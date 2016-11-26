@@ -29,23 +29,18 @@
  */
 package tiled.core;
 
-import java.awt.Color;
 import java.awt.Image;
 import java.awt.Rectangle;
-import java.awt.Toolkit;
-import java.awt.image.BufferedImage;
-import java.awt.image.FilteredImageSource;
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import javax.imageio.ImageIO;
-
-import tiled.util.TileCutter;
-import tiled.util.TransparentImageFilter;
 import tiled.util.BasicTileCutter;
+import tiled.util.TileCutter;
+
+import com.jme3.math.ColorRGBA;
+import com.jme3.texture.Texture;
+import com.jme3.texture.image.ImageRaster;
 
 /**
  * todo: Update documentation
@@ -67,17 +62,14 @@ public class TileSet implements Iterable<Tile> {
 
     private String base;
     final private List<Tile> tiles = new ArrayList<>();
-    private long tilebmpFileLastModified;
-    private TileCutter tileCutter;
     private Rectangle tileDimensions;
     private int tileSpacing;
     private int tileMargin;
     private int tilesPerRow;
     private String externalSource;
-    private File tilebmpFile;
     private String name;
-    private Color transparentColor;
-    private Image tileSetImage;
+    private ColorRGBA transparentColor;
+    private Texture tileSetTexture;
 
     /**
      * Default constructor
@@ -87,143 +79,62 @@ public class TileSet implements Iterable<Tile> {
     }
 
     /**
-     * Creates a tileset from a tileset image file.
-     *
-     * @param imgFilename a {@link java.lang.String} object.
-     * @param cutter a {@link tiled.util.TileCutter} object.
-     * @throws java.io.IOException if any.
-     * @see TileSet#importTileBitmap(BufferedImage, TileCutter)
-     */
-    public void importTileBitmap(String imgFilename, TileCutter cutter)
-            throws IOException {
-        setTilesetImageFilename(imgFilename);
-
-        Image image = ImageIO.read(new File(imgFilename));
-        if (image == null) {
-            throw new IOException("Failed to load " + tilebmpFile);
-        }
-
-        Toolkit tk = Toolkit.getDefaultToolkit();
-
-        if (transparentColor != null) {
-            int rgb = transparentColor.getRGB();
-            image = tk.createImage(
-                    new FilteredImageSource(image.getSource(),
-                            new TransparentImageFilter(rgb)));
-        }
-
-        BufferedImage buffered = new BufferedImage(
-                image.getWidth(null),
-                image.getHeight(null),
-                BufferedImage.TYPE_INT_ARGB);
-        buffered.getGraphics().drawImage(image, 0, 0, null);
-
-        importTileBitmap(buffered, cutter);
-    }
-
-    /**
-     * Creates a tileset from a buffered image. Tiles are cut by the passed
+     * Creates a tileset from a Texture2D. Tiles are cut by the passed
      * cutter.
      *
-     * @param tileBitmap the image to be used, must not be null
+     * @param texture the image to be used, must not be null
      * @param cutter the tile cutter, must not be null
      */
-    public void importTileBitmap(BufferedImage tileBitmap, TileCutter cutter) {
-        assert tileBitmap != null;
-        assert cutter != null;
+    public void importTileTexture(Texture texture, TileCutter cutter) {
+    	assert texture != null;
+    	assert cutter != null;
+    	
+    	this.tileSetTexture = texture;
+    	
+    	 if (transparentColor != null) {
+    		 trans(texture, transparentColor);
+    	 }
+    	 
+    	 if (cutter instanceof BasicTileCutter) {
+             BasicTileCutter basicTileCutter = (BasicTileCutter) cutter;
+             tileSpacing = basicTileCutter.getTileSpacing();
+             tileMargin = basicTileCutter.getTileMargin();
+             tilesPerRow = basicTileCutter.getTilesPerRow();
+         }
 
-        tileCutter = cutter;
-        tileSetImage = tileBitmap;
-
-        cutter.setImage(tileBitmap);
-
-        tileDimensions = new Rectangle(cutter.getTileDimensions());
-        if (cutter instanceof BasicTileCutter) {
-            BasicTileCutter basicTileCutter = (BasicTileCutter) cutter;
-            tileSpacing = basicTileCutter.getTileSpacing();
-            tileMargin = basicTileCutter.getTileMargin();
-            tilesPerRow = basicTileCutter.getTilesPerRow();
-        }
-
-        Image tileImage = cutter.getNextTile();
-        while (tileImage != null) {
-            Tile tile = new Tile();
-            tile.setImage(tileImage);
-            addNewTile(tile);
-            tileImage = cutter.getNextTile();
-        }
+         Image tileImage = cutter.getNextTile();
+         while (tileImage != null) {
+             Tile tile = new Tile();
+             tile.setImage(tileImage);
+             addNewTile(tile);
+             tileImage = cutter.getNextTile();
+         }
+    	 
     }
-
-    /**
-     * Refreshes a tileset from a tileset image file.
-     *
-     * @throws IOException
-     * @see TileSet#importTileBitmap(BufferedImage,TileCutter)
-     */
-    private void refreshImportedTileBitmap()
-            throws IOException {
-        String imgFilename = tilebmpFile.getPath();
-
-        Image image = ImageIO.read(new File(imgFilename));
-        if (image == null) {
-            throw new IOException("Failed to load " + tilebmpFile);
-        }
-
-        Toolkit tk = Toolkit.getDefaultToolkit();
-
-        if (transparentColor != null) {
-            int rgb = transparentColor.getRGB();
-            image = tk.createImage(
-                    new FilteredImageSource(image.getSource(),
-                            new TransparentImageFilter(rgb)));
-        }
-
-        BufferedImage buffered = new BufferedImage(
-                image.getWidth(null),
-                image.getHeight(null),
-                BufferedImage.TYPE_INT_ARGB);
-        buffered.getGraphics().drawImage(image, 0, 0, null);
-
-        refreshImportedTileBitmap(buffered);
-    }
-
-    /**
-     * Refreshes a tileset from a buffered image. Tiles are cut by the passed
-     * cutter.
-     *
-     * @param tileBitmap the image to be used, must not be null
-     */
-    private void refreshImportedTileBitmap(BufferedImage tileBitmap) {
-        assert tileBitmap != null;
-
-        tileCutter.reset();
-        tileCutter.setImage(tileBitmap);
-
-        tileSetImage = tileBitmap;
-        tileDimensions = new Rectangle(tileCutter.getTileDimensions());
-
-        int id = 0;
-        Image tileImage = tileCutter.getNextTile();
-        while (tileImage != null) {
-            Tile tile = getTile(id);
-            tile.setImage(tileImage);
-            tileImage = tileCutter.getNextTile();
-            id++;
-        }
-    }
-
-    /**
-     * <p>checkUpdate.</p>
-     *
-     * @throws java.io.IOException if any.
-     */
-    public void checkUpdate() throws IOException {
-        if (tilebmpFile != null
-                && tilebmpFile.lastModified() > tilebmpFileLastModified) {
-            refreshImportedTileBitmap();
-            tilebmpFileLastModified = tilebmpFile.lastModified();
-        }
-    }
+    
+	/**
+	 * This method is used for filtering out a given "transparent" color from an
+     * image. Sometimes known as magic pink.
+	 * @param tex
+	 * @param transColor
+	 */
+	private void trans(final Texture tex, final ColorRGBA transColor) {
+		com.jme3.texture.Image img = tex.getImage();
+		ImageRaster raster = ImageRaster.create(img);
+		
+		ColorRGBA store = new ColorRGBA();
+		int width = img.getWidth();
+		int height = img.getHeight();
+		for(int y = 0; y<height; y++) {
+			for(int x = 0; x<width; x++) {
+				raster.getPixel(x, y, store);
+				if (store.r == transColor.r && store.g == transColor.g && store.b == transColor.b) {
+					store.set(0, 0, 0, 0);
+					raster.setPixel(x, y, store);
+				}
+			}
+		}
+	}
 
     /**
      * Sets the URI path of the external source of this tile set. By setting
@@ -245,21 +156,6 @@ public class TileSet implements Iterable<Tile> {
     }
 
     /**
-     * Sets the filename of the tileset image. Doesn't change the tileset in any
-     * other way.
-     *
-     * @param name a {@link java.lang.String} object.
-     */
-    public void setTilesetImageFilename(String name) {
-        if (name != null) {
-            tilebmpFile = new File(name);
-            tilebmpFileLastModified = tilebmpFile.lastModified();
-        } else {
-            tilebmpFile = null;
-        }
-    }
-
-    /**
      * Sets the name of this tileset.
      *
      * @param name the new name for this tileset
@@ -271,9 +167,9 @@ public class TileSet implements Iterable<Tile> {
     /**
      * Sets the transparent color in the tileset image.
      *
-     * @param color a {@link java.awt.Color} object.
+     * @param color a {@link com.jme3.math.ColorRGBA} object.
      */
-    public void setTransparentColor(Color color) {
+    public void setTransparentColor(ColorRGBA color) {
         transparentColor = color;
     }
 
@@ -458,23 +354,6 @@ public class TileSet implements Iterable<Tile> {
     }
 
     /**
-     * Returns the filename of the tileset image.
-     *
-     * @return the filename of the tileset image, or <code>null</code> if this
-     * tileset doesn't reference a tileset image
-     */
-    public String getTilebmpFile() {
-        if (tilebmpFile != null) {
-            try {
-                return tilebmpFile.getCanonicalPath();
-            } catch (IOException e) {
-            }
-        }
-
-        return null;
-    }
-
-    /**
      * <p>Getter for the field <code>name</code>.</p>
      *
      * @return the name of this tileset.
@@ -489,7 +368,7 @@ public class TileSet implements Iterable<Tile> {
      *
      * @return Color - The transparent color of the set
      */
-    public Color getTransparentColor() {
+    public ColorRGBA getTransparentColor() {
         return transparentColor;
     }
 
@@ -506,6 +385,6 @@ public class TileSet implements Iterable<Tile> {
      * @return tileSetImage != null
      */
     public boolean isSetFromImage() {
-        return tileSetImage != null;
+        return tileSetTexture != null;
     }
 }

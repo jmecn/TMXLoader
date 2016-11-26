@@ -136,7 +136,6 @@ public class BasicTileCutter implements TileCutter {
      * @return the number of tiles per row in the tileset image.
      */
     public int getTilesPerRow() {
-        return (image.getWidth() - 2 * tileMargin + tileSpacing)
-                / (tileWidth + tileSpacing);
+        return (image.getWidth() - 2 * tileMargin + tileSpacing) / (tileWidth + tileSpacing);
     }
 }

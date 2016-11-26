@@ -1,13 +1,9 @@
 package com.jme3.tmx;
 
-import java.awt.Color;
 import java.awt.Image;
-import java.awt.Toolkit;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Path2D;
 import java.awt.geom.Rectangle2D;
-import java.awt.image.BufferedImage;
-import java.awt.image.FilteredImageSource;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -44,7 +40,6 @@ import tiled.core.TileLayer;
 import tiled.core.TileSet;
 import tiled.util.Base64;
 import tiled.util.BasicTileCutter;
-import tiled.util.TransparentImageFilter;
 
 import com.jme3.asset.AssetInfo;
 import com.jme3.asset.AssetKey;
@@ -52,7 +47,9 @@ import com.jme3.asset.AssetLoader;
 import com.jme3.asset.AssetManager;
 import com.jme3.asset.TextureKey;
 import com.jme3.math.ColorRGBA;
+import com.jme3.texture.Texture;
 import com.jme3.texture.Texture2D;
+import com.jme3.texture.image.ImageRaster;
 import com.sun.istack.internal.logging.Logger;
 
 public class TmxLoader implements AssetLoader {
@@ -60,7 +57,7 @@ public class TmxLoader implements AssetLoader {
 	static Logger logger = Logger.getLogger(TmxLoader.class);
 
 	private AssetManager assetManager;
-	private AssetKey key;
+	private AssetKey<?> key;
 
 	private Map map;
 	private String xmlPath;
@@ -70,7 +67,20 @@ public class TmxLoader implements AssetLoader {
 	public Object load(AssetInfo assetInfo) throws IOException {
 		key = assetInfo.getKey();
 		assetManager = assetInfo.getManager();
+		
+		String extension = key.getExtension();
+		
+		switch (extension) {
+		case "tmx":
+			return loadMap(assetInfo.openStream());
+		case "tsx":
+			return loadTileSet(assetInfo.openStream());
+		default : return null;
+		}
 
+	}
+	
+	private Map loadMap(InputStream inputStream) throws IOException {
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 		Document doc;
 		try {
@@ -87,7 +97,7 @@ public class TmxLoader implements AssetLoader {
 					return null;
 				}
 			});
-			InputSource insrc = new InputSource(assetInfo.openStream());
+			InputSource insrc = new InputSource(inputStream);
 			insrc.setSystemId(key.getFolder());
 			insrc.setEncoding("UTF-8");
 			doc = builder.parse(insrc);
@@ -107,7 +117,37 @@ public class TmxLoader implements AssetLoader {
 
 
 		return map;
-		
+	}
+	
+	private TileSet loadTileSet(InputStream inputStream) {
+		TileSet set = null;
+		Node tsNode;
+
+		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+		try {
+			DocumentBuilder builder = factory.newDocumentBuilder();
+			Document tsDoc = builder.parse(inputStream, ".");
+
+			String xmlPathSave = xmlPath;
+
+			NodeList tsNodeList = tsDoc.getElementsByTagName("tileset");
+
+			// There can be only one tileset in a .tsx file.
+			tsNode = tsNodeList.item(0);
+			if (tsNode != null) {
+				set = buildTileset(tsNode);
+				if (set.getSource() != null) {
+					System.out.println("Recursive external tilesets are not supported.");
+				}
+				set.setSource(key.getName());
+			}
+
+			xmlPath = xmlPathSave;
+		} catch (Exception e) {
+			logger.warning("Failed while loading " + key.getName(), e);
+		}
+
+		return set;
 	}
 	
 	private void buildMap(Document doc) throws Exception {
@@ -438,7 +478,7 @@ public class TmxLoader implements AssetLoader {
 						Texture2D tex = loadTexture2D(imgSource);
 						logger.info("Texture:" + tex);
 						
-						Color transparentColor = null;
+						ColorRGBA transparentColor = null;
 						if (transStr != null) {
 							// #RRGGBB || RRGGBB
 							if (transStr.startsWith("#")) {
@@ -446,40 +486,19 @@ public class TmxLoader implements AssetLoader {
 							}
 
 							int rgb = Integer.parseInt(transStr, 16);
-							transparentColor = new Color(rgb);
-							set.setTransparentColor(transparentColor);
-							
 							// TODO use ColorRGBA
 							int red = (rgb >> 16) & 0xFF;
 							int green = (rgb >> 8) & 0xFF;
 							int blue = (rgb >> 0) & 0xFF;
 							float scalor = 1f / 255f;
-							ColorRGBA transColor = new ColorRGBA(red * scalor, green * scalor, blue * scalor, 1f);
+							transparentColor = new ColorRGBA(red * scalor, green * scalor, blue * scalor, 1f);
+							
+							set.setTransparentColor(transparentColor);
+							trans(tex, transparentColor);
 						}
-
-						AssetInfo info = assetManager.locateAsset(new AssetKey(sourcePath));
-						Image image = ImageIO.read(info.openStream());
-				        if (image == null) {
-				            throw new IOException("Failed to load " + sourcePath);
-				        }
-
-				        Toolkit tk = Toolkit.getDefaultToolkit();
-
-				        if (transparentColor != null) {
-				            int rgb = transparentColor.getRGB();
-				            image = tk.createImage(
-				                    new FilteredImageSource(image.getSource(),
-				                            new TransparentImageFilter(rgb)));
-				        }
-
-				        BufferedImage buffered = new BufferedImage(
-				                image.getWidth(null),
-				                image.getHeight(null),
-				                BufferedImage.TYPE_INT_ARGB);
-				        buffered.getGraphics().drawImage(image, 0, 0, null);
 				        
-						set.importTileBitmap(buffered, new BasicTileCutter(
-								tileWidth, tileHeight, tileSpacing, tileMargin));
+						set.setSource(sourcePath);
+						set.importTileTexture(tex, new BasicTileCutter(tileWidth, tileHeight, tileSpacing, tileMargin));
 					}
 				} else if (child.getNodeName().equalsIgnoreCase("tile")) {
 					Tile tile = unmarshalTile(set, child, basedir);
@@ -974,6 +993,30 @@ public class TmxLoader implements AssetLoader {
 		
         return tex;
 		
+	}
+	
+	/**
+	 * This method is used for filtering out a given "transparent" color from an
+     * image. Sometimes known as magic pink.
+	 * @param tex
+	 * @param transColor
+	 */
+	private void trans(final Texture tex, final ColorRGBA transColor) {
+		com.jme3.texture.Image img = tex.getImage();
+		ImageRaster raster = ImageRaster.create(img);
+		
+		ColorRGBA store = new ColorRGBA();
+		int width = img.getWidth();
+		int height = img.getHeight();
+		for(int y = 0; y<height; y++) {
+			for(int x = 0; x<width; x++) {
+				raster.getPixel(x, y, store);
+				if (store.r == transColor.r && store.g == transColor.g && store.b == transColor.b) {
+					store.set(0, 0, 0, 0);
+					raster.setPixel(x, y, store);
+				}
+			}
+		}
 	}
 	
 	/**

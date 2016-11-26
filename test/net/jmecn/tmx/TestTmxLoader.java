@@ -14,13 +14,11 @@ import tiled.view.OrthogonalRenderer;
 import com.jme3.app.SimpleApplication;
 import com.jme3.material.Material;
 import com.jme3.scene.Geometry;
-import com.jme3.scene.Spatial;
 import com.jme3.scene.shape.Quad;
 import com.jme3.texture.Texture;
 import com.jme3.texture.Texture2D;
 import com.jme3.texture.plugins.AWTLoader;
 import com.jme3.tmx.TmxLoader;
-import com.jme3.tmx.TsxLoader;
 
 /**
  * test tmx loader
@@ -31,8 +29,7 @@ public class TestTmxLoader extends SimpleApplication {
 
 	@Override
 	public void simpleInitApp() {
-		assetManager.registerLoader(TmxLoader.class, "tmx");
-		assetManager.registerLoader(TsxLoader.class, "tsx");
+		assetManager.registerLoader(TmxLoader.class, "tmx", "tsx");
 		Map map = (Map) assetManager.loadAsset("Models/Examples/csvmap.tmx");
 		rootNode.attachChild(createMap(map));
 	}
