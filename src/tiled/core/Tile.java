@@ -29,166 +29,187 @@
  */
 package tiled.core;
 
-import java.awt.Image;
 import java.util.Properties;
+
+import com.jme3.texture.Image;
+import com.jme3.texture.Texture;
 
 /**
  * The core class for our tiles.
- *
+ * 
  * @author Thorbj?rn Lindeijer
  * @author Adam Turk
  * @version 0.17
  */
 public class Tile {
 
-    private Image image;
-    private String source;
-    private int id = -1;
-    private Properties properties;
-    private TileSet tileset;
+	private Texture texture;
+	private String source;
+	private int id = -1;
+	private Properties properties;
+	private TileSet tileset;
+	private int x;
+	private int y;
+	private int width;
+	private int height;
 
-    /**
-     * <p>Constructor for Tile.</p>
-     */
-    public Tile() {
-        properties = new Properties();
-    }
+	
+	/**
+	 * <p>
+	 * Constructor for Tile.
+	 * </p>
+	 */
+	public Tile() {
+		properties = new Properties();
+	}
 
-    /**
-     * <p>Constructor for Tile.</p>
-     *
-     * @param set a {@link tiled.core.TileSet} object.
-     */
-    public Tile(TileSet set) {
-        this();
-        setTileSet(set);
-    }
+	/**
+	 * <p>
+	 * Constructor for Tile.
+	 * </p>
+	 * 
+	 * @param set
+	 *            a {@link tiled.core.TileSet} object.
+	 */
+	public Tile(TileSet set) {
+		this();
+		setTileSet(set);
+	}
 
-    /**
-     * Copy constructor
-     *
-     * @param t tile to copy
-     */
-    public Tile(Tile t) {
-        properties = (Properties) t.properties.clone();
-        tileset = t.tileset;
-    }
+	/**
+	 * Copy constructor
+	 * 
+	 * @param t
+	 *            tile to copy
+	 */
+	public Tile(Tile t) {
+		properties = (Properties) t.properties.clone();
+		tileset = t.tileset;
+	}
 
-    /**
-     * Sets the id of the tile as long as it is at least 0.
-     *
-     * @param i The id of the tile
-     */
-    public void setId(int i) {
-        if (i >= 0) {
-            id = i;
-        }
-    }
+	/**
+	 * Sets the id of the tile as long as it is at least 0.
+	 * 
+	 * @param i
+	 *            The id of the tile
+	 */
+	public void setId(int i) {
+		if (i >= 0) {
+			id = i;
+		}
+	}
 
-    /**
-     * Sets the image of the tile.
-     *
-     * @param i the new image of the tile
-     */
-    public void setImage(Image i) {
-        image = i;
-    }
+	public void setTexture(Texture t) {
+		texture = t;
+	}
+	
+	/**
+	 * Sets the parent tileset for a tile.
+	 * 
+	 * @param set
+	 *            a {@link tiled.core.TileSet} object.
+	 */
+	public void setTileSet(TileSet set) {
+		tileset = set;
+	}
 
-    /**
-     * Sets the parent tileset for a tile.
-     *
-     * @param set a {@link tiled.core.TileSet} object.
-     */
-    public void setTileSet(TileSet set) {
-        tileset = set;
-    }
+	/** 
+	 * <p>
+	 * Setter for the field <code>properties</code>.
+	 * </p>
+	 * 
+	 * @param p
+	 *            a {@link java.util.Properties} object.
+	 */
+	public void setProperties(Properties p) {
+		properties = p;
+	}
 
-    /**
-     * <p>Setter for the field <code>properties</code>.</p>
-     *
-     * @param p a {@link java.util.Properties} object.
-     */
-    public void setProperties(Properties p) {
-        properties = p;
-    }
+	/**
+	 * <p>
+	 * Getter for the field <code>properties</code>.
+	 * </p>
+	 * 
+	 * @return a {@link java.util.Properties} object.
+	 */
+	public Properties getProperties() {
+		return properties;
+	}
 
-    /**
-     * <p>Getter for the field <code>properties</code>.</p>
-     *
-     * @return a {@link java.util.Properties} object.
-     */
-    public Properties getProperties() {
-        return properties;
-    }
+	/**
+	 * Returns the tile id of this tile, relative to tileset.
+	 * 
+	 * @return id
+	 */
+	public int getId() {
+		return id;
+	}
 
-    /**
-     * Returns the tile id of this tile, relative to tileset.
-     *
-     * @return id
-     */
-    public int getId() {
-        return id;
-    }
+	/**
+	 * Returns the {@link tiled.core.TileSet} that this tile is part of.
+	 * 
+	 * @return TileSet
+	 */
+	public TileSet getTileSet() {
+		return tileset;
+	}
 
-    /**
-     * Returns the {@link tiled.core.TileSet} that this tile is part of.
-     *
-     * @return TileSet
-     */
-    public TileSet getTileSet() {
-        return tileset;
-    }
 
-    /**
-     * <p>getWidth.</p>
-     *
-     * @return a int.
-     */
-    public int getWidth() {
-        if (image != null) {
-            return image.getWidth(null);
-        }
-        return 0;
-    }
+	public void setRectangle(int x, int y, int width, int height) {
+		this.x = x;
+		this.y = y;
+		this.width = width;
+		this.height = height;
+	}
+	
+	public int getX() {
+		return x;
+	}
 
-    /**
-     * <p>getHeight.</p>
-     *
-     * @return a int.
-     */
-    public int getHeight() {
-        if (image != null) {
-            return image.getHeight(null);
-        }
-        return 0;
-    }
+	public int getY() {
+		return y;
+	}
 
-    /**
-     * Returns the tile image for this Tile.
-     *
-     * @return Image
-     */
-    public Image getImage() {
-        return image;
-    }
+	/**
+	 * <p>
+	 * getWidth.
+	 * </p>
+	 * 
+	 * @return a int.
+	 */
+	public int getWidth() {
+		return width;
+	}
 
-    public String getSource() {
-        return source;
-    }
+	/**
+	 * <p>
+	 * getHeight.
+	 * </p>
+	 * 
+	 * @return a int.
+	 */
+	public int getHeight() {
+		return height;
+	}
 
-    /**
-     * Sets the URI path of the external source of this tile set. By setting
-     * this, the set is implied to be external in all other operations.
-     *
-     * @param source a URI of the tileset image file
-     */
-    public void setSource(String source) {
-        this.source = source;
-    }
+	public String getSource() {
+		return source;
+	}
 
-    /** {@inheritDoc} */
-    @Override
-    public String toString() {
-        return "Tile " + id + " (" + getWidth() + "x" + getHeight() + ")";
-    }
+	/**
+	 * Sets the URI path of the external source of this tile set. By setting
+	 * this, the set is implied to be external in all other operations.
+	 * 
+	 * @param source
+	 *            a URI of the tileset image file
+	 */
+	public void setSource(String source) {
+		this.source = source;
+	}
+	
+	/** {@inheritDoc} */
+	@Override
+	public String toString() {
+		return "Tile " + id + " (" + getWidth() + "x" + getHeight() + ")";
+	}
 }

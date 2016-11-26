@@ -1,6 +1,5 @@
 package com.jme3.tmx;
 
-import java.awt.Image;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Path2D;
 import java.awt.geom.Rectangle2D;
@@ -17,7 +16,6 @@ import java.util.TreeMap;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.InflaterInputStream;
 
-import javax.imageio.ImageIO;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -39,7 +37,6 @@ import tiled.core.Tile;
 import tiled.core.TileLayer;
 import tiled.core.TileSet;
 import tiled.util.Base64;
-import tiled.util.BasicTileCutter;
 
 import com.jme3.asset.AssetInfo;
 import com.jme3.asset.AssetKey;
@@ -48,8 +45,8 @@ import com.jme3.asset.AssetManager;
 import com.jme3.asset.TextureKey;
 import com.jme3.math.ColorRGBA;
 import com.jme3.texture.Texture;
+import com.jme3.texture.Texture.WrapMode;
 import com.jme3.texture.Texture2D;
-import com.jme3.texture.image.ImageRaster;
 import com.sun.istack.internal.logging.Logger;
 
 public class TmxLoader implements AssetLoader {
@@ -377,8 +374,8 @@ public class TmxLoader implements AssetLoader {
 		return o;
 	}
 
-	private Image unmarshalImage(Node t, String baseDir) throws IOException {
-		Image img = null;
+	private Texture2D unmarshalImage(Node t, String baseDir) throws IOException {
+		Texture2D img = null;
 
 		String source = getAttributeValue(t, "source");
 
@@ -386,10 +383,8 @@ public class TmxLoader implements AssetLoader {
 			// TODO : replace java.awt.Image with com.jme3.texture.Image
 			Texture2D tex = loadTexture2D(source);
 			logger.info("tex:" + tex);
-			
-			AssetInfo info = assetManager.locateAsset(new AssetKey(source));
-			img = ImageIO.read(info.openStream());
 			logger.info("img:" + img);
+			img = tex;
 		} else {
 			NodeList nl = t.getChildNodes();
 
@@ -402,22 +397,9 @@ public class TmxLoader implements AssetLoader {
 						char[] charArray = sdata.trim().toCharArray();
 						byte[] imageData = Base64.decode(charArray);
 
-						// TODO replace java.awt.Image with com.jme3.texture.Image
 						Texture2D tex = loadTexture2D(imageData);
 						logger.info("tex:" + tex);
-						
-						// for android
-						// Bitmap bmp = BitmapFactory.decodeByteArray(imageData, 0, imageData.length);
-
-						// for desktop
-						img = ImageIO.read(new ByteArrayInputStream(imageData));
-
-						// Deriving a scaled instance, even if it has the same
-						// size, somehow makes drawing of the tiles a lot
-						// faster on various systems (seen on Linux, Windows
-						// and MacOS X).
-						img = img.getScaledInstance(img.getWidth(null),
-								img.getHeight(null), Image.SCALE_FAST);
+						img = tex;
 					}
 					break;
 				}
@@ -442,12 +424,10 @@ public class TmxLoader implements AssetLoader {
 			final int tileHeight = getAttribute(t, "tileheight", map != null ? map.getTileHeight() : 0);
 			final int tileSpacing = getAttribute(t, "spacing", 0);
 			final int tileMargin = getAttribute(t, "margin", 0);
-			final int tileCount = getAttribute(t, "tilecount", 0);
-			final int columns = getAttribute(t, "columns", 0);// tilesPerRow
 
 			final String name = getAttributeValue(t, "name");
 
-			set = new TileSet();
+			set = new TileSet(tileWidth, tileHeight, tileSpacing, tileMargin);
 
 			set.setName(name);
 			set.setBaseDir(basedir);
@@ -494,14 +474,13 @@ public class TmxLoader implements AssetLoader {
 							transparentColor = new ColorRGBA(red * scalor, green * scalor, blue * scalor, 1f);
 							
 							set.setTransparentColor(transparentColor);
-							trans(tex, transparentColor);
 						}
 				        
 						set.setSource(sourcePath);
-						set.importTileTexture(tex, new BasicTileCutter(tileWidth, tileHeight, tileSpacing, tileMargin));
+						set.setTileSetTexture(tex);
 					}
 				} else if (child.getNodeName().equalsIgnoreCase("tile")) {
-					Tile tile = unmarshalTile(set, child, basedir);
+					Tile tile = buildTile(set, child, basedir);
 					if (!hasTilesetImage || tile.getId() > set.getMaxTileId()) {
 						set.addTile(tile);
 					} else {
@@ -625,7 +604,7 @@ public class TmxLoader implements AssetLoader {
 		}
 	}
 
-	private Tile unmarshalTile(TileSet set, Node t, String baseDir) throws Exception {
+	private Tile buildTile(TileSet set, Node t, String baseDir) throws Exception {
 		Tile tile = null;
 		NodeList children = t.getChildNodes();
 		boolean isAnimated = false;
@@ -656,8 +635,8 @@ public class TmxLoader implements AssetLoader {
 		for (int i = 0; i < children.getLength(); i++) {
 			Node child = children.item(i);
 			if ("image".equalsIgnoreCase(child.getNodeName())) {
-				Image img = unmarshalImage(child, baseDir);
-				tile.setImage(img);
+				Texture tex = unmarshalImage(child, baseDir);
+				tile.setTexture(tex);
 			} else if ("animation".equalsIgnoreCase(child.getNodeName())) {
 				// TODO: fill this in once TMXMapWriter is complete
 			}
@@ -923,9 +902,10 @@ public class TmxLoader implements AssetLoader {
 		
 		Texture2D tex = null;
 		try {
-			TextureKey texKey = new TextureKey(assetPath, false);
+			TextureKey texKey = new TextureKey(assetPath, true);
 			texKey.setGenerateMips(false);
 			tex = (Texture2D)assetManager.loadTexture(texKey);
+			tex.setWrap(WrapMode.Repeat);
 			logger.info("Texture:" + tex);
 		} catch (Exception e) {
 			logger.warning("Can't load texture " + source, e);
@@ -984,6 +964,7 @@ public class TmxLoader implements AssetLoader {
 			com.jme3.texture.Image img = (com.jme3.texture.Image)loadMethod.invoke(loaderInstance, info);
 			
 			tex = new Texture2D();
+			tex.setWrap(WrapMode.Repeat);
 			tex.setAnisotropicFilter(texKey.getAnisotropy());
 	        tex.setName(texKey.getName());
 	        tex.setImage(img);
@@ -993,30 +974,6 @@ public class TmxLoader implements AssetLoader {
 		
         return tex;
 		
-	}
-	
-	/**
-	 * This method is used for filtering out a given "transparent" color from an
-     * image. Sometimes known as magic pink.
-	 * @param tex
-	 * @param transColor
-	 */
-	private void trans(final Texture tex, final ColorRGBA transColor) {
-		com.jme3.texture.Image img = tex.getImage();
-		ImageRaster raster = ImageRaster.create(img);
-		
-		ColorRGBA store = new ColorRGBA();
-		int width = img.getWidth();
-		int height = img.getHeight();
-		for(int y = 0; y<height; y++) {
-			for(int x = 0; x<width; x++) {
-				raster.getPixel(x, y, store);
-				if (store.r == transColor.r && store.g == transColor.g && store.b == transColor.b) {
-					store.set(0, 0, 0, 0);
-					raster.setPixel(x, y, store);
-				}
-			}
-		}
 	}
 	
 	/**

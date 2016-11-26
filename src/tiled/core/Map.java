@@ -375,11 +375,11 @@ public class Map implements Iterable<MapLayer> {
      *
      * @return int The maximum tile height
      */
-    public int getTileHeightMax() {
-        int maxHeight = tileHeight;
+    public float getTileHeightMax() {
+        float maxHeight = tileHeight;
 
         for (TileSet tileset : tileSets) {
-            int height = tileset.getTileHeight();
+            float height = tileset.getTileHeight();
             if (height > maxHeight) {
                 maxHeight = height;
             }
