@@ -21,7 +21,7 @@ public class RPGCamAppState extends BaseAppState implements AnalogListener {
 
 	private static String[] mappings = new String[] { LEFT, RIGHT, UP, DOWN, };
 
-	private float viewColumns = 24f;
+	private float viewColumns = 8f;
 	private Orientation orientation = Orientation.ORTHOGONAL;
 	private Camera cam;
 	private InputManager inputManager;
@@ -62,11 +62,10 @@ public class RPGCamAppState extends BaseAppState implements AnalogListener {
 			return;
 		}
 		
-		float frustumSize = columns * 0.5f;
+		float frustumSize = viewColumns * 0.5f;
 		cam.setParallelProjection(true);
-		float aspect = (float) cam.getWidth() / cam.getHeight();
-		cam.setFrustum(-1000, 1000, -aspect * frustumSize,
-				aspect * frustumSize, frustumSize, -frustumSize);
+		float aspect = (float) cam.getHeight() / cam.getWidth();
+		cam.setFrustum(-1000, 1000, - frustumSize, frustumSize, aspect * frustumSize, - aspect * frustumSize);
 	}
 	
 	public void setOrientation(Orientation orien) {

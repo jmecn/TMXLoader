@@ -13,6 +13,7 @@ import com.jme3.app.FlyCamAppState;
 import com.jme3.app.SimpleApplication;
 import com.jme3.app.state.BaseAppState;
 import com.jme3.asset.AssetManager;
+import com.jme3.light.AmbientLight;
 import com.jme3.material.Material;
 import com.jme3.material.RenderState.BlendMode;
 import com.jme3.renderer.queue.RenderQueue.Bucket;
@@ -20,13 +21,12 @@ import com.jme3.scene.Geometry;
 import com.jme3.scene.Mesh;
 import com.jme3.scene.Node;
 import com.jme3.scene.VertexBuffer.Type;
+import com.jme3.texture.Image;
 import com.jme3.texture.Texture;
 
 public class TiledMapAppState extends BaseAppState {
 
 	private final Map map;
-	private float viewColumns = 24;
-
 	private Node rootNode;
 	private AssetManager assetManager;
 	private RPGCamAppState rpgCam;
@@ -41,14 +41,19 @@ public class TiledMapAppState extends BaseAppState {
 		return map;
 	}
 	
+	public void setViewColumns(int viewColumn) {
+		rpgCam.setParallelCamera(viewColumn);
+	}
+	
 	@Override
 	protected void initialize(Application app) {
 		this.assetManager = getApplication().getAssetManager();
 
-		rpgCam.setParallelCamera(viewColumns);
 		rpgCam.setOrientation(map.getOrientation());
 		
 		createSpatials();
+		
+		rootNode.addLight(new AmbientLight());
 	}
 
 	@Override
@@ -108,8 +113,15 @@ public class TiledMapAppState extends BaseAppState {
 			TileSet set = sets.get(i);
 			
 			Texture tex = set.getTexture();
-			Material mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
-			mat.setTexture("ColorMap", tex);
+			
+			Material mat = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md");
+			mat.setTexture("DiffuseMap", tex);
+			
+			// FIXME : notice image.Format == BGR8 means no alpha channel!
+			mat.setFloat("AlphaDiscardThreshold", 0.01f);
+			mat.getAdditionalRenderState().setDepthWrite(true);
+			mat.getAdditionalRenderState().setDepthTest(true);
+			mat.getAdditionalRenderState().setColorWrite(true);
 			mat.getAdditionalRenderState().setBlendMode(BlendMode.Alpha);
 	
 			/**
@@ -139,8 +151,9 @@ public class TiledMapAppState extends BaseAppState {
 			/**
 			 * Calculate texCoords for each tile, and create a Geometry for it.
 			 */
-			float imageWidth = tex.getImage().getWidth();
-			float imageHeight = tex.getImage().getHeight();
+			Image image = tex.getImage();
+			float imageWidth = image.getWidth();
+			float imageHeight = image.getHeight();
 			int tileSize = set.size();
 			for (int j = 0; j < tileSize; j++) {
 				Tile tile = set.getTile(j);
@@ -173,7 +186,7 @@ public class TiledMapAppState extends BaseAppState {
 	
 				Geometry geom = new Geometry("tile#" + tile.getId(), mesh);
 				geom.setMaterial(mat);
-				geom.setQueueBucket(Bucket.Transparent);
+				geom.setQueueBucket(Bucket.Translucent);
 	
 				tile.setGeom(geom);
 			}
