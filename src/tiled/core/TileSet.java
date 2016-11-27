@@ -107,7 +107,6 @@ public class TileSet implements Iterable<Tile> {
 		
 		Tile tile = getNextTile();
 		while (tile != null) {
-			tile.setTexture(tileSetTexture);
 			addNewTile(tile);
 			tile = getNextTile();
 		}

@@ -31,15 +31,13 @@ package tiled.core;
 
 import java.util.Properties;
 
-import com.jme3.texture.Image;
+import com.jme3.scene.Geometry;
 import com.jme3.texture.Texture;
 
 /**
  * The core class for our tiles.
  * 
- * @author Thorbj?rn Lindeijer
- * @author Adam Turk
- * @version 0.17
+ * @author yanmaoyuan
  */
 public class Tile {
 
@@ -53,6 +51,7 @@ public class Tile {
 	private int width;
 	private int height;
 
+	private Geometry geom = null;
 	
 	/**
 	 * <p>
@@ -101,6 +100,10 @@ public class Tile {
 
 	public void setTexture(Texture t) {
 		texture = t;
+	}
+	
+	public Texture getTexture() {
+		return texture;
 	}
 	
 	/**
@@ -207,6 +210,14 @@ public class Tile {
 		this.source = source;
 	}
 	
+	public Geometry getGeom() {
+		return geom;
+	}
+
+	public void setGeom(Geometry geom) {
+		this.geom = geom;
+	}
+
 	/** {@inheritDoc} */
 	@Override
 	public String toString() {
