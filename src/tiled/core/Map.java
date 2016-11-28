@@ -288,6 +288,7 @@ public class Map implements Iterable<MapLayer> {
             return;
         }
 
+        
         Tile t = tileset.getTile(0);
 
         if (t != null) {
@@ -301,6 +302,7 @@ public class Map implements Iterable<MapLayer> {
             }
         }
 
+        tileset.createSpatialForTile(tileWidth, tileHeight);
         tileSets.add(tileset);
     }
 

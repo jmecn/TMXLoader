@@ -31,6 +31,7 @@ package tiled.core;
 
 import java.util.Properties;
 
+import com.jme3.material.Material;
 import com.jme3.scene.Geometry;
 import com.jme3.texture.Texture;
 
@@ -41,7 +42,10 @@ import com.jme3.texture.Texture;
  */
 public class Tile {
 
-	private Texture texture;
+	private Geometry geom = null;
+	private Material mat;
+	private Texture tex;
+	
 	private String source;
 	private int id = -1;
 	private Properties properties;
@@ -51,7 +55,6 @@ public class Tile {
 	private int width;
 	private int height;
 
-	private Geometry geom = null;
 	
 	/**
 	 * <p>
@@ -99,11 +102,11 @@ public class Tile {
 	}
 
 	public void setTexture(Texture t) {
-		texture = t;
+		tex = t;
 	}
 	
 	public Texture getTexture() {
-		return texture;
+		return tex;
 	}
 	
 	/**
@@ -222,5 +225,13 @@ public class Tile {
 	@Override
 	public String toString() {
 		return "Tile " + id + " (" + getWidth() + "x" + getHeight() + ")";
+	}
+
+	public void setMaterial(Material mat) {
+		this.mat = mat;
+	}
+	
+	public Material getMaterial() {
+		return this.mat;
 	}
 }

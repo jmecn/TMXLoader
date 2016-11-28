@@ -1,4 +1,4 @@
-package com.jme3.tiled;
+package com.jme3.tiled.spatial;
 
 import tiled.core.Tile;
 
@@ -8,7 +8,7 @@ import com.jme3.scene.VertexBuffer.Type;
 import com.jme3.texture.Image;
 import com.jme3.texture.Texture;
 
-public class Sprite extends Geometry {
+public class TileQuad extends Geometry {
 
 	private float width = 1f;
 	private float height = 1f;
@@ -40,12 +40,12 @@ public class Sprite extends Geometry {
 			u1, v1,
 			u0, v1 };
 	
-	public Sprite(String name) {
+	public TileQuad(String name) {
 		super(name);
 		updateMesh();
 	}
 	
-	public Sprite(String name, float width, float height) {
+	public TileQuad(String name, float width, float height) {
 		super(name);
 		this.width = width;
 		this.height = height;

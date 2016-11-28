@@ -43,11 +43,15 @@ import com.jme3.asset.AssetKey;
 import com.jme3.asset.AssetLoader;
 import com.jme3.asset.AssetManager;
 import com.jme3.asset.TextureKey;
+import com.jme3.material.Material;
+import com.jme3.material.RenderState.BlendMode;
 import com.jme3.math.ColorRGBA;
+import com.jme3.renderer.queue.RenderQueue.Bucket;
 import com.jme3.texture.Texture;
 import com.jme3.texture.Texture.MagFilter;
 import com.jme3.texture.Texture.WrapMode;
 import com.jme3.texture.Texture2D;
+import com.jme3.tiled.spatial.TileQuad;
 import com.sun.istack.internal.logging.Logger;
 
 public class TmxLoader implements AssetLoader {
@@ -116,7 +120,7 @@ public class TmxLoader implements AssetLoader {
 		}
 
 		try {
-			buildMap(doc);
+			readMap(doc);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -146,7 +150,7 @@ public class TmxLoader implements AssetLoader {
 			tsNode = tsNodeList.item(0);
 			
 			if (tsNode != null) {
-				set = buildTileset(tsNode);
+				set = readTileset(tsNode);
 				if (set.getSource() != null) {
 					logger.warning("Recursive external tilesets are not supported.");
 				}
@@ -178,101 +182,7 @@ public class TmxLoader implements AssetLoader {
 		return ext;
 	}
 	
-	private void buildMap(Document doc) throws Exception {
-		Node item, mapNode;
-
-		mapNode = doc.getDocumentElement();
-
-		if (!"map".equals(mapNode.getNodeName())) {
-			throw new Exception("Not a valid tmx map file.");
-		}
-
-		// Get the map dimensions and create the map
-		int mapWidth = getAttribute(mapNode, "width", 0);
-		int mapHeight = getAttribute(mapNode, "height", 0);
-
-		if (mapWidth > 0 && mapHeight > 0) {
-			map = new Map(mapWidth, mapHeight);
-		} else {
-			// Maybe this map is still using the dimensions element
-			NodeList l = doc.getElementsByTagName("dimensions");
-			for (int i = 0; (item = l.item(i)) != null; i++) {
-				if (item.getParentNode() == mapNode) {
-					mapWidth = getAttribute(item, "width", 0);
-					mapHeight = getAttribute(item, "height", 0);
-
-					if (mapWidth > 0 && mapHeight > 0) {
-						map = new Map(mapWidth, mapHeight);
-					}
-				}
-			}
-		}
-
-		if (map == null) {
-			logger.warning("Couldn't locate map dimensions.");
-			throw new RuntimeException("Couldn't locate map dimensions.");
-		}
-
-		// Load other map attributes
-		String orientation = getAttributeValue(mapNode, "orientation");
-		int tileWidth = getAttribute(mapNode, "tilewidth", 0);
-		int tileHeight = getAttribute(mapNode, "tileheight", 0);
-		int hexsidelength = getAttribute(mapNode, "hexsidelength", 0);
-		String staggerAxis = getAttributeValue(mapNode, "staggeraxis");
-		String staggerIndex = getAttributeValue(mapNode, "staggerindex");
-
-		if (orientation != null) {
-			setOrientation(orientation.toUpperCase());
-		} else {
-			map.setOrientation(Map.Orientation.ORTHOGONAL);
-		}
-
-		if (tileWidth > 0) {
-			map.setTileWidth(tileWidth);
-		}
-		if (tileHeight > 0) {
-			map.setTileHeight(tileHeight);
-		}
-		if (hexsidelength > 0) {
-			map.setHexSideLength(hexsidelength);
-		}
-
-		if (staggerAxis != null) {
-			setStaggerAxis(staggerAxis.toUpperCase());
-		}
-
-		if (staggerIndex != null) {
-			setStaggerIndex(staggerIndex.toUpperCase());
-		}
-
-		// Load properties
-		readProperties(mapNode.getChildNodes(), map.getProperties());
-
-		// Load tilesets first, in case order is munged
-		tilesetPerFirstGid = new TreeMap<>();
-		NodeList l = doc.getElementsByTagName("tileset");
-		for (int i = 0; (item = l.item(i)) != null; i++) {
-			map.addTileset(buildTileset(item));
-		}
-
-		// Load the layers and objectgroups
-		for (Node sibs = mapNode.getFirstChild(); sibs != null; sibs = sibs.getNextSibling()) {
-			if ("layer".equals(sibs.getNodeName())) {
-				MapLayer layer = readLayer(sibs);
-				if (layer != null) {
-					map.addLayer(layer);
-				}
-			} else if ("objectgroup".equals(sibs.getNodeName())) {
-				MapLayer layer = buildObjectGroup(sibs);
-				if (layer != null) {
-					map.addLayer(layer);
-				}
-			}
-		}
-		tilesetPerFirstGid = null;
-	}
-
-	private static int reflectFindMethodByName(Class c, String methodName) {
+	private static int reflectFindMethodByName(Class<?> c, String methodName) {
 		Method[] methods = c.getMethods();
 		for (int i = 0; i < methods.length; i++) {
 			if (methods[i].getName().equalsIgnoreCase(methodName)) {
@@ -284,7 +194,7 @@ public class TmxLoader implements AssetLoader {
 
 	private void reflectInvokeMethod(Object invokeVictim, Method method,
 			String[] args) throws Exception {
-		Class[] parameterTypes = method.getParameterTypes();
+		Class<?>[] parameterTypes = method.getParameterTypes();
 		Object[] conformingArguments = new Object[parameterTypes.length];
 
 		if (args.length < parameterTypes.length) {
@@ -364,10 +274,10 @@ public class TmxLoader implements AssetLoader {
 		}
 	}
 
-	private Object unmarshalClass(Class reflector, Node node)
+	private Object unmarshalClass(Class<?> reflector, Node node)
 			throws InstantiationException, IllegalAccessException,
 			InvocationTargetException {
-		Constructor cons = null;
+		Constructor<?> cons = null;
 		try {
 			cons = reflector.getConstructor((Class[]) null);
 		} catch (SecurityException e1) {
@@ -405,42 +315,101 @@ public class TmxLoader implements AssetLoader {
 		return o;
 	}
 
-	private Texture2D unmarshalImage(Node t, String baseDir) throws IOException {
-		Texture2D img = null;
+	private void readMap(Document doc) throws Exception {
+		Node item, mapNode;
 
-		String source = getAttributeValue(t, "source");
+		mapNode = doc.getDocumentElement();
 
-		if (source != null) {
-			// TODO : replace java.awt.Image with com.jme3.texture.Image
-			Texture2D tex = loadTexture2D(source);
-			logger.info("tex:" + tex);
-			logger.info("img:" + img);
-			img = tex;
+		if (!"map".equals(mapNode.getNodeName())) {
+			throw new Exception("Not a valid tmx map file.");
+		}
+
+		// Get the map dimensions and create the map
+		int mapWidth = getAttribute(mapNode, "width", 0);
+		int mapHeight = getAttribute(mapNode, "height", 0);
+
+		if (mapWidth > 0 && mapHeight > 0) {
+			map = new Map(mapWidth, mapHeight);
 		} else {
-			NodeList nl = t.getChildNodes();
+			// Maybe this map is still using the dimensions element
+			NodeList l = doc.getElementsByTagName("dimensions");
+			for (int i = 0; (item = l.item(i)) != null; i++) {
+				if (item.getParentNode() == mapNode) {
+					mapWidth = getAttribute(item, "width", 0);
+					mapHeight = getAttribute(item, "height", 0);
 
-			for (int i = 0; i < nl.getLength(); i++) {
-				Node node = nl.item(i);
-				if ("data".equals(node.getNodeName())) {
-					Node cdata = node.getFirstChild();
-					if (cdata != null) {
-						String sdata = cdata.getNodeValue();
-						char[] charArray = sdata.trim().toCharArray();
-						byte[] imageData = Base64.decode(charArray);
-
-						Texture2D tex = loadTexture2D(imageData);
-						logger.info("tex:" + tex);
-						img = tex;
+					if (mapWidth > 0 && mapHeight > 0) {
+						map = new Map(mapWidth, mapHeight);
 					}
-					break;
 				}
 			}
 		}
 
-		return img;
-	}
+		if (map == null) {
+			logger.warning("Couldn't locate map dimensions.");
+			throw new RuntimeException("Couldn't locate map dimensions.");
+		}
 
-	private TileSet buildTileset(Node t) throws Exception {
+		// Load other map attributes
+		String orientation = getAttributeValue(mapNode, "orientation");
+		int tileWidth = getAttribute(mapNode, "tilewidth", 0);
+		int tileHeight = getAttribute(mapNode, "tileheight", 0);
+		int hexsidelength = getAttribute(mapNode, "hexsidelength", 0);
+		String staggerAxis = getAttributeValue(mapNode, "staggeraxis");
+		String staggerIndex = getAttributeValue(mapNode, "staggerindex");
+
+		if (orientation != null) {
+			setOrientation(orientation.toUpperCase());
+		} else {
+			map.setOrientation(Map.Orientation.ORTHOGONAL);
+		}
+
+		if (tileWidth > 0) {
+			map.setTileWidth(tileWidth);
+		}
+		if (tileHeight > 0) {
+			map.setTileHeight(tileHeight);
+		}
+		if (hexsidelength > 0) {
+			map.setHexSideLength(hexsidelength);
+		}
+
+		if (staggerAxis != null) {
+			setStaggerAxis(staggerAxis.toUpperCase());
+		}
+
+		if (staggerIndex != null) {
+			setStaggerIndex(staggerIndex.toUpperCase());
+		}
+
+		// Load properties
+		readProperties(mapNode.getChildNodes(), map.getProperties());
+
+		// Load tilesets first, in case order is munged
+		tilesetPerFirstGid = new TreeMap<>();
+		NodeList l = doc.getElementsByTagName("tileset");
+		for (int i = 0; (item = l.item(i)) != null; i++) {
+			map.addTileset(readTileset(item));
+		}
+
+		// Load the layers and objectgroups
+		for (Node sibs = mapNode.getFirstChild(); sibs != null; sibs = sibs.getNextSibling()) {
+			if ("layer".equals(sibs.getNodeName())) {
+				MapLayer layer = readLayer(sibs);
+				if (layer != null) {
+					map.addLayer(layer);
+				}
+			} else if ("objectgroup".equals(sibs.getNodeName())) {
+				MapLayer layer = readObjectGroup(sibs);
+				if (layer != null) {
+					map.addLayer(layer);
+				}
+			}
+		}
+		tilesetPerFirstGid = null;
+	}
+	
+	private TileSet readTileset(Node t) throws Exception {
 		TileSet set = null;
 		
 		String source = getAttributeValue(t, "source");
@@ -486,8 +455,11 @@ public class TmxLoader implements AssetLoader {
 						hasTilesetImage = true;
 
 						String sourcePath = toJmeAssetPath(imgSource);
+						set.setSource(sourcePath);
 						
 						Texture2D tex = loadTexture2D(imgSource);
+						set.setTileSetTexture(tex);
+						
 						ColorRGBA transparentColor = null;
 						if (transStr != null) {
 							// #RRGGBB || RRGGBB
@@ -496,7 +468,6 @@ public class TmxLoader implements AssetLoader {
 							}
 
 							int rgb = Integer.parseInt(transStr, 16);
-							// TODO use ColorRGBA
 							int red = (rgb >> 16) & 0xFF;
 							int green = (rgb >> 8) & 0xFF;
 							int blue = (rgb >> 0) & 0xFF;
@@ -506,13 +477,28 @@ public class TmxLoader implements AssetLoader {
 							set.setTransparentColor(transparentColor);
 						}
 				        
-						set.setSource(sourcePath);
-						set.setTileSetTexture(tex);
+						Material mat = createMaterial(tex, transparentColor);
+						set.setMaterial(mat);
 					}
 				} else if (child.getNodeName().equalsIgnoreCase("tile")) {
-					Tile tile = buildTile(set, child, basedir);
+					Tile tile = readTile(set, child, basedir);
 					if (!hasTilesetImage || tile.getId() > set.getMaxTileId()) {
 						set.addTile(tile);
+						
+						/**
+						 * Calculate texCoords for each tile, and create a Geometry for it.
+						 * TODO : refact this code
+						 */
+						if (tile.getMaterial() != null) {
+							TileQuad sprite = new TileQuad("tile#"+tile.getId());
+							sprite.setSize(tile.getWidth() / map.getTileWidth(), tile.getHeight() / map.getTileHeight());
+							sprite.setTexCoordFromTile(tile);
+							
+							sprite.setMaterial(tile.getMaterial());
+							sprite.setQueueBucket(Bucket.Translucent);
+	
+							tile.setGeom(sprite);
+						}
 					} else {
 						Tile myTile = set.getTile(tile.getId());
 						myTile.setProperties(tile.getProperties());
@@ -530,111 +516,7 @@ public class TmxLoader implements AssetLoader {
 		return set;
 	}
 	
-	private MapObject readMapObject(Node t) throws Exception {
-		final String name = getAttributeValue(t, "name");
-		final String type = getAttributeValue(t, "type");
-		final String gid = getAttributeValue(t, "gid");
-		final double x = getDoubleAttribute(t, "x", 0);
-		final double y = getDoubleAttribute(t, "y", 0);
-		final double width = getDoubleAttribute(t, "width", 0);
-		final double height = getDoubleAttribute(t, "height", 0);
-
-		MapObject obj = new MapObject(x, y, width, height);
-		obj.setShape(obj.getBounds());
-		if (name != null) {
-			obj.setName(name);
-		}
-		if (type != null) {
-			obj.setType(type);
-		}
-		if (gid != null) {
-			Tile tile = getTileForTileGID(Integer.parseInt(gid));
-			obj.setTile(tile);
-		}
-
-		NodeList children = t.getChildNodes();
-		for (int i = 0; i < children.getLength(); i++) {
-			Node child = children.item(i);
-			if ("image".equalsIgnoreCase(child.getNodeName())) {
-				String source = getAttributeValue(child, "source");
-				if (source != null) {
-					if (!new File(source).isAbsolute()) {
-						source = xmlPath + source;
-					}
-					obj.setImageSource(source);
-				}
-				break;
-			} else if ("ellipse".equalsIgnoreCase(child.getNodeName())) {
-				obj.setShape(new Ellipse2D.Double(x, y, width, height));
-			} else if ("polygon".equalsIgnoreCase(child.getNodeName())
-					|| "polyline".equalsIgnoreCase(child.getNodeName())) {
-				Path2D.Double shape = new Path2D.Double();
-				final String pointsAttribute = getAttributeValue(child,
-						"points");
-				StringTokenizer st = new StringTokenizer(pointsAttribute, ", ");
-				boolean firstPoint = true;
-				while (st.hasMoreElements()) {
-					double pointX = Double.parseDouble(st.nextToken());
-					double pointY = Double.parseDouble(st.nextToken());
-					if (firstPoint) {
-						shape.moveTo(x + pointX, y + pointY);
-						firstPoint = false;
-					} else {
-						shape.lineTo(x + pointX, y + pointY);
-					}
-				}
-				shape.closePath();
-				obj.setShape(shape);
-				obj.setBounds((Rectangle2D.Double) shape.getBounds2D());
-			}
-		}
-
-		Properties props = new Properties();
-		readProperties(children, props);
-
-		obj.setProperties(props);
-		return obj;
-	}
-
-	/**
-	 * Reads properties from amongst the given children. When a "properties"
-	 * element is encountered, it recursively calls itself with the children of
-	 * this node. This function ensures backward compatibility with tmx version
-	 * 0.99a.
-	 * 
-	 * Support for reading property values stored as character data was added in
-	 * Tiled 0.7.0 (tmx version 0.99c).
-	 * 
-	 * @param children
-	 *            the children amongst which to find properties
-	 * @param props
-	 *            the properties object to set the properties of
-	 */
-	private static void readProperties(NodeList children, Properties props) {
-		for (int i = 0; i < children.getLength(); i++) {
-			Node child = children.item(i);
-			if ("property".equalsIgnoreCase(child.getNodeName())) {
-				final String key = getAttributeValue(child, "name");
-				String value = getAttributeValue(child, "value");
-				if (value == null) {
-					Node grandChild = child.getFirstChild();
-					if (grandChild != null) {
-						value = grandChild.getNodeValue();
-						if (value != null) {
-							value = value.trim();
-						}
-					}
-				}
-				if (value != null) {
-					props.setProperty(key, value);
-				}
-			} else if ("properties".equals(child.getNodeName())) {
-				readProperties(child.getChildNodes(), props);
-			}
-		}
-	}
-
-	private Tile buildTile(TileSet set, Node t, String baseDir) throws Exception {
+	private Tile readTile(TileSet set, Node t, String baseDir) throws Exception {
 		Tile tile = null;
 		NodeList children = t.getChildNodes();
 		boolean isAnimated = false;
@@ -665,46 +547,69 @@ public class TmxLoader implements AssetLoader {
 		for (int i = 0; i < children.getLength(); i++) {
 			Node child = children.item(i);
 			if ("image".equalsIgnoreCase(child.getNodeName())) {
-				Texture tex = unmarshalImage(child, baseDir);
+				Texture tex = readImage(child, baseDir);
+				Material mat = createMaterial(tex, null);
 				tile.setTexture(tex);
+				tile.setMaterial(mat);
+				
+				float qx = (float)tile.getWidth() / map.getTileWidth();
+				float qy = (float)tile.getHeight() / map.getTileHeight();
+				TileQuad sprite = new TileQuad("tile#"+tile.getId());
+				sprite.setSize(qx, qy);
+				sprite.setTexCoordFromTile(tile);
+				
+				sprite.setMaterial(tile.getMaterial());
+				sprite.setQueueBucket(Bucket.Translucent);
+
+				tile.setGeom(sprite);
+				
 			} else if ("animation".equalsIgnoreCase(child.getNodeName())) {
 				// TODO: fill this in once TMXMapWriter is complete
 			}
 		}
-
+		
 		return tile;
 	}
+	
+	/**
+	 * oad image from file or decode from the CDATA
+	 * @param t
+	 * @param baseDir
+	 * @return
+	 * @throws IOException
+	 */
+	private Texture2D readImage(Node t, String baseDir) throws IOException {
+		Texture2D img = null;
 
-	private MapLayer buildObjectGroup(Node t) throws Exception {
-		ObjectGroup og = null;
-		try {
-			og = (ObjectGroup) unmarshalClass(ObjectGroup.class, t);
-		} catch (Exception e) {// todo: fix pok¨¦mon exception handling
-			logger.warning("failed load object group", e);
-			return og;
-		}
+		String source = getAttributeValue(t, "source");
 
-		final int offsetX = getAttribute(t, "x", 0);
-		final int offsetY = getAttribute(t, "y", 0);
-		og.setOffset(offsetX, offsetY);
+		if (source != null) {
+			Texture2D tex = loadTexture2D(source);
+			img = tex;
+		} else {
+			NodeList nl = t.getChildNodes();
 
-		// Add all objects from the objects group
-		NodeList children = t.getChildNodes();
+			for (int i = 0; i < nl.getLength(); i++) {
+				Node node = nl.item(i);
+				if ("data".equals(node.getNodeName())) {
+					Node cdata = node.getFirstChild();
+					if (cdata != null) {
+						String sdata = cdata.getNodeValue();
+						char[] charArray = sdata.trim().toCharArray();
+						byte[] imageData = Base64.decode(charArray);
 
-		for (int i = 0; i < children.getLength(); i++) {
-			Node child = children.item(i);
-			if ("object".equalsIgnoreCase(child.getNodeName())) {
-				og.addObject(readMapObject(child));
+						Texture2D tex = loadTexture2D(imageData);
+						logger.info("tex:" + tex);
+						img = tex;
+					}
+					break;
+				}
 			}
 		}
 
-		Properties props = new Properties();
-		readProperties(children, props);
-		og.setProperties(props);
-
-		return og;
+		return img;
 	}
-
+	
 	/**
 	 * Loads a map layer from a layer node.
 	 * 
@@ -744,21 +649,20 @@ public class TmxLoader implements AssetLoader {
 					if (cdata != null) {
 						char[] enc = cdata.getNodeValue().trim().toCharArray();
 						byte[] dec = Base64.decode(enc);
-						ByteArrayInputStream bais = new ByteArrayInputStream(dec);
+						
 						InputStream is;
-
 						if ("gzip".equalsIgnoreCase(comp)) {
 							final int len = layerWidth * layerHeight * 4;
-							is = new GZIPInputStream(bais, len);
+							is = new GZIPInputStream(new ByteArrayInputStream(dec), len);
 						} else if ("zlib".equalsIgnoreCase(comp)) {
-							is = new InflaterInputStream(bais);
+							is = new InflaterInputStream(new ByteArrayInputStream(dec));
 						} else if (comp != null && !comp.isEmpty()) {
 							throw new IOException(
 									"Unrecognized compression method \"" + comp
 											+ "\" for map layer "
 											+ ml.getName());
 						} else {
-							is = bais;
+							is = new ByteArrayInputStream(dec);
 						}
 
 						for (int y = 0; y < ml.getHeight(); y++) {
@@ -848,7 +752,142 @@ public class TmxLoader implements AssetLoader {
 
 		return ml;
 	}
+	
+	private MapLayer readObjectGroup(Node t) throws Exception {
+		ObjectGroup og = null;
+		try {
+			og = (ObjectGroup) unmarshalClass(ObjectGroup.class, t);
+		} catch (Exception e) {// todo: fix pok¨¦mon exception handling
+			logger.warning("failed load object group", e);
+			return og;
+		}
 
+		final int offsetX = getAttribute(t, "x", 0);
+		final int offsetY = getAttribute(t, "y", 0);
+		og.setOffset(offsetX, offsetY);
+
+		// Add all objects from the objects group
+		NodeList children = t.getChildNodes();
+
+		for (int i = 0; i < children.getLength(); i++) {
+			Node child = children.item(i);
+			if ("object".equalsIgnoreCase(child.getNodeName())) {
+				og.addObject(readMapObject(child));
+			}
+		}
+
+		Properties props = new Properties();
+		readProperties(children, props);
+		og.setProperties(props);
+
+		return og;
+	}
+
+	private MapObject readMapObject(Node t) throws Exception {
+		final String name = getAttributeValue(t, "name");
+		final String type = getAttributeValue(t, "type");
+		final String gid = getAttributeValue(t, "gid");
+		final double x = getDoubleAttribute(t, "x", 0);
+		final double y = getDoubleAttribute(t, "y", 0);
+		final double width = getDoubleAttribute(t, "width", 0);
+		final double height = getDoubleAttribute(t, "height", 0);
+
+		MapObject obj = new MapObject(x, y, width, height);
+		obj.setShape(obj.getBounds());
+		if (name != null) {
+			obj.setName(name);
+		}
+		if (type != null) {
+			obj.setType(type);
+		}
+		if (gid != null) {
+			Tile tile = getTileForTileGID(Integer.parseInt(gid));
+			obj.setTile(tile);
+		}
+
+		NodeList children = t.getChildNodes();
+		for (int i = 0; i < children.getLength(); i++) {
+			Node child = children.item(i);
+			if ("image".equalsIgnoreCase(child.getNodeName())) {
+				String source = getAttributeValue(child, "source");
+				if (source != null) {
+					if (!new File(source).isAbsolute()) {
+						source = xmlPath + source;
+					}
+					obj.setImageSource(source);
+				}
+				break;
+			} else if ("ellipse".equalsIgnoreCase(child.getNodeName())) {
+				obj.setShape(new Ellipse2D.Double(x, y, width, height));
+			} else if ("polygon".equalsIgnoreCase(child.getNodeName())
+					|| "polyline".equalsIgnoreCase(child.getNodeName())) {
+				Path2D.Double shape = new Path2D.Double();
+				final String pointsAttribute = getAttributeValue(child,
+						"points");
+				StringTokenizer st = new StringTokenizer(pointsAttribute, ", ");
+				boolean firstPoint = true;
+				while (st.hasMoreElements()) {
+					double pointX = Double.parseDouble(st.nextToken());
+					double pointY = Double.parseDouble(st.nextToken());
+					if (firstPoint) {
+						shape.moveTo(x + pointX, y + pointY);
+						firstPoint = false;
+					} else {
+						shape.lineTo(x + pointX, y + pointY);
+					}
+				}
+				shape.closePath();
+				obj.setShape(shape);
+				obj.setBounds((Rectangle2D.Double) shape.getBounds2D());
+			}
+		}
+
+		Properties props = new Properties();
+		readProperties(children, props);
+
+		obj.setProperties(props);
+		return obj;
+	}
+	
+	
+	/**
+	 * Reads properties from amongst the given children. When a "properties"
+	 * element is encountered, it recursively calls itself with the children of
+	 * this node. This function ensures backward compatibility with tmx version
+	 * 0.99a.
+	 * 
+	 * Support for reading property values stored as character data was added in
+	 * Tiled 0.7.0 (tmx version 0.99c).
+	 * 
+	 * @param children
+	 *            the children amongst which to find properties
+	 * @param props
+	 *            the properties object to set the properties of
+	 */
+	private void readProperties(NodeList children, Properties props) {
+		for (int i = 0; i < children.getLength(); i++) {
+			Node child = children.item(i);
+			if ("property".equalsIgnoreCase(child.getNodeName())) {
+				final String key = getAttributeValue(child, "name");
+				String value = getAttributeValue(child, "value");
+				if (value == null) {
+					Node grandChild = child.getFirstChild();
+					if (grandChild != null) {
+						value = grandChild.getNodeValue();
+						if (value != null) {
+							value = value.trim();
+						}
+					}
+				}
+				if (value != null) {
+					props.setProperty(key, value);
+				}
+			} else if ("properties".equals(child.getNodeName())) {
+				readProperties(child.getChildNodes(), props);
+			}
+		}
+	}
+	
 	/**
 	 * Helper method to set the tile based on its global id.
 	 * 
@@ -1023,5 +1062,22 @@ public class TmxLoader implements AssetLoader {
 		} else {
 			throw new RuntimeException("Can't locate asset: " + src);
 		}
+	}
+	
+	protected Material createMaterial(Texture tex, ColorRGBA transColor) {
+		Material mat = new Material(assetManager, "Shader/TransColor.j3md");
+		mat.setTexture("ColorMap", tex);
+		mat.setFloat("AlphaDiscardThreshold", 0.01f);
+		
+		if (transColor != null) {
+			mat.setColor("TransColor", transColor);
+		}
+		
+		mat.getAdditionalRenderState().setDepthWrite(true);
+		mat.getAdditionalRenderState().setDepthTest(true);
+		mat.getAdditionalRenderState().setColorWrite(true);
+		mat.getAdditionalRenderState().setBlendMode(BlendMode.Alpha);
+		
+		return mat;
 	}
 }

@@ -33,28 +33,27 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector2f;
+import com.jme3.renderer.queue.RenderQueue.Bucket;
 import com.jme3.texture.Texture;
-import com.jme3.texture.image.ImageRaster;
+import com.jme3.tiled.spatial.TileQuad;
 
 /**
- * todo: Update documentation
  * <p>
  * TileSet handles operations on tiles as a set, or group. It has several
  * advanced internal functions aimed at reducing unnecessary data replication. A
  * 'tile' is represented internally as two distinct pieces of data. The first
  * and most important is a {@link tiled.core.Tile} object, and these are held in
- * a {@link java.util.Vector}.
+ * a {@link java.util.List}.
  * </p>
  * 
  * <p>
- * The other is the tile image.
+ * The other is the tile Texture.
  * </p>
  * 
- * @author Thorbj?rn Lindeijer
- * @author Adam Turk
- * @version 0.17
+ * @author yanmaoyuan
  */
 public class TileSet implements Iterable<Tile> {
 
@@ -67,17 +66,22 @@ public class TileSet implements Iterable<Tile> {
 	private int tileMargin;
 	private String externalSource;
 	private String name;
+
 	private ColorRGBA transparentColor;
 	private Texture tileSetTexture;
+	private Material material;
 
-    
 	/**
 	 * Default constructor
 	 */
 	public TileSet() {
+		this.tileWidth = 32;
+		this.tileHeight = 32;
+		this.tileSpacing = 0;
+		this.tileMargin = 0;
 		tileDimensions = new Vector2f();
 	}
-	
+
 	public TileSet(int width, int height, int space, int margin) {
 		this.tileWidth = width;
 		this.tileHeight = height;
@@ -100,7 +104,7 @@ public class TileSet implements Iterable<Tile> {
 		this.tileSetTexture = texture;
 
 		reset();
-		
+
 		Tile tile = getNextTile();
 		while (tile != null) {
 			addNewTile(tile);
@@ -365,47 +369,82 @@ public class TileSet implements Iterable<Tile> {
 	public Texture getTexture() {
 		return tileSetTexture;
 	}
-	
+
+	public Material getMaterial() {
+		return material;
+	}
+
+	public void setMaterial(Material material) {
+		this.material = material;
+	}
+
 	int nextX;
 	int nextY;
 
-    /** {@inheritDoc} */
-    private final void reset() {
-        nextX = tileMargin;
-        nextY = tileMargin;
-    }
-    
-    /** {@inheritDoc} */
-    public Vector2f getTileDimensions() {
-        return new Vector2f(tileWidth, tileHeight);
-    }
+	/** {@inheritDoc} */
+	private final void reset() {
+		nextX = tileMargin;
+		nextY = tileMargin;
+	}
 
-    /**
-     * Returns the number of tiles per row in the tileset image.
-     *
-     * @return the number of tiles per row in the tileset image.
-     */
-    public int getTilesPerRow() {
-        return (tileSetTexture.getImage().getWidth() - 2 * tileMargin + tileSpacing) / (tileWidth + tileSpacing);
-    }
-    
-    /** {@inheritDoc} */
-    private Tile getNextTile() {
-    	Tile tile = new Tile();
-        if (nextY + tileHeight + tileMargin <= tileSetTexture.getImage().getHeight()) {
-        	
-        	tile.setTexture(tileSetTexture);
-        	tile.setRectangle(nextX, nextY, tileWidth, tileHeight);
-            
-            nextX += tileWidth + tileSpacing;
-            if (nextX + tileWidth + tileMargin > tileSetTexture.getImage().getWidth()) {
-                nextX = tileMargin;
-                nextY += tileHeight + tileSpacing;
-            }
+	/** {@inheritDoc} */
+	public Vector2f getTileDimensions() {
+		return new Vector2f(tileWidth, tileHeight);
+	}
 
-            return tile;
-        }
+	/**
+	 * Returns the number of tiles per row in the tileset image.
+	 * 
+	 * @return the number of tiles per row in the tileset image.
+	 */
+	public int getTilesPerRow() {
+		return (tileSetTexture.getImage().getWidth() - 2 * tileMargin + tileSpacing)
+				/ (tileWidth + tileSpacing);
+	}
 
-        return null;
-    }
+	private Tile getNextTile() {
+		Tile tile = new Tile();
+		if (nextY + tileHeight + tileMargin <= tileSetTexture.getImage()
+				.getHeight()) {
+
+			tile.setTexture(tileSetTexture);
+			tile.setRectangle(nextX, nextY, tileWidth, tileHeight);
+			
+			nextX += tileWidth + tileSpacing;
+			if (nextX + tileWidth + tileMargin > tileSetTexture.getImage().getWidth()) {
+				nextX = tileMargin;
+				nextY += tileHeight + tileSpacing;
+			}
+
+			return tile;
+		}
+
+		return null;
+	}
+	
+	public void createSpatialForTile(float mapTileWidth, float mapTileHeight) {
+		/**
+		 * The unit size of each Quad is (1, 1).
+		 * only if this TileSet's (tileWidth, tileHeight) equals 
+		 * the Map's (tileWidth, tileHeight)
+		 */
+		float qx = tileWidth / mapTileWidth;
+		float qy = tileWidth / mapTileHeight;
+		
+		for(int i=0; i<tiles.size(); i++) {
+			Tile tile = tiles.get(i);
+			
+			/**
+			 * Calculate texCoords for each tile, and create a Geometry for it.
+			 */
+			TileQuad sprite = new TileQuad("tile#"+tile.getId());
+			sprite.setSize(qx, qy);
+			sprite.setTexCoordFromTile(tile);
+			
+			sprite.setMaterial(material);
+			sprite.setQueueBucket(Bucket.Translucent);
+	
+			tile.setGeom(sprite);
+		}
+	}
 }

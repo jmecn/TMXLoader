@@ -1,7 +1,5 @@
 package com.jme3.tiled;
 
-import tiled.core.Map.Orientation;
-
 import com.jme3.app.Application;
 import com.jme3.app.state.BaseAppState;
 import com.jme3.input.InputManager;
@@ -22,17 +20,16 @@ public class RPGCamAppState extends BaseAppState implements AnalogListener {
 	private static String[] mappings = new String[] { LEFT, RIGHT, UP, DOWN, };
 
 	private float viewColumns = 8f;
-	private Orientation orientation = Orientation.ORTHOGONAL;
 	private Camera cam;
 	private InputManager inputManager;
-	protected float moveSpeed = 3f;
+	protected float moveSpeed = 10f;
 
 	@Override
 	protected void initialize(Application app) {
 		this.cam = app.getCamera();
+		this.cam.lookAtDirection(Vector3f.UNIT_Z.negate(), Vector3f.UNIT_Y);
 		this.inputManager = app.getInputManager();
 		this.setParallelCamera(viewColumns);
-		this.setOrientation(orientation);
 	}
 
 	@Override
@@ -68,26 +65,6 @@ public class RPGCamAppState extends BaseAppState implements AnalogListener {
 		cam.setFrustum(-1000, 1000, - frustumSize, frustumSize, aspect * frustumSize, - aspect * frustumSize);
 	}
 	
-	public void setOrientation(Orientation orien) {
-		this.orientation = orien;
-		
-		if (cam == null) {
-			return;
-		}
-		
-		switch (orientation) {
-		case ORTHOGONAL:
-			cam.lookAtDirection(Vector3f.UNIT_Z.negate(), Vector3f.UNIT_Y);
-			break;
-		case ISOMETRIC:
-			cam.lookAtDirection(new Vector3f(-1f, 1f, -1f).normalizeLocal(),
-					Vector3f.UNIT_Y);
-			break;
-		case HEXAGONAL:
-		case STAGGERED:
-		}
-	}
-
 	/**
 	 * Sets the move speed. The speed is given in world units per second.
 	 * 
