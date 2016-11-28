@@ -11,9 +11,6 @@ MaterialDef TransColor {
         Float AlphaDiscardThreshold (AlphaTestFallOff)
         
         Color TransColor
-
-        // ScrollSpeed
-        Float Speed : 0.0
     }
 
     Technique {
@@ -24,7 +21,6 @@ MaterialDef TransColor {
             WorldViewProjectionMatrix
             ViewProjectionMatrix
             ViewMatrix
-            Time
         }
 
         Defines {
@@ -44,7 +40,6 @@ MaterialDef TransColor {
             WorldViewProjectionMatrix
             ViewProjectionMatrix
             ViewMatrix
-            Time
         }
 
         Defines {
