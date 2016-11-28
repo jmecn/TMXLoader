@@ -7,7 +7,6 @@ import tiled.core.MapLayer;
 import tiled.core.TileLayer;
 
 import com.jme3.app.Application;
-import com.jme3.app.FlyCamAppState;
 import com.jme3.app.SimpleApplication;
 import com.jme3.app.state.BaseAppState;
 import com.jme3.math.Vector3f;
@@ -17,6 +16,12 @@ import com.jme3.tiled.spatial.IsometricRender;
 import com.jme3.tiled.spatial.MapRender;
 import com.jme3.tiled.spatial.OrthogonalRender;
 
+/**
+ * TiledMapAppState will create a Spatial for tile.ore.Map.
+ * Only TileLayer will be shown, ObjectGroups are not support for now.
+ * @author yanmaoyuan
+ *
+ */
 public class TiledMapAppState extends BaseAppState {
 
 	static Logger logger = Logger.getLogger(TiledMapAppState.class.getName());
@@ -26,7 +31,6 @@ public class TiledMapAppState extends BaseAppState {
 	private final Map map;
 	protected Vector3f centerOffset;
 	private MapRender mapRender;
-	private RPGCamAppState rpgCam;
 
 	public TiledMapAppState(Map map) {
 		this.map = map;
@@ -45,8 +49,6 @@ public class TiledMapAppState extends BaseAppState {
         case STAGGERED:
         	mapRender = new HexagonalRender(map);
 		}
-		
-		this.rpgCam = new RPGCamAppState();
 		rootNode = new Node("TileMapRoot");
 	}
 
@@ -60,10 +62,6 @@ public class TiledMapAppState extends BaseAppState {
 	
 	public Vector3f getCameraLocation(int x, int y) {
 		return mapRender.tileLoc2ScreenLoc(x, y).addLocal(centerOffset);
-	}
-	
-	public void setViewColumns(int viewColumn) {
-		rpgCam.setParallelCamera(viewColumn);
 	}
 	
 	@Override
@@ -88,34 +86,14 @@ public class TiledMapAppState extends BaseAppState {
 	protected void cleanup(Application app) {
 	}
 
-	private FlyCamAppState flyCamAppState = null;
 	@Override
 	protected void onEnable() {
-		((SimpleApplication) getApplication()).getRootNode().attachChild(
-				rootNode);
-		
-		// disable flyCamAppState
-		flyCamAppState = getStateManager().getState(FlyCamAppState.class);
-		if (flyCamAppState != null) {
-			getStateManager().detach(flyCamAppState);
-		}
-		
-		if (rpgCam != null) {
-			getStateManager().attach(rpgCam);
-		}
+		((SimpleApplication) getApplication()).getRootNode().attachChild(rootNode);
 	}
 
 	@Override
 	protected void onDisable() {
 		rootNode.removeFromParent();
-		
-		if (flyCamAppState != null) {
-			getStateManager().attach(flyCamAppState);
-		}
-		
-		if (rpgCam != null) {
-			getStateManager().detach(rpgCam);
-		}
 	}
 
 }

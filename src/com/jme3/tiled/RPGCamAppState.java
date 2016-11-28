@@ -1,6 +1,7 @@
 package com.jme3.tiled;
 
 import com.jme3.app.Application;
+import com.jme3.app.FlyCamAppState;
 import com.jme3.app.state.BaseAppState;
 import com.jme3.input.InputManager;
 import com.jme3.input.Joystick;
@@ -10,6 +11,12 @@ import com.jme3.input.controls.KeyTrigger;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.Camera;
 
+/**
+ * This RPG Camera AppState is for debug use.
+ * Move camera with wsad keys or up/down/left/right keys.
+ * @author yanmaoyuan
+ *
+ */
 public class RPGCamAppState extends BaseAppState implements AnalogListener {
 
 	public static String LEFT = "left";
@@ -38,11 +45,23 @@ public class RPGCamAppState extends BaseAppState implements AnalogListener {
 
 	@Override
 	protected void onEnable() {
+		// disable flyCamAppState
+		FlyCamAppState flyCamAppState = getStateManager().getState(FlyCamAppState.class);
+		if (flyCamAppState != null) {
+			flyCamAppState.setEnabled(false);
+		}
+		
 		registerWithInput(inputManager);
 	}
 
 	@Override
 	protected void onDisable() {
+		// enable flyCamAppState
+		FlyCamAppState flyCamAppState = getStateManager().getState(FlyCamAppState.class);
+		if (flyCamAppState != null) {
+			flyCamAppState.setEnabled(true);
+		}
+		
 		unregisterInput();
 	}
 	

@@ -10,9 +10,15 @@ import com.jme3.math.Vector3f;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.debug.Grid;
 import com.jme3.scene.shape.Box;
+import com.jme3.tiled.RPGCamAppState;
 import com.jme3.tiled.TiledMapAppState;
 import com.jme3.tmx.TmxLoader;
 
+/**
+ * Test TMXLoader and TildeMapAppState
+ * @author yanmaoyuan
+ *
+ */
 public class TestTildMapApp extends SimpleApplication {
 
 	static String csvmap = "Models/Examples/csvmap.tmx";
@@ -29,8 +35,11 @@ public class TestTildMapApp extends SimpleApplication {
 		Map map = (Map) assetManager.loadAsset(mini);
 		
 		TiledMapAppState state = new TiledMapAppState(map);
-		state.setViewColumns(12);
 		stateManager.attach(state);
+		
+		RPGCamAppState rpgCam = new RPGCamAppState();
+		rpgCam.setParallelCamera(12);
+		stateManager.attach(rpgCam);
 		
 		//createAxis();
 		

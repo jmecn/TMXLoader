@@ -457,7 +457,7 @@ public class TmxLoader implements AssetLoader {
 						String sourcePath = toJmeAssetPath(imgSource);
 						set.setSource(sourcePath);
 						
-						Texture2D tex = loadTexture2D(imgSource);
+						Texture2D tex = loadTexture2D(sourcePath);
 						set.setTileSetTexture(tex);
 						
 						ColorRGBA transparentColor = null;
@@ -584,7 +584,8 @@ public class TmxLoader implements AssetLoader {
 		String source = getAttributeValue(t, "source");
 
 		if (source != null) {
-			Texture2D tex = loadTexture2D(source);
+			String assetPath = toJmeAssetPath(source);
+			Texture2D tex = loadTexture2D(assetPath);
 			img = tex;
 		} else {
 			NodeList nl = t.getChildNodes();
@@ -947,16 +948,13 @@ public class TmxLoader implements AssetLoader {
 	 * @return
 	 */
 	private Texture2D loadTexture2D(final String source) {
-		String assetPath = toJmeAssetPath(source);
-		
 		Texture2D tex = null;
 		try {
-			TextureKey texKey = new TextureKey(assetPath, true);
+			TextureKey texKey = new TextureKey(source, true);
 			texKey.setGenerateMips(false);
 			tex = (Texture2D)assetManager.loadTexture(texKey);
 			tex.setWrap(WrapMode.Repeat);
 			tex.setMagFilter(MagFilter.Nearest);
-			logger.info("Texture:" + tex);
 		} catch (Exception e) {
 			logger.warning("Can't load texture " + source, e);
 		}
