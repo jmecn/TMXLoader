@@ -801,7 +801,7 @@ public class TmxLoader implements AssetLoader {
 			obj.setType(type);
 		}
 		if (gid != null) {
-			Tile tile = getTileForTileGID(Integer.parseInt(gid));
+			Tile tile = getTileForTileGID((int)Long.parseLong(gid) & 0xFFFFFFFF);
 			obj.setTile(tile);
 		}
 
@@ -1038,7 +1038,7 @@ public class TmxLoader implements AssetLoader {
 		 * 1st: try to locate it with assetManager. No need to handle the src path unless
 		 * assetManager can't locate it.
 		 */
-		if (assetManager.locateAsset(new AssetKey(src)) != null) {
+		if (assetManager.locateAsset(new AssetKey<Object>(src)) != null) {
 			return src;
 		}
 		
@@ -1057,7 +1057,7 @@ public class TmxLoader implements AssetLoader {
 		/*
 		 * 3rd: try locate it again.
 		 */
-		if (assetManager.locateAsset(new AssetKey(dest)) != null) {
+		if (assetManager.locateAsset(new AssetKey<Object>(dest)) != null) {
 			return dest;
 		} else {
 			throw new RuntimeException("Can't locate asset: " + src);
@@ -1072,10 +1072,8 @@ public class TmxLoader implements AssetLoader {
 		if (transColor != null) {
 			mat.setColor("TransColor", transColor);
 		}
-		
-		mat.getAdditionalRenderState().setDepthWrite(true);
-		mat.getAdditionalRenderState().setDepthTest(true);
-		mat.getAdditionalRenderState().setColorWrite(true);
+		// debug
+		//mat.getAdditionalRenderState().setWireframe(true);
 		mat.getAdditionalRenderState().setBlendMode(BlendMode.Alpha);
 		
 		return mat;

@@ -21,6 +21,7 @@ public class TestTildMapApp extends SimpleApplication {
 	static String mini = "Models/Examples/Hexagonal/hexagonal-mini.tmx";
 	static String grass_and_water = "Models/Examples/Isometric/isometric_grass_and_water.tmx";
 	static String perspective_walls = "Models/Examples/Orthogonal/perspective_walls.tmx";
+	static String outside = "Models/Examples/Orthogonal/orthogonal-outside.tmx";
 	
 	@Override
 	public void simpleInitApp() {
@@ -28,19 +29,20 @@ public class TestTildMapApp extends SimpleApplication {
 		Map map = (Map) assetManager.loadAsset(mini);
 		
 		TiledMapAppState state = new TiledMapAppState(map);
-		state.setViewColumns(8);
+		state.setViewColumns(12);
 		stateManager.attach(state);
 		
-		createAxis();
+		//createAxis();
 		
-		Vector3f location = state.tileLoc2ScreenLoc(3, 4);
-		// move camera to the left top of the map
+		Vector3f location = state.getCameraLocation(12, 12);
 		cam.setLocation(location);
 		
 		createBox(location);
+		
+		viewPort.setBackgroundColor(ColorRGBA.DarkGray);
 	}
 
-	private void createAxis() {
+	protected void createAxis() {
 		Grid gird = new Grid(101, 101, 1);
 		Geometry gem = new Geometry("axis", gird);
 		gem.rotate(-FastMath.HALF_PI, 0, 0);
@@ -49,7 +51,7 @@ public class TestTildMapApp extends SimpleApplication {
 		gem.setMaterial(mat);
 		rootNode.attachChild(gem);
 		
-		Box box = new Box(0.1f, 0.1f, 0.1f);
+		Box box = new Box(0.02f, 0.02f, 0.02f);
 		Geometry geom = new Geometry("orgin", box);
 		
 		mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
@@ -59,7 +61,7 @@ public class TestTildMapApp extends SimpleApplication {
 	}
 	
 	private void createBox(Vector3f location) {
-		Box box = new Box(0.1f, 0.1f, 0.1f);
+		Box box = new Box(0.03f, 0.03f, 0.03f);
 		Geometry geom = new Geometry("orgin", box);
 		geom.setLocalTranslation(location);
 		

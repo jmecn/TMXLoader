@@ -10,11 +10,14 @@ import com.jme3.scene.Spatial;
 public abstract class MapRender {
 	
 	protected Map map;
+	protected int width;
+	protected int height;
 	protected float aspect = 1f;
-	
 	public MapRender(Map map) {
 		this.map = map;
-		aspect = (float)map.getTileHeight() / map.getTileWidth();
+		this.width = map.getWidth();
+		this.height = map.getHeight();
+		this.aspect = (float)map.getTileHeight() / map.getTileWidth();
 	}
 	
 	/**

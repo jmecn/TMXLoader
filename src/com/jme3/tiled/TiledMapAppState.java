@@ -24,11 +24,14 @@ public class TiledMapAppState extends BaseAppState {
 	private Node rootNode;
 	
 	private final Map map;
+	protected Vector3f centerOffset;
 	private MapRender mapRender;
 	private RPGCamAppState rpgCam;
 
 	public TiledMapAppState(Map map) {
 		this.map = map;
+		float aspect = (float)map.getTileHeight() / map.getTileWidth();
+		this.centerOffset = new Vector3f(0.5f, 0.5f*aspect, 0f);
 		switch (map.getOrientation()) {
         case ORTHOGONAL:
             mapRender = new OrthogonalRender(map);
@@ -51,8 +54,12 @@ public class TiledMapAppState extends BaseAppState {
 		return map;
 	}
 	
-	public Vector3f tileLoc2ScreenLoc(int x, int y) {
+	public Vector3f getLocation(int x, int y) {
 		return mapRender.tileLoc2ScreenLoc(x, y);
+	}
+	
+	public Vector3f getCameraLocation(int x, int y) {
+		return mapRender.tileLoc2ScreenLoc(x, y).addLocal(centerOffset);
 	}
 	
 	public void setViewColumns(int viewColumn) {

@@ -1,6 +1,5 @@
 package com.jme3.tiled.spatial;
 
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.jme3.math.Vector2f;
@@ -19,17 +18,17 @@ public class HexagonalRender extends MapRender {
 
 	static Logger logger = Logger.getLogger(HexagonalRender.class.getName());
 	
+	private boolean staggerX = false;
+	private boolean staggerEven = false;
 	public HexagonalRender(Map map) {
 		super(map);
+		
+		staggerX = map.getStaggerAxis() == StaggerAxis.X;
+		staggerEven = map.getStaggerIndex() == StaggerIndex.EVEN;
 	}
 
 	@Override
 	public Spatial createTileLayer(TileLayer layer) {
-		int tileWidth = map.getTileWidth();
-		int tileHeight = map.getTileHeight();
-		
-		boolean staggerX = map.getStaggerAxis() == StaggerAxis.X;
-		boolean staggerEven = map.getStaggerIndex() == StaggerIndex.EVEN;
 		
 		int width = layer.getWidth();
 		int height = layer.getHeight();
@@ -38,25 +37,14 @@ public class HexagonalRender extends MapRender {
 		for(int y=0; y<height; y++) {
 			for(int x=0; x<width; x++) {
 				final Tile tile = layer.getTileAt(x, y);
-				if (tile == null) {
+				if (tile == null || tile.getGeom() == null) {
 					continue;
 				}
 				
-				Geometry tileGeom = tile.getGeom();
-				if (tileGeom == null) {
-					logger.warning("Tile#" + tile.getId() + " has no texture.");
-					continue;
-				}
-				
-				Geometry geom = null;
-				if (tileGeom != null) {
-					geom = tileGeom.clone();
-					
-					int odd = y % 2;
-					geom.setLocalTranslation(x+odd*0.5f, (-y-1)*0.75f*aspect, 0);
-					geom.scale(1f, aspect, 1f);
-					bathNode.attachChild(geom);
-				}
+				Geometry geom = tile.getGeom().clone();
+				geom.scale(1f, aspect, 1f);
+				geom.setLocalTranslation(tileLoc2ScreenLoc(x, y));
+				bathNode.attachChild(geom);
 				
 			}
 		}
@@ -68,12 +56,19 @@ public class HexagonalRender extends MapRender {
 	@Override
 	public Vector3f tileLoc2ScreenLoc(int x, int y) {
 		int odd = y % 2;
-		return new Vector3f(x+odd*0.5f + 0.5f, (-y-1)*0.75f*aspect, 0);
+		if (staggerEven) {
+			odd = 1 - odd;
+		}
+		
+		if (staggerX) {
+			return new Vector3f(x*0.75f, (height-y-odd*0.5f)*aspect, 0);
+		} else {
+			return new Vector3f(x+odd*0.5f, (height-y-1)*0.75f*aspect, 0);
+		}
 	}
 
 	@Override
 	public Vector2f screenLoc2TileLoc(Vector3f location) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 

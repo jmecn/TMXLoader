@@ -12,10 +12,16 @@ import com.jme3.scene.BatchNode;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Spatial;
 
+/**
+ * Orthogonal render
+ * @author yanmaoyuan
+ *
+ */
 public class OrthogonalRender extends MapRender {
 	
 	static Logger logger = Logger.getLogger(OrthogonalRender.class.getName());
 	
+	public Vector3f centerOffset;
 	public OrthogonalRender(Map map) {
 		super(map);
 	}
@@ -26,27 +32,19 @@ public class OrthogonalRender extends MapRender {
 		int width = layer.getWidth();
 		int height = layer.getHeight();
 		
+		float h = map.getHeight() * aspect;
+		
 		BatchNode bathNode = new BatchNode(layer.getName());
 		for(int y=0; y<height; y++) {
 			for(int x=0; x<width; x++) {
 				final Tile tile = layer.getTileAt(x, y);
-				if (tile == null) {
+				if (tile == null || tile.getGeom() == null) {
 					continue;
 				}
 				
-				Geometry tileGeom = tile.getGeom();
-				if (tileGeom == null) {
-					logger.warning("Tile#" + tile.getId() + " has no texture.");
-					continue;
-				}
-				
-				Geometry geom = null;
-				if (tileGeom != null) {
-					geom = tileGeom.clone();
-					geom.setLocalTranslation(x, -y-1, 0);
-					bathNode.attachChild(geom);
-				}
-				
+				Geometry geom = tile.getGeom().clone();
+				geom.setLocalTranslation(x, h-(y+1)*aspect, 0);
+				bathNode.attachChild(geom);
 			}
 		}
 		bathNode.batch();
@@ -56,12 +54,11 @@ public class OrthogonalRender extends MapRender {
 
 	@Override
 	public Vector3f tileLoc2ScreenLoc(int x, int y) {
-		return new Vector3f(x + 0.5f, - y - 0.5f, 0);
+		return new Vector3f(x, (height-y-1)*aspect, 0);
 	}
 
 	@Override
 	public Vector2f screenLoc2TileLoc(Vector3f location) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 }
