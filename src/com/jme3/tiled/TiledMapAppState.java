@@ -1,6 +1,7 @@
 package com.jme3.tiled;
 
 import java.util.List;
+import java.util.logging.Logger;
 
 import tiled.core.Map;
 import tiled.core.MapLayer;
@@ -16,16 +17,17 @@ import com.jme3.asset.AssetManager;
 import com.jme3.light.AmbientLight;
 import com.jme3.material.Material;
 import com.jme3.material.RenderState.BlendMode;
+import com.jme3.math.ColorRGBA;
 import com.jme3.renderer.queue.RenderQueue.Bucket;
+import com.jme3.scene.BatchNode;
 import com.jme3.scene.Geometry;
-import com.jme3.scene.Mesh;
 import com.jme3.scene.Node;
-import com.jme3.scene.VertexBuffer.Type;
-import com.jme3.texture.Image;
 import com.jme3.texture.Texture;
 
 public class TiledMapAppState extends BaseAppState {
 
+	static Logger logger = Logger.getLogger(TiledMapAppState.class.getName());
+	
 	private final Map map;
 	private Node rootNode;
 	private AssetManager assetManager;
@@ -114,15 +116,11 @@ public class TiledMapAppState extends BaseAppState {
 			
 			Texture tex = set.getTexture();
 			
-			Material mat = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md");
-			mat.setTexture("DiffuseMap", tex);
-			
-			// FIXME : notice image.Format == BGR8 means no alpha channel!
-			mat.setFloat("AlphaDiscardThreshold", 0.01f);
-			mat.getAdditionalRenderState().setDepthWrite(true);
-			mat.getAdditionalRenderState().setDepthTest(true);
-			mat.getAdditionalRenderState().setColorWrite(true);
-			mat.getAdditionalRenderState().setBlendMode(BlendMode.Alpha);
+			Material mat = createMaterial(tex, true);
+			ColorRGBA transColor = set.getTransparentColor();
+			if (transColor != null) {
+				mat.setColor("TransColor", transColor);
+			}
 	
 			/**
 			 * The unit size of each Quad is (1, 1).
@@ -134,26 +132,9 @@ public class TiledMapAppState extends BaseAppState {
 			float qx = tw / mw;
 			float qy = th / mh;
 			
-			float[] vertices = new float[] {
-					0, 0, 0,
-					qx, 0, 0,
-					qx, qy, 0,
-					0, qy, 0 };
-			float[] normals = new float[] {
-					0, 0, 1,
-					0, 0, 1,
-					0, 0, 1,
-					0, 0, 1 };
-			short[] indexes = new short[] {
-					0, 1, 2,
-					0, 2, 3 };
-	
 			/**
 			 * Calculate texCoords for each tile, and create a Geometry for it.
 			 */
-			Image image = tex.getImage();
-			float imageWidth = image.getWidth();
-			float imageHeight = image.getHeight();
 			int tileSize = set.size();
 			for (int j = 0; j < tileSize; j++) {
 				Tile tile = set.getTile(j);
@@ -161,34 +142,15 @@ public class TiledMapAppState extends BaseAppState {
 				if (tile == null) {
 					continue;
 				}
-	
-				float x = tile.getX();
-				float y = tile.getY();
-	
-				float u0 = x / imageWidth;
-				float v0 = (imageHeight - y - th + 1) / imageHeight;
-				float u1 = (x + tw - 1) / imageWidth;
-				float v1 = (imageHeight - y - 1) / imageHeight;
-	
-				float[] texCoord = new float[] {
-						u0, v0,
-						u1, v0,
-						u1, v1,
-						u0, v1 };
+
+				Sprite sprite = new Sprite("tile#"+tile.getId());
+				sprite.setSize(qx, qy);
+				sprite.setTexCoordFromTile(tile);
 				
-				Mesh mesh = new Mesh();
-				mesh.setBuffer(Type.Position, 3, vertices);
-				mesh.setBuffer(Type.TexCoord, 2, texCoord);
-				mesh.setBuffer(Type.Normal, 3, normals);
-				mesh.setBuffer(Type.Index, 3, indexes);
-				mesh.updateBound();
-				mesh.setStatic();
+				sprite.setMaterial(mat);
+				sprite.setQueueBucket(Bucket.Translucent);
 	
-				Geometry geom = new Geometry("tile#" + tile.getId(), mesh);
-				geom.setMaterial(mat);
-				geom.setQueueBucket(Bucket.Translucent);
-	
-				tile.setGeom(geom);
+				tile.setGeom(sprite);
 			}
 		}
 	}
@@ -211,12 +173,13 @@ public class TiledMapAppState extends BaseAppState {
 	}
 	
 	private void viewTileLayer(TileLayer layer, float z) {
-		z *= 0.1f;
+		z *= 0.0f;
 		int mh = map.getHeight();
 		
 		int width = layer.getWidth();
 		int height = layer.getHeight();
-		Node node = new Node();
+		
+		BatchNode bathNode = new BatchNode(layer.getName());
 		for(int y=0; y<height; y++) {
 			for(int x=0; x<width; x++) {
 				final Tile tile = layer.getTileAt(x, y);
@@ -225,14 +188,58 @@ public class TiledMapAppState extends BaseAppState {
 				}
 				
 				Geometry tileGeom = tile.getGeom();
-				if (tileGeom != null) {
-					Geometry geom = tileGeom.clone();
-					geom.setLocalTranslation(x, mh-y, z);
-					node.attachChild(geom);
+				Texture tileTex = tile.getTexture();
+				
+				if (tileGeom == null && tileTex == null) {
+					logger.warning("Tile#" + tile.getId() + " has no texture.");
+					continue;
 				}
+				
+				Geometry geom = null;
+				if (tileGeom != null) {
+					geom = tileGeom.clone();
+					
+				} else {
+					
+					Material mat = createMaterial(tileTex, true);
+					
+					float tw = tile.getWidth() / map.getTileWidth();
+					float th = tile.getHeight() / map.getTileWidth();
+					
+					Sprite sprite = new Sprite("tile#"+tile.getId());
+					sprite.setSize(tw, th);
+					sprite.setTexCoordFromTile(tile);
+					
+					sprite.setMaterial(mat);
+					sprite.setQueueBucket(Bucket.Translucent);
+					
+					tile.setGeom(sprite);
+					
+					geom = sprite.clone();
+				}
+				
+				geom.setLocalTranslation(x, mh-y, z);
+				bathNode.attachChild(geom);
 			}
 		}
+		bathNode.batch();
 		
-		rootNode.attachChild(node);
+		rootNode.attachChild(bathNode);
+	}
+	
+	private Material createMaterial(Texture tex, boolean useAlpha) {
+		Material mat = new Material(assetManager, "Shader/TransColor.j3md");
+		mat.setTexture("ColorMap", tex);
+		
+		if (useAlpha) {
+			// FIXME : notice image.Format == BGR8 means no alpha channel!
+			mat.setFloat("AlphaDiscardThreshold", 0.01f);
+			mat.getAdditionalRenderState().setDepthWrite(true);
+			mat.getAdditionalRenderState().setDepthTest(true);
+			mat.getAdditionalRenderState().setColorWrite(true);
+			mat.getAdditionalRenderState().setBlendMode(BlendMode.Alpha);
+		}
+		
+		return mat;
 	}
 }

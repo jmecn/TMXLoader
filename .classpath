@@ -7,5 +7,6 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/jme3-core"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/jme3-desktop"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/jme3-lwjgl"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/jme3-effects"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

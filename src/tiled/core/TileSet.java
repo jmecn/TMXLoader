@@ -100,7 +100,7 @@ public class TileSet implements Iterable<Tile> {
 		this.tileSetTexture = texture;
 
 		if (transparentColor != null) {
-			trans(texture, transparentColor);
+			// trans(texture, transparentColor);
 		}
 
 		reset();
@@ -424,6 +424,7 @@ public class TileSet implements Iterable<Tile> {
     	Tile tile = new Tile();
         if (nextY + tileHeight + tileMargin <= tileSetTexture.getImage().getHeight()) {
         	
+        	tile.setTexture(tileSetTexture);
         	tile.setRectangle(nextX, nextY, tileWidth, tileHeight);
             
             nextX += tileWidth + tileSpacing;

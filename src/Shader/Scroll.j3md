@@ -1,0 +1,55 @@
+MaterialDef Scroll {
+
+    MaterialParameters {
+        Texture2D ColorMap
+        Color Color (Color)
+
+        // For instancing
+        Boolean UseInstancing
+
+        // Alpha threshold for fragment discarding
+        Float AlphaDiscardThreshold (AlphaTestFallOff)
+
+        // ScrollSpeed
+        Float Speed : 1.0
+    }
+
+    Technique {
+        VertexShader GLSL150:   Shader/Scroll.vert
+        FragmentShader GLSL150: Shader/Scroll.frag
+
+        WorldParameters {
+            WorldViewProjectionMatrix
+            ViewProjectionMatrix
+            ViewMatrix
+            Time
+        }
+
+        Defines {
+            INSTANCING : UseInstancing
+            HAS_COLORMAP : ColorMap
+            HAS_COLOR : Color
+            DISCARD_ALPHA : AlphaDiscardThreshold
+        }
+    }
+
+    Technique {
+        VertexShader GLSL100:   Shader/Scroll.vert
+        FragmentShader GLSL100: Shader/Scroll.frag
+
+        WorldParameters {
+            WorldViewProjectionMatrix
+            ViewProjectionMatrix
+            ViewMatrix
+            Time
+        }
+
+        Defines {
+            INSTANCING : UseInstancing
+            HAS_COLORMAP : ColorMap
+            HAS_COLOR : Color
+            DISCARD_ALPHA : AlphaDiscardThreshold
+        }
+    }
+
+}

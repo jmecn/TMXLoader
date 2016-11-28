@@ -1,0 +1,59 @@
+MaterialDef TransColor {
+
+    MaterialParameters {
+        Texture2D ColorMap
+        Color Color (Color)
+
+        // For instancing
+        Boolean UseInstancing
+
+        // Alpha threshold for fragment discarding
+        Float AlphaDiscardThreshold (AlphaTestFallOff)
+        
+        Color TransColor
+
+        // ScrollSpeed
+        Float Speed : 0.0
+    }
+
+    Technique {
+        VertexShader GLSL150:   Shader/TransColor.vert
+        FragmentShader GLSL150: Shader/TransColor.frag
+
+        WorldParameters {
+            WorldViewProjectionMatrix
+            ViewProjectionMatrix
+            ViewMatrix
+            Time
+        }
+
+        Defines {
+            INSTANCING : UseInstancing
+            HAS_COLORMAP : ColorMap
+            HAS_COLOR : Color
+            DISCARD_ALPHA : AlphaDiscardThreshold
+            TRANS_COLOR: TransColor
+        }
+    }
+
+    Technique {
+        VertexShader GLSL100:   Shader/TransColor.vert
+        FragmentShader GLSL100: Shader/TransColor.frag
+
+        WorldParameters {
+            WorldViewProjectionMatrix
+            ViewProjectionMatrix
+            ViewMatrix
+            Time
+        }
+
+        Defines {
+            INSTANCING : UseInstancing
+            HAS_COLORMAP : ColorMap
+            HAS_COLOR : Color
+            DISCARD_ALPHA : AlphaDiscardThreshold
+            TRANS_COLOR: TransColor
+        }
+    }
+
+}

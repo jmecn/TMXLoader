@@ -15,7 +15,7 @@ public class TestTildMapApp extends SimpleApplication {
 		Map map = (Map) assetManager.loadAsset("Models/Examples/sewers.tmx");
 		
 		TiledMapAppState state = new TiledMapAppState(map);
-		state.setViewColumns(16);
+		state.setViewColumns(24);
 		stateManager.attach(state);
 		
 		// move camera to left top of the map

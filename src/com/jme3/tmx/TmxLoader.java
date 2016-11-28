@@ -72,11 +72,18 @@ public class TmxLoader implements AssetLoader {
 			return loadMap(assetInfo.openStream());
 		case "tsx":
 			return loadTileSet(assetInfo.openStream());
-		default : return null;
+		default :
+			return null;
 		}
 
 	}
 	
+	/**
+	 * Load a Map from .tmx file
+	 * @param inputStream
+	 * @return
+	 * @throws IOException
+	 */
 	private Map loadMap(InputStream inputStream) throws IOException {
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 		Document doc;
@@ -94,6 +101,7 @@ public class TmxLoader implements AssetLoader {
 					return null;
 				}
 			});
+			
 			InputSource insrc = new InputSource(inputStream);
 			insrc.setSystemId(key.getFolder());
 			insrc.setEncoding("UTF-8");
@@ -116,35 +124,57 @@ public class TmxLoader implements AssetLoader {
 		return map;
 	}
 	
-	private TileSet loadTileSet(InputStream inputStream) {
+	/**
+	 * Load a TileSet from .tsx file.
+	 * @param inputStream
+	 * @return
+	 */
+	private TileSet loadTileSet(final InputStream inputStream) {
 		TileSet set = null;
 		Node tsNode;
 
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+		Document doc;
 		try {
 			DocumentBuilder builder = factory.newDocumentBuilder();
-			Document tsDoc = builder.parse(inputStream, ".");
+			doc = builder.parse(inputStream);
 
-			String xmlPathSave = xmlPath;
-
-			NodeList tsNodeList = tsDoc.getElementsByTagName("tileset");
+			NodeList tsNodeList = doc.getElementsByTagName("tileset");
 
 			// There can be only one tileset in a .tsx file.
 			tsNode = tsNodeList.item(0);
+			
 			if (tsNode != null) {
 				set = buildTileset(tsNode);
 				if (set.getSource() != null) {
-					System.out.println("Recursive external tilesets are not supported.");
+					logger.warning("Recursive external tilesets are not supported.");
 				}
 				set.setSource(key.getName());
 			}
-
-			xmlPath = xmlPathSave;
 		} catch (Exception e) {
 			logger.warning("Failed while loading " + key.getName(), e);
 		}
 
 		return set;
+	}
+	
+	/**
+	 * Load TileSet from a ".tsx" file. 
+	 * @param source
+	 * @return
+	 */
+	private TileSet loadTileSet(final String source) {
+		String assetPath = toJmeAssetPath(source);
+
+		// load it with assetManager
+		TileSet ext = null;
+		try {
+			ext = (TileSet) assetManager.loadAsset(assetPath);
+		} catch (Exception e) {
+			logger.warning("Tileset " + source + " was not loaded correctly!", e);
+		}
+
+		return ext;
 	}
 	
 	private void buildMap(Document doc) throws Exception {
@@ -413,11 +443,12 @@ public class TmxLoader implements AssetLoader {
 		TileSet set = null;
 		
 		String source = getAttributeValue(t, "source");
-		String basedir = key.getFolder();// getAttributeValue(t, "basedir");
+		String basedir = getAttributeValue(t, "basedir");
 		int firstGid = getAttribute(t, "firstgid", 1);
 		
 		if (source != null) {
 			set = loadTileSet(source);
+			
 		} else {
 			
 			final int tileWidth = getAttribute(t, "tilewidth", map != null ? map.getTileWidth() : 0);
@@ -456,8 +487,6 @@ public class TmxLoader implements AssetLoader {
 						String sourcePath = toJmeAssetPath(imgSource);
 						
 						Texture2D tex = loadTexture2D(imgSource);
-						logger.info("Texture:" + tex);
-						
 						ColorRGBA transparentColor = null;
 						if (transStr != null) {
 							// #RRGGBB || RRGGBB
@@ -872,26 +901,6 @@ public class TmxLoader implements AssetLoader {
 		tilesetPerFirstGid.put(firstGid, tileset);
 	}
 
-	
-	/**
-	 * Load TileSet from a ".tsx" file. 
-	 * @param source
-	 * @return
-	 */
-	private TileSet loadTileSet(final String source) {
-		String assetPath = toJmeAssetPath(source);
-
-		// load it with assetManager
-		TileSet ext = null;
-		try {
-			ext = (TileSet) assetManager.loadAsset(assetPath);
-		} catch (Exception e) {
-			logger.warning("Tileset " + source + " was not loaded correctly!", e);
-		}
-
-		return ext;
-	}
-	
 	/**
 	 * Load a Texture from source
 	 * @param source
