@@ -99,10 +99,6 @@ public class TileSet implements Iterable<Tile> {
 
 		this.tileSetTexture = texture;
 
-		if (transparentColor != null) {
-			// trans(texture, transparentColor);
-		}
-
 		reset();
 		
 		Tile tile = getNextTile();
@@ -111,32 +107,6 @@ public class TileSet implements Iterable<Tile> {
 			tile = getNextTile();
 		}
 
-	}
-    
-	/**
-	 * This method is used for filtering out a given "transparent" color from an
-	 * image. Sometimes known as magic pink.
-	 * 
-	 * @param tex
-	 * @param transColor
-	 */
-	private void trans(final Texture tex, final ColorRGBA transColor) {
-		com.jme3.texture.Image img = tex.getImage();
-		ImageRaster raster = ImageRaster.create(img);
-
-		ColorRGBA store = new ColorRGBA();
-		int width = img.getWidth();
-		int height = img.getHeight();
-		for (int y = 0; y < height; y++) {
-			for (int x = 0; x < width; x++) {
-				raster.getPixel(x, y, store);
-				if (store.r == transColor.r && store.g == transColor.g
-						&& store.b == transColor.b) {
-					store.set(0, 0, 0, 0);
-					raster.setPixel(x, y, store);
-				}
-			}
-		}
 	}
 
 	/**

@@ -9,13 +9,16 @@ import com.jme3.tmx.TmxLoader;
 
 public class TestTildMapApp extends SimpleApplication {
 
+	static String csvmap = "Models/Examples/csvmap.tmx";
+	static String sewers = "Models/Examples/sewers.tmx";
+	static String desert = "Models/Examples/Desert/desert.tmx";
 	@Override
 	public void simpleInitApp() {
 		assetManager.registerLoader(TmxLoader.class, "tmx", "tsx");
-		Map map = (Map) assetManager.loadAsset("Models/Examples/sewers.tmx");
+		Map map = (Map) assetManager.loadAsset(desert);
 		
 		TiledMapAppState state = new TiledMapAppState(map);
-		state.setViewColumns(24);
+		state.setViewColumns(40);
 		stateManager.attach(state);
 		
 		// move camera to left top of the map

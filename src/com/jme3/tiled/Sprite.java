@@ -18,6 +18,28 @@ public class Sprite extends Geometry {
 	private float u1 = 1f;
 	private float v1 = 1f;
 	
+	private float[] vertices = new float[] {
+			0, 0, 0,
+			width, 0, 0,
+			width, height, 0,
+			0, height, 0 };
+	
+	private float[] normals = new float[] {
+			0, 0, 1,
+			0, 0, 1,
+			0, 0, 1,
+			0, 0, 1 };
+	
+	private short[] indexes = new short[] {
+			0, 1, 2,
+			0, 2, 3 };
+	
+	private float[] texCoord = new float[] {
+			u0, v0,
+			u1, v0,
+			u1, v1,
+			u0, v1 };
+	
 	public Sprite(String name) {
 		super(name);
 		updateMesh();
@@ -33,6 +55,13 @@ public class Sprite extends Geometry {
 	public void setSize(float width, float height) {
 		this.width = width;
 		this.height = height;
+		
+		vertices = new float[] {
+				0, 0, 0,
+				width, 0, 0,
+				width, height, 0,
+				0, height, 0 };
+		
 		this.updateMesh();
 	}
 	
@@ -53,38 +82,21 @@ public class Sprite extends Geometry {
 		float tw = tile.getWidth();
 		float th = tile.getHeight();
 
-		u0 = x / imageWidth;
-		v0 = (imageHeight - y - th + 1) / imageHeight;
-		u1 = (x + tw - 1) / imageWidth;
-		v1 = (imageHeight - y - 1) / imageHeight;
+		u0 = (x) / imageWidth;
+		v0 = (imageHeight - y - th) / imageHeight;
+		u1 = (x + tw) / imageWidth;
+		v1 = (imageHeight - y) / imageHeight;
 		
-		this.updateMesh();
-	}
-	
-	public void updateMesh() {
-		
-		float[] vertices = new float[] {
-				0, 0, 0,
-				width, 0, 0,
-				width, height, 0,
-				0, height, 0 };
-		
-		float[] normals = new float[] {
-				0, 0, 1,
-				0, 0, 1,
-				0, 0, 1,
-				0, 0, 1 };
-		
-		short[] indexes = new short[] {
-				0, 1, 2,
-				0, 2, 3 };
-		
-		float[] texCoord = new float[] {
+		texCoord = new float[] {
 				u0, v0,
 				u1, v0,
 				u1, v1,
 				u0, v1 };
 		
+		this.updateMesh();
+	}
+	
+	public void updateMesh() {
 		Mesh mesh = getMesh();
 		if (mesh == null) {
 			mesh = new Mesh();

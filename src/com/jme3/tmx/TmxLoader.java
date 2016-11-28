@@ -45,6 +45,7 @@ import com.jme3.asset.AssetManager;
 import com.jme3.asset.TextureKey;
 import com.jme3.math.ColorRGBA;
 import com.jme3.texture.Texture;
+import com.jme3.texture.Texture.MagFilter;
 import com.jme3.texture.Texture.WrapMode;
 import com.jme3.texture.Texture2D;
 import com.sun.istack.internal.logging.Logger;
@@ -915,6 +916,7 @@ public class TmxLoader implements AssetLoader {
 			texKey.setGenerateMips(false);
 			tex = (Texture2D)assetManager.loadTexture(texKey);
 			tex.setWrap(WrapMode.Repeat);
+			tex.setMagFilter(MagFilter.Nearest);
 			logger.info("Texture:" + tex);
 		} catch (Exception e) {
 			logger.warning("Can't load texture " + source, e);
@@ -974,6 +976,7 @@ public class TmxLoader implements AssetLoader {
 			
 			tex = new Texture2D();
 			tex.setWrap(WrapMode.Repeat);
+			tex.setMagFilter(MagFilter.Nearest);
 			tex.setAnisotropicFilter(texKey.getAnisotropy());
 	        tex.setName(texKey.getName());
 	        tex.setImage(img);

@@ -232,8 +232,7 @@ public class TiledMapAppState extends BaseAppState {
 		mat.setTexture("ColorMap", tex);
 		
 		if (useAlpha) {
-			// FIXME : notice image.Format == BGR8 means no alpha channel!
-			mat.setFloat("AlphaDiscardThreshold", 0.01f);
+			mat.setFloat("AlphaDiscardThreshold", 1f);
 			mat.getAdditionalRenderState().setDepthWrite(true);
 			mat.getAdditionalRenderState().setDepthTest(true);
 			mat.getAdditionalRenderState().setColorWrite(true);
