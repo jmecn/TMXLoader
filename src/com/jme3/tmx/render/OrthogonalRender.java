@@ -1,6 +1,10 @@
-package com.jme3.tiled.render;
+package com.jme3.tmx.render;
 
 import java.util.logging.Logger;
+
+import tiled.core.Map;
+import tiled.core.Tile;
+import tiled.core.TileLayer;
 
 import com.jme3.math.Vector2f;
 import com.jme3.math.Vector3f;
@@ -8,30 +12,27 @@ import com.jme3.scene.BatchNode;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Spatial;
 
-import tiled.core.Map;
-import tiled.core.Map.StaggerAxis;
-import tiled.core.Map.StaggerIndex;
-import tiled.core.Tile;
-import tiled.core.TileLayer;
-
-public class HexagonalRender extends MapRender {
-
-	static Logger logger = Logger.getLogger(HexagonalRender.class.getName());
+/**
+ * Orthogonal render
+ * @author yanmaoyuan
+ *
+ */
+public class OrthogonalRender extends MapRender {
 	
-	private boolean staggerX = false;
-	private boolean staggerEven = false;
-	public HexagonalRender(Map map) {
+	static Logger logger = Logger.getLogger(OrthogonalRender.class.getName());
+	
+	public Vector3f centerOffset;
+	public OrthogonalRender(Map map) {
 		super(map);
-		
-		staggerX = map.getStaggerAxis() == StaggerAxis.X;
-		staggerEven = map.getStaggerIndex() == StaggerIndex.EVEN;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public Spatial createTileLayer(TileLayer layer) {
-		
 		int width = layer.getWidth();
 		int height = layer.getHeight();
+		
+		float h = map.getHeight() * aspect;
 		
 		BatchNode bathNode = new BatchNode(layer.getName());
 		for(int y=0; y<height; y++) {
@@ -42,10 +43,8 @@ public class HexagonalRender extends MapRender {
 				}
 				
 				Geometry geom = tile.getGeom().clone();
-				geom.scale(1f, aspect, 1f);
-				geom.setLocalTranslation(tileLoc2ScreenLoc(x, y));
+				geom.setLocalTranslation(x, h-(y+1)*aspect, 0);
 				bathNode.attachChild(geom);
-				
 			}
 		}
 		bathNode.batch();
@@ -55,21 +54,11 @@ public class HexagonalRender extends MapRender {
 
 	@Override
 	public Vector3f tileLoc2ScreenLoc(int x, int y) {
-		int odd = y % 2;
-		if (staggerEven) {
-			odd = 1 - odd;
-		}
-		
-		if (staggerX) {
-			return new Vector3f(x*0.75f, (height-y-odd*0.5f)*aspect, 0);
-		} else {
-			return new Vector3f(x+odd*0.5f, (height-y-1)*0.75f*aspect, 0);
-		}
+		return new Vector3f(x, (height-y-1)*aspect, 0);
 	}
 
 	@Override
 	public Vector2f screenLoc2TileLoc(Vector3f location) {
 		return null;
 	}
-
 }

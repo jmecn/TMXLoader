@@ -51,7 +51,6 @@ import com.jme3.texture.Texture;
 import com.jme3.texture.Texture.MagFilter;
 import com.jme3.texture.Texture.WrapMode;
 import com.jme3.texture.Texture2D;
-import com.jme3.tiled.render.TileQuad;
 import com.sun.istack.internal.logging.Logger;
 
 public class TmxLoader implements AssetLoader {
@@ -490,7 +489,7 @@ public class TmxLoader implements AssetLoader {
 						 * TODO : refact this code
 						 */
 						if (tile.getMaterial() != null) {
-							TileQuad sprite = new TileQuad("tile#"+tile.getId());
+							TileGeom sprite = new TileGeom("tile#"+tile.getId());
 							sprite.setSize(tile.getWidth() / map.getTileWidth(), tile.getHeight() / map.getTileHeight());
 							sprite.setTexCoordFromTile(tile);
 							
@@ -554,7 +553,7 @@ public class TmxLoader implements AssetLoader {
 				
 				float qx = (float)tile.getWidth() / map.getTileWidth();
 				float qy = (float)tile.getHeight() / map.getTileHeight();
-				TileQuad sprite = new TileQuad("tile#"+tile.getId());
+				TileGeom sprite = new TileGeom("tile#"+tile.getId());
 				sprite.setSize(qx, qy);
 				sprite.setTexCoordFromTile(tile);
 				

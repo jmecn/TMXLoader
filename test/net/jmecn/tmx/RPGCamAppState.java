@@ -1,4 +1,4 @@
-package com.jme3.tiled;
+package net.jmecn.tmx;
 
 import com.jme3.app.Application;
 import com.jme3.app.FlyCamAppState;

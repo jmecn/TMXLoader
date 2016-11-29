@@ -38,7 +38,7 @@ import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector2f;
 import com.jme3.renderer.queue.RenderQueue.Bucket;
 import com.jme3.texture.Texture;
-import com.jme3.tiled.render.TileQuad;
+import com.jme3.tmx.TileGeom;
 
 /**
  * <p>
@@ -437,7 +437,7 @@ public class TileSet implements Iterable<Tile> {
 			/**
 			 * Calculate texCoords for each tile, and create a Geometry for it.
 			 */
-			TileQuad sprite = new TileQuad("tile#"+tile.getId());
+			TileGeom sprite = new TileGeom("tile#"+tile.getId());
 			sprite.setSize(qx, qy);
 			sprite.setTexCoordFromTile(tile);
 			

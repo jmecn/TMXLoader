@@ -1,4 +1,4 @@
-package com.jme3.tiled;
+package net.jmecn.tmx;
 
 import java.util.logging.Logger;
 
@@ -11,10 +11,10 @@ import com.jme3.app.SimpleApplication;
 import com.jme3.app.state.BaseAppState;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Node;
-import com.jme3.tiled.render.HexagonalRender;
-import com.jme3.tiled.render.IsometricRender;
-import com.jme3.tiled.render.MapRender;
-import com.jme3.tiled.render.OrthogonalRender;
+import com.jme3.tmx.render.HexagonalRender;
+import com.jme3.tmx.render.IsometricRender;
+import com.jme3.tmx.render.MapRender;
+import com.jme3.tmx.render.OrthogonalRender;
 
 /**
  * TiledMapAppState will create a Spatial for tile.ore.Map.
@@ -26,30 +26,17 @@ public class TiledMapAppState extends BaseAppState {
 
 	static Logger logger = Logger.getLogger(TiledMapAppState.class.getName());
 	
-	private Node rootNode;
+	private Node rootNode = new Node("TileMapRoot");
 	
-	private final Map map;
+	private Map map;
 	protected Vector3f centerOffset;
 	private MapRender mapRender;
 
+	public TiledMapAppState() {
+	}
+	
 	public TiledMapAppState(Map map) {
-		this.map = map;
-		float aspect = (float)map.getTileHeight() / map.getTileWidth();
-		this.centerOffset = new Vector3f(0.5f, 0.5f*aspect, 0f);
-		switch (map.getOrientation()) {
-        case ORTHOGONAL:
-            mapRender = new OrthogonalRender(map);
-            break;
-        case ISOMETRIC:
-        	mapRender = new IsometricRender(map);
-        	break;
-        case HEXAGONAL:
-        	mapRender = new HexagonalRender(map);
-        	break;
-        case STAGGERED:
-        	mapRender = new HexagonalRender(map);
-		}
-		rootNode = new Node("TileMapRoot");
+		setMap(map);
 	}
 
 	public Map getMap() {
@@ -66,22 +53,10 @@ public class TiledMapAppState extends BaseAppState {
 	
 	@Override
 	protected void initialize(Application app) {
-		
-		int len = map.getLayerCount();
-		for(int i=0; i<len; i++) {
-			MapLayer layer = map.getLayer(i);
-			
-			// skip invisible layer
-			if (!layer.isVisible()) {
-				continue;
-			}
-			
-			if (layer instanceof TileLayer) {
-				rootNode.attachChild(mapRender.createTileLayer((TileLayer) layer));
-			}
-		}
+		if (map != null)
+			render();
 	}
-
+	
 	@Override
 	protected void cleanup(Application app) {
 	}
@@ -96,4 +71,39 @@ public class TiledMapAppState extends BaseAppState {
 		rootNode.removeFromParent();
 	}
 
+	public void setMap(Map map) {
+		this.map = map;
+		float aspect = (float)map.getTileHeight() / map.getTileWidth();
+		this.centerOffset = new Vector3f(0.5f, 0.5f*aspect, 0f);
+		switch (map.getOrientation()) {
+        case ORTHOGONAL:
+            mapRender = new OrthogonalRender(map);
+            break;
+        case ISOMETRIC:
+        	mapRender = new IsometricRender(map);
+        	break;
+        case HEXAGONAL:
+        	mapRender = new HexagonalRender(map);
+        	break;
+        case STAGGERED:
+        	mapRender = new HexagonalRender(map);
+		}
+	}
+	
+	public void render() {
+		rootNode.detachAllChildren();
+		int len = map.getLayerCount();
+		for(int i=0; i<len; i++) {
+			MapLayer layer = map.getLayer(i);
+			
+			// skip invisible layer
+			if (!layer.isVisible()) {
+				continue;
+			}
+			
+			if (layer instanceof TileLayer) {
+				rootNode.attachChild(mapRender.createTileLayer((TileLayer) layer));
+			}
+		}
+	}
 }
