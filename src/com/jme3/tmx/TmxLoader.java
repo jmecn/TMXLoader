@@ -356,6 +356,7 @@ public class TmxLoader implements AssetLoader {
 		int hexsidelength = getAttribute(mapNode, "hexsidelength", 0);
 		String staggerAxis = getAttributeValue(mapNode, "staggeraxis");
 		String staggerIndex = getAttributeValue(mapNode, "staggerindex");
+		String bgStr = getAttributeValue(mapNode, "backgroundcolor");
 
 		if (orientation != null) {
 			setOrientation(orientation.toUpperCase());
@@ -380,6 +381,23 @@ public class TmxLoader implements AssetLoader {
 		if (staggerIndex != null) {
 			setStaggerIndex(staggerIndex.toUpperCase());
 		}
+		
+		ColorRGBA backgroundColor = null;
+		if (bgStr != null) {
+			// #RRGGBB || RRGGBB
+			if (bgStr.startsWith("#")) {
+				bgStr = bgStr.substring(1);
+			}
+
+			int rgb = Integer.parseInt(bgStr, 16);
+			int red = (rgb >> 16) & 0xFF;
+			int green = (rgb >> 8) & 0xFF;
+			int blue = (rgb >> 0) & 0xFF;
+			float scalor = 1f / 255f;
+			backgroundColor = new ColorRGBA(red * scalor, green * scalor, blue * scalor, 1f);
+			
+			map.setBackgroundColor(backgroundColor);
+		}
 
 		// Load properties
 		readProperties(mapNode.getChildNodes(), map.getProperties());
@@ -402,6 +420,14 @@ public class TmxLoader implements AssetLoader {
 				MapLayer layer = readObjectGroup(sibs);
 				if (layer != null) {
 					map.addLayer(layer);
+				}
+			} else {
+				// TODO delete debug code
+				String name = sibs.getNodeName();
+				if (name.equals("#text") || name.equals("properties") || name.equals("tileset")) {
+					// ignore
+				} else { 
+					logger.info("unknonw node:" + sibs.getNodeName());
 				}
 			}
 		}

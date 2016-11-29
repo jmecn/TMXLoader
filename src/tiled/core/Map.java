@@ -36,6 +36,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
+import com.jme3.math.ColorRGBA;
+
 /**
  * The Map class is the focal point of the <code>tiled.core</code> package.
  *
@@ -98,6 +100,7 @@ public class Map implements Iterable<MapLayer> {
     private Properties properties;
     private String filename;
     protected Rectangle bounds;          // in tiles
+	private ColorRGBA backgroundColor;
 
     /**
      * <p>Constructor for Map.</p>
@@ -518,6 +521,14 @@ public class Map implements Iterable<MapLayer> {
         this.staggerIndex = staggerIndex;
     }
 
+	public void setBackgroundColor(ColorRGBA backgroundColor) {
+		this.backgroundColor = backgroundColor;
+	}
+	
+	public ColorRGBA getBackgroundColor() {
+		return this.backgroundColor;
+	}
+	
     /**
      * <p>Getter for the field <code>properties</code>.</p>
      *
@@ -574,4 +585,5 @@ public class Map implements Iterable<MapLayer> {
                 + getLayerCount() + "][" + tileWidth + "x"
                 + tileHeight + "]";
     }
+
 }

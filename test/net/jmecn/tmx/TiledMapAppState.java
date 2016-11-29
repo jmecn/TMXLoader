@@ -9,7 +9,9 @@ import tiled.core.TileLayer;
 import com.jme3.app.Application;
 import com.jme3.app.SimpleApplication;
 import com.jme3.app.state.BaseAppState;
+import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector3f;
+import com.jme3.renderer.ViewPort;
 import com.jme3.scene.Node;
 import com.jme3.tmx.render.HexagonalRender;
 import com.jme3.tmx.render.IsometricRender;
@@ -32,6 +34,8 @@ public class TiledMapAppState extends BaseAppState {
 	protected Vector3f centerOffset;
 	private MapRender mapRender;
 
+	private ViewPort viewPort;
+	
 	public TiledMapAppState() {
 	}
 	
@@ -53,6 +57,8 @@ public class TiledMapAppState extends BaseAppState {
 	
 	@Override
 	protected void initialize(Application app) {
+		viewPort = app.getViewPort();
+		
 		if (map != null)
 			render();
 	}
@@ -91,6 +97,13 @@ public class TiledMapAppState extends BaseAppState {
 	}
 	
 	public void render() {
+		// background color
+		if (map.getBackgroundColor() != null) {
+			viewPort.setBackgroundColor(map.getBackgroundColor());
+		} else {
+			viewPort.setBackgroundColor(ColorRGBA.Black);
+		}
+		
 		rootNode.detachAllChildren();
 		int len = map.getLayerCount();
 		for(int i=0; i<len; i++) {

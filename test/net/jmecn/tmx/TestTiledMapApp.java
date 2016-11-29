@@ -1,4 +1,5 @@
 package net.jmecn.tmx;
+
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -13,8 +14,6 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
@@ -41,12 +40,14 @@ import com.jme3.tmx.TmxLoader;
 
 /**
  * Chooser a tmx file and load it.
+ * 
  * @author yanmaoyuan
- *
+ * 
  */
 public class TestTiledMapApp extends SimpleApplication {
 
-	final static private String[] assets = { "Models/Examples/Orthogonal/01.tmx",
+	final static private String[] assets = {
+			"Models/Examples/Orthogonal/01.tmx",
 			"Models/Examples/Orthogonal/02.tmx",
 			"Models/Examples/Orthogonal/03.tmx",
 			"Models/Examples/Orthogonal/04.tmx",
@@ -55,7 +56,8 @@ public class TestTiledMapApp extends SimpleApplication {
 			"Models/Examples/Orthogonal/07.tmx",
 			"Models/Examples/Orthogonal/orthogonal-outside.tmx",
 			"Models/Examples/Orthogonal/perspective_walls.tmx",
-			"Models/Examples/csvmap.tmx", "Models/Examples/sewers.tmx",
+			"Models/Examples/csvmap.tmx",
+			"Models/Examples/sewers.tmx",
 			"Models/Examples/Desert/desert.tmx",
 
 			"Models/Examples/Isometric/01.tmx",
@@ -74,213 +76,196 @@ public class TestTiledMapApp extends SimpleApplication {
 			"Models/Examples/Staggered/02.tmx",
 			"Models/Examples/Staggered/03.tmx",
 			"Models/Examples/Staggered/04.tmx",
-			"Models/Examples/Staggered/05.tmx",
-	};
+			"Models/Examples/Staggered/05.tmx", };
 
-	final static private String[] names = {
-			"orthogonal_01",
-			"orthogonal_02",
-			"orthogonal_03",
-			"orthogonal_04",
-			"orthogonal_05",
-			"orthogonal_06",
-			"orthogonal_07",
-			"orthogonal_08",
-			"orthogonal_09",
-			"orthogonal_10",
-			"orthogonal_11",
-			"orthogonal_12",
+	final static private String[] names = { "orthogonal_01", "orthogonal_02",
+			"orthogonal_03", "orthogonal_04", "orthogonal_05", "orthogonal_06",
+			"orthogonal_07", "orthogonal_08", "orthogonal_09", "orthogonal_10",
+			"orthogonal_11", "orthogonal_12",
 
-			"isometric_01",
-			"isometric_02",
-			"isometric_03",
-			"isometric_04",
+			"isometric_01", "isometric_02", "isometric_03", "isometric_04",
 
-			"hexagonal_01",
-			"hexagonal_02",
-			"hexagonal_03",
-			"hexagonal_04",
-			"hexagonal_05",
-			"hexagonal_06",
+			"hexagonal_01", "hexagonal_02", "hexagonal_03", "hexagonal_04",
+			"hexagonal_05", "hexagonal_06",
 
-			"staggered_01",
-			"staggered_02",
-			"staggered_03",
-			"staggered_04",
+			"staggered_01", "staggered_02", "staggered_03", "staggered_04",
 			"staggered_05", };
-	
+
 	private static String assetPath = null;
-	
-    final private static CountDownLatch panelsAreReady = new CountDownLatch(1);
-    private static TestTiledMapApp app;
-    private static AwtPanel panel;
-    
-    public static void main(String[] args){
-    	try {
+
+	final private static CountDownLatch panelsAreReady = new CountDownLatch(1);
+	private static TestTiledMapApp app;
+	private static AwtPanel panel;
+
+	public static void main(String[] args) {
+		try {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 		} catch (Exception e) {
 		}
-    	
-        Logger.getLogger("com.jme3").setLevel(Level.WARNING);
-        
-        app = new TestTiledMapApp();
-        app.setShowSettings(false);
-        AppSettings settings = new AppSettings(true);
-        settings.setCustomRenderer(AwtPanelsContext.class);
-        settings.setFrameRate(60);
-        app.setSettings(settings);
-        app.start();
-        
-        SwingUtilities.invokeLater(new Runnable(){
-            public void run(){
-                /*
-                 * Sleep 2 seconds to ensure there's no race condition.
-                 * The sleep is not required for correctness.
-                 */
-                try {
-                    Thread.sleep(2000);
-                } catch (InterruptedException exception) {
-                    return;
-                }
 
-                final AwtPanelsContext ctx = (AwtPanelsContext) app.getContext();
-                panel = ctx.createPanel(PaintMode.Accelerated);
-                panel.setPreferredSize(new Dimension(800, 600));
-                ctx.setInputSource(panel);
-                
-                /*
-                 * create JFrame
-                 */
-                final JFrame frame = new JFrame("Render Display ");
-                frame.getContentPane().setLayout(new BorderLayout());
-                frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-                frame.getContentPane().add(panel, BorderLayout.CENTER);
-                frame.addWindowListener(new WindowAdapter() {
-                    @Override
-                    public void windowClosed(WindowEvent e) {
-                       app.stop();
-                    }
-                });
-                
-                /*
-                 * create JList
-                 */
-            	final JList<String> list = new JList<String>();
-        		list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		app = new TestTiledMapApp();
+		app.setShowSettings(false);
+		AppSettings settings = new AppSettings(true);
+		settings.setCustomRenderer(AwtPanelsContext.class);
+		settings.setFrameRate(60);
+		app.setSettings(settings);
+		app.start();
 
-        		DefaultListModel<String> model = new DefaultListModel<String>();
-        		for (int i = 0; i < names.length; i++) {
-        			model.addElement(names[i]);
-        		}
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				/*
+				 * Sleep 2 seconds to ensure there's no race condition. The
+				 * sleep is not required for correctness.
+				 */
+				try {
+					Thread.sleep(2000);
+				} catch (InterruptedException exception) {
+					return;
+				}
 
-        		list.setModel(model);
+				final AwtPanelsContext ctx = (AwtPanelsContext) app
+						.getContext();
+				panel = ctx.createPanel(PaintMode.Accelerated);
+				panel.setPreferredSize(new Dimension(800, 600));
+				ctx.setInputSource(panel);
 
-        		frame.getContentPane().add(new JScrollPane(list), BorderLayout.WEST);
+				/*
+				 * create JFrame
+				 */
+				final JFrame frame = new JFrame("Test Tiled Map Loader");
+				frame.getContentPane().setLayout(new BorderLayout());
+				frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+				frame.getContentPane().add(panel, BorderLayout.CENTER);
+				frame.addWindowListener(new WindowAdapter() {
+					@Override
+					public void windowClosed(WindowEvent e) {
+						app.stop();
+					}
+				});
 
-        		list.getSelectionModel().addListSelectionListener(
-        				new ListSelectionListener() {
-        					public void valueChanged(ListSelectionEvent e) {
-        						assetPath = assets[list.getSelectedIndex()];
-        					}
-        				});
-        		list.addMouseListener(new MouseAdapter() {
-        			public void mouseClicked(MouseEvent e) {
-        				if (e.getClickCount() == 2 && assetPath != null) {
-        					app.load(assetPath);
-        				}
-        			}
-        		});
-        		list.addKeyListener(new KeyAdapter() {
-        			@Override
-        			public void keyTyped(KeyEvent e) {
-        				if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-        					app.load(assetPath);
-        				} else if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
-        					frame.dispose();
-        				}
-        			}
-        		});
-        		
-        		final JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-        		frame.getContentPane().add(buttonPanel, BorderLayout.PAGE_END);
+				/*
+				 * create JList
+				 */
+				final JList<String> list = new JList<String>();
+				list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
-        		final JButton okButton = new JButton("Ok");
-        		okButton.setMnemonic('O');
-        		buttonPanel.add(okButton);
-        		frame.getRootPane().setDefaultButton(okButton);
-        		okButton.addActionListener(new ActionListener() {
-        			public void actionPerformed(ActionEvent e) {
-        				app.load(assetPath);
-        			}
-        		});
+				DefaultListModel<String> model = new DefaultListModel<String>();
+				for (int i = 0; i < names.length; i++) {
+					model.addElement(names[i]);
+				}
 
-        		final JButton cancelButton = new JButton("Cancel");
-        		cancelButton.setMnemonic('C');
-        		buttonPanel.add(cancelButton);
-        		cancelButton.addActionListener(new ActionListener() {
-        			public void actionPerformed(ActionEvent e) {
-        				frame.dispose();
-        			}
-        		});
-        		
-        		frame.pack();
-        		
-        		/*
-        		 * center
-        		 */
-        		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-        		Dimension frameSize = frame.getSize();
-        		if (frameSize.height > screenSize.height) {
-        			frameSize.height = screenSize.height;
-        		}
-        		if (frameSize.width > screenSize.width) {
-        			frameSize.width = screenSize.width;
-        		}
-        		frame.setLocation((screenSize.width - frameSize.width) / 2,
-        				(screenSize.height - frameSize.height) / 2);
-        		
-                frame.setVisible(true);
-                /*
-                 * Both panels are ready.
-                 */
-                panelsAreReady.countDown();
-            }
-        });
-    }
-    
+				list.setModel(model);
+
+				frame.getContentPane().add(new JScrollPane(list),
+						BorderLayout.WEST);
+
+				list.getSelectionModel().addListSelectionListener(
+						new ListSelectionListener() {
+							public void valueChanged(ListSelectionEvent e) {
+								assetPath = assets[list.getSelectedIndex()];
+							}
+						});
+				list.addMouseListener(new MouseAdapter() {
+					public void mouseClicked(MouseEvent e) {
+						if (e.getClickCount() == 2 && assetPath != null) {
+							app.load(assetPath);
+						}
+					}
+				});
+				list.addKeyListener(new KeyAdapter() {
+					@Override
+					public void keyTyped(KeyEvent e) {
+						if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+							app.load(assetPath);
+						} else if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
+							frame.dispose();
+						}
+					}
+				});
+
+				final JPanel buttonPanel = new JPanel(new FlowLayout(
+						FlowLayout.CENTER));
+				frame.getContentPane().add(buttonPanel, BorderLayout.PAGE_END);
+
+				final JButton okButton = new JButton("Ok");
+				okButton.setMnemonic('O');
+				buttonPanel.add(okButton);
+				frame.getRootPane().setDefaultButton(okButton);
+				okButton.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+						app.load(assetPath);
+					}
+				});
+
+				final JButton cancelButton = new JButton("Cancel");
+				cancelButton.setMnemonic('C');
+				buttonPanel.add(cancelButton);
+				cancelButton.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+						frame.dispose();
+					}
+				});
+
+				frame.pack();
+
+				/*
+				 * center
+				 */
+				Dimension screenSize = Toolkit.getDefaultToolkit()
+						.getScreenSize();
+				Dimension frameSize = frame.getSize();
+				if (frameSize.height > screenSize.height) {
+					frameSize.height = screenSize.height;
+				}
+				if (frameSize.width > screenSize.width) {
+					frameSize.width = screenSize.width;
+				}
+				frame.setLocation((screenSize.width - frameSize.width) / 2,
+						(screenSize.height - frameSize.height) / 2);
+
+				frame.setVisible(true);
+				/*
+				 * Both panels are ready.
+				 */
+				panelsAreReady.countDown();
+			}
+		});
+	}
+
 	/**
 	 * display how many columns in a screen
 	 */
 	private int viewColumn = 24;
-	
+
 	private TiledMapAppState tiledMap;
 	private RPGCamAppState rpgCam;
-	
+
 	@Override
 	public void simpleInitApp() {
 		assetManager.registerLoader(TmxLoader.class, "tmx", "tsx");
-		
+
 		viewPort.setBackgroundColor(ColorRGBA.DarkGray);
-		
+
 		tiledMap = new TiledMapAppState();
 		stateManager.attach(tiledMap);
-		
+
 		rpgCam = new RPGCamAppState();
 		rpgCam.setParallelCamera(viewColumn);
 		stateManager.attach(rpgCam);
-		
-		/*
-         * Wait until both AWT panels are ready.
-         */
-        try {
-            panelsAreReady.await();
-        } catch (InterruptedException exception) {
-            throw new RuntimeException("Interrupted while waiting for panels", exception);
-        }
 
-        panel.attachTo(true, viewPort, guiViewPort);
+		/*
+		 * Wait until both AWT panels are ready.
+		 */
+		try {
+			panelsAreReady.await();
+		} catch (InterruptedException exception) {
+			throw new RuntimeException("Interrupted while waiting for panels",
+					exception);
+		}
+
+		panel.attachTo(true, viewPort, guiViewPort);
 	}
-    
+
 	public void load(final String assetPath) {
 		enqueue(new Callable<Void>() {
 			@Override
@@ -291,18 +276,18 @@ public class TestTiledMapApp extends SimpleApplication {
 				} catch (Exception e) {
 					// i don't care
 				}
-				
+
 				if (map != null) {
 					tiledMap.setMap(map);
 					tiledMap.render();
-					
-					Vector3f location = tiledMap.getLocation(viewColumn / 2, 0);
+
+					Vector3f location = tiledMap.getLocation(0, 0);
 					cam.setLocation(location);
 				}
 				return null;
 			}
-			
+
 		});
-		
+
 	}
 }
