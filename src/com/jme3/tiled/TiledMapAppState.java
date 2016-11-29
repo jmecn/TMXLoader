@@ -11,10 +11,10 @@ import com.jme3.app.SimpleApplication;
 import com.jme3.app.state.BaseAppState;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Node;
-import com.jme3.tiled.spatial.HexagonalRender;
-import com.jme3.tiled.spatial.IsometricRender;
-import com.jme3.tiled.spatial.MapRender;
-import com.jme3.tiled.spatial.OrthogonalRender;
+import com.jme3.tiled.render.HexagonalRender;
+import com.jme3.tiled.render.IsometricRender;
+import com.jme3.tiled.render.MapRender;
+import com.jme3.tiled.render.OrthogonalRender;
 
 /**
  * TiledMapAppState will create a Spatial for tile.ore.Map.

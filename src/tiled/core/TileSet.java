@@ -38,7 +38,7 @@ import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector2f;
 import com.jme3.renderer.queue.RenderQueue.Bucket;
 import com.jme3.texture.Texture;
-import com.jme3.tiled.spatial.TileQuad;
+import com.jme3.tiled.render.TileQuad;
 
 /**
  * <p>
@@ -289,7 +289,7 @@ public class TileSet implements Iterable<Tile> {
 	public Tile getTile(int i) {
 		try {
 			return tiles.get(i);
-		} catch (ArrayIndexOutOfBoundsException a) {
+		} catch (IndexOutOfBoundsException a) {
 		}
 		return null;
 	}

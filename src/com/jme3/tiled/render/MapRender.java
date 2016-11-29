@@ -1,4 +1,4 @@
-package com.jme3.tiled.spatial;
+package com.jme3.tiled.render;
 
 import tiled.core.Map;
 import tiled.core.TileLayer;

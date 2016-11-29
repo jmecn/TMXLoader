@@ -51,7 +51,7 @@ import com.jme3.texture.Texture;
 import com.jme3.texture.Texture.MagFilter;
 import com.jme3.texture.Texture.WrapMode;
 import com.jme3.texture.Texture2D;
-import com.jme3.tiled.spatial.TileQuad;
+import com.jme3.tiled.render.TileQuad;
 import com.sun.istack.internal.logging.Logger;
 
 public class TmxLoader implements AssetLoader {
@@ -1045,7 +1045,8 @@ public class TmxLoader implements AssetLoader {
 		 * that's why I cut the filename and contact it to key.getFolder().
 		 */
 		String dest = src;
-		int idx = src.lastIndexOf(File.separatorChar);
+		src.replaceAll("\\\\", "/");
+		int idx = src.lastIndexOf("/");
 		if (idx >= 0) {
 			dest = key.getFolder() + src.substring(idx + 1);
 		} else {
