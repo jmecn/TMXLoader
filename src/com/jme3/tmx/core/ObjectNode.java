@@ -1,5 +1,9 @@
 package com.jme3.tmx.core;
 
+import java.util.List;
+
+import com.jme3.material.Material;
+import com.jme3.math.Vector2f;
 import com.jme3.texture.Texture;
 import com.jme3.tmx.math2d.Rectangle;
 import com.jme3.tmx.math2d.Shape;
@@ -52,11 +56,15 @@ public class ObjectNode extends Base {
 		 */
 		Polyline,
 		/**
-		 * An image references to a tile with it's gid.
+		 * An tile references to a tile with it's gid.
+		 */
+		Tile,
+		/**
+		 * An image
 		 */
 		Image;
 	}
-	
+
 	private ObjectLayer objectGroup;
 
 	/**
@@ -100,24 +108,27 @@ public class ObjectNode extends Base {
 	private boolean visible;
 
 	/**
-	 * An reference to a tile (optional).
+	 * An reference to a tile (optional). 
+	 * 
+	 * When the object has a gid set, then it is represented by the image of the tile with that global ID. The image alignment currently depends on the map orientation. In orthogonal orientation it's aligned to the bottom-left while in isometric it's aligned to the bottom-center.
 	 */
 	private int gid;
 	private Tile tile;// when ObjectGroupType == Tile
 
 	// ObjectGroupType == Polygon || ObjectGroupType == Polyline
-	private float[] points;
+	private List<Vector2f> points;
 
+	// ObjectGroupType == Image
 	private String imageSource = "";
-	private Texture image;
-	private Texture scaledImage;
+	private Texture texture;
+	private Material material;
 
 	/**
 	 * Default constructor
 	 */
 	public ObjectNode() {
 	}
-	
+
 	public ObjectNode(double x, double y, double width, double height) {
 		this.x = x;
 		this.y = y;
@@ -237,11 +248,11 @@ public class ObjectNode extends Base {
 		this.tile = tile;
 	}
 
-	public float[] getPoints() {
+	public List<Vector2f> getPoints() {
 		return points;
 	}
 
-	public void setPoints(float[] points) {
+	public void setPoints(List<Vector2f> points) {
 		this.points = points;
 	}
 
@@ -253,20 +264,20 @@ public class ObjectNode extends Base {
 		this.imageSource = imageSource;
 	}
 
-	public Texture getImage() {
-		return image;
+	public Texture getTexture() {
+		return texture;
 	}
 
-	public void setImage(Texture image) {
-		this.image = image;
+	public void setTexture(Texture texture) {
+		this.texture = texture;
 	}
 
-	public Texture getScaledImage() {
-		return scaledImage;
+	public Material getMaterial() {
+		return material;
 	}
 
-	public void setScaledImage(Texture scaledImage) {
-		this.scaledImage = scaledImage;
+	public void setMaterial(Material material) {
+		this.material = material;
 	}
 	
 }

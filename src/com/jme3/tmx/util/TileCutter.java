@@ -11,7 +11,6 @@ public class TileCutter {
 	private int tileMargin;
 	private int tileSpacing;
 	
-	private Texture texture;
 	private int imageWidth;
 	private int imageHeight;
 	
@@ -24,7 +23,6 @@ public class TileCutter {
 		this.tileMargin = margin;
 		this.tileSpacing = space;
 		
-		this.texture = texture;
 		Image image = texture.getImage();
 		this.imageWidth = image.getWidth();
 		this.imageHeight = image.getHeight();
@@ -38,7 +36,6 @@ public class TileCutter {
 		if (nextY + tileHeight + tileMargin <= imageHeight) {
 
 			Tile tile = new Tile(nextX, nextY, tileWidth, tileHeight);
-			tile.setTexture(texture);
 			
 			nextX += tileWidth + tileSpacing;
 			if (nextX + tileWidth + tileMargin > imageWidth) {
@@ -50,5 +47,10 @@ public class TileCutter {
 		}
 
 		return null;
+	}
+
+	public void setTileOffset(int tileOffsetX, int tileOffsetY) {
+		this.nextX = tileMargin + tileOffsetX;
+		this.nextY = tileMargin + tileOffsetY;
 	}
 }

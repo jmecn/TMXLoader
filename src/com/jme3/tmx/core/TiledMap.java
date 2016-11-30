@@ -105,13 +105,13 @@ public class TiledMap extends Base {
 	 * For staggered and hexagonal maps, determines which axis ("x" or "y") is
 	 * staggered. (since 0.11)
 	 */
-	private StaggerAxis staggerAxis;
+	private StaggerAxis staggerAxis = StaggerAxis.Y;
 
 	/**
 	 * For staggered and hexagonal maps, determines whether the "even" or "odd"
 	 * indexes along the staggered axis are shifted. (since 0.11)
 	 */
-	private StaggerIndex staggerIndex;
+	private StaggerIndex staggerIndex = StaggerIndex.ODD;
 
 	/**
 	 * The background color of the map. (since 0.9, optional, may include alpha
@@ -142,8 +142,13 @@ public class TiledMap extends Base {
 	public TiledMap(int width, int height) {
 		this.width = width;
 		this.height = height;
-		tilesets = new ArrayList<Tileset>();
-		layers = new ArrayList<Layer>();
+		this.tileWidth = 0;
+		this.tileHeight = 0;
+		this.hexSideLength = 0;
+		this.nextObjectId = 0;
+		this.backgroundColor = new ColorRGBA(0f, 0f, 0f, 0f);
+		this.tilesets = new ArrayList<Tileset>();
+		this.layers = new ArrayList<Layer>();
 	}
 
 	/**
@@ -277,7 +282,6 @@ public class TiledMap extends Base {
 			}
 		}
 
-		tileset.createSpatialForTile(tileWidth, tileHeight);
 		tilesets.add(tileset);
 	}
 
@@ -351,6 +355,22 @@ public class TiledMap extends Base {
 		return renderOrder;
 	}
 
+	public void setRenderOrder(String renderorder) {
+		if ("right-down".equals(renderorder)) {
+			renderOrder = RenderOrder.RightDown;
+		} else if ("right-up".equals(renderorder)) {
+			renderOrder = RenderOrder.RightUp;
+		} else if ("left-down".equals(renderorder)) {
+			renderOrder = RenderOrder.LeftDown;
+		} else if ("left-up".equals(renderorder)) {
+			renderOrder = RenderOrder.LeftUp;
+		} else {
+			// use default
+			renderOrder = RenderOrder.RightDown;
+			logger.warning("Unknown render order '" + renderorder + "'");
+		}
+	}
+	
 	public void setRenderOrder(RenderOrder renderOrder) {
 		this.renderOrder = renderOrder;
 	}
@@ -417,8 +437,7 @@ public class TiledMap extends Base {
 
 	public void setStaggerIndex(String staggerIndex) {
 		try {
-			this.staggerIndex = StaggerIndex
-					.valueOf(staggerIndex.toUpperCase());
+			this.staggerIndex = StaggerIndex.valueOf(staggerIndex.toUpperCase());
 		} catch (IllegalArgumentException e) {
 			logger.warning("Unknown stagger index '" + staggerIndex + "'");
 		}
@@ -433,7 +452,7 @@ public class TiledMap extends Base {
 	}
 
 	public void setBackgroundColor(ColorRGBA backgroundColor) {
-		this.backgroundColor = backgroundColor;
+		this.backgroundColor.set(backgroundColor);
 	}
 
 	public int getNextObjectId() {

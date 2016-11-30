@@ -3,195 +3,18 @@ package com.jme3.tmx.util;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.FastMath;
 import com.jme3.texture.Image;
+import com.jme3.texture.Texture.WrapMode;
+import com.jme3.texture.Texture2D;
+import com.jme3.texture.Texture.MagFilter;
 import com.jme3.texture.image.ColorSpace;
 import com.jme3.texture.image.ImageRaster;
-import com.jme3.tmx.math2d.Ellipse;
-import com.jme3.tmx.math2d.Polygon;
-import com.jme3.tmx.math2d.Polyline;
-import com.jme3.tmx.math2d.Rectangle;
 import com.jme3.util.BufferUtils;
 
 public class ObjectTexture {
 
-	public static enum BlendMode {
-
-		/**
-		 * Ignore the original color and just set the color of the pixel to the
-		 * incoming value..
-		 */
-		SET {
-			@Override
-			protected void apply(ColorRGBA color, float r, float g, float b,
-					float a) {
-				color.r = r;
-				color.g = g;
-				color.b = b;
-				color.a = a;
-			}
-
-			@Override
-			protected boolean needsOriginal(float a) {
-				return false;
-			}
-		},
-		/**
-		 * Add the original color and the new color based on the transparency of
-		 * the new color. This will lighten the image. Original Alpha is
-		 * increased by incoming alpha.
-		 */
-		/**
-		 * Mix the original color with the new color based on the transparency
-		 * of the new color Original Alpha is merged with the incoming alpha.
-		 */
-		NORMAL {
-			@Override
-			protected void apply(ColorRGBA color, float r, float g, float b,
-					float a) {
-				color.r = color.r * (1 - a) + r * a;
-				color.g = color.g * (1 - a) + g * a;
-				color.b = color.b * (1 - a) + b * a;
-				color.a = color.a * (1 - a) + a;
-			}
-
-			@Override
-			protected boolean needsOriginal(float a) {
-				return a < 1;
-			}
-		},
-		/**
-		 * Add the original color and the new color based on the transparency of
-		 * the new color. This will lighten the image. Original Alpha is
-		 * increased by incoming alpha.
-		 */
-		ADD {
-			@Override
-			protected void apply(ColorRGBA color, float r, float g, float b,
-					float a) {
-				color.r = color.r + r * a;
-				color.g = color.g + g * a;
-				color.b = color.b + b * a;
-				color.a = color.a + a;
-			}
-
-			@Override
-			protected boolean needsOriginal(float a) {
-				return true;
-			}
-		},
-		/**
-		 * Subtract the new color from the original color based on the
-		 * transparency of the new color. This will darken the image. Original
-		 * Alpha is increased by incoming alpha.
-		 */
-		SUBTRACT {
-			@Override
-			protected void apply(ColorRGBA color, float r, float g, float b,
-					float a) {
-				color.r = color.r - r * a;
-				color.g = color.g - g * a;
-				color.b = color.b - b * a;
-				color.a = color.a + a;
-			}
-
-			@Override
-			protected boolean needsOriginal(float a) {
-				return true;
-			}
-		},
-		/**
-		 * Mix the original color with the new color based on the transparency
-		 * of the new color If the resulting channel (r,g,b are processed
-		 * separately) would be darker than the original then keep the original.
-		 * Original Alpha is left unchanged.
-		 */
-		LIGHTEN_ONLY {
-			@Override
-			protected void apply(ColorRGBA color, float r, float g, float b,
-					float a) {
-				color.r = Math.max(color.r * (1 - a) + r * a, color.r);
-				color.g = Math.max(color.g * (1 - a) + g * a, color.g);
-				color.b = Math.max(color.b * (1 - a) + b * a, color.b);
-			}
-
-			@Override
-			protected boolean needsOriginal(float a) {
-				return true;
-			}
-		},
-		/**
-		 * Mix the original color with the new color based on the transparency
-		 * of the new color If the resulting channel (r,g,b are processed
-		 * separately) would be lighter than the original then keep the
-		 * original. Original Alpha is left unchanged.
-		 */
-		DARKEN_ONLY {
-			@Override
-			protected void apply(ColorRGBA color, float r, float g, float b,
-					float a) {
-				color.r = Math.min(color.r * (1 - a) + r * a, color.r);
-				color.g = Math.min(color.g * (1 - a) + g * a, color.g);
-				color.b = Math.min(color.b * (1 - a) + b * a, color.b);
-			}
-
-			@Override
-			protected boolean needsOriginal(float a) {
-				return true;
-			}
-		},
-		/**
-		 * Mix the original color with the new color by multiplying them
-		 * together (r,g,b are processed separately). This will tend to darken
-		 * the image. Original Alpha is left unchanged.
-		 */
-		MULTIPLY {
-			@Override
-			protected void apply(ColorRGBA color, float r, float g, float b,
-					float a) {
-				color.r = color.r * (1 - a) + (r * color.r) * a;
-				color.g = color.g * (1 - a) + (g * color.g) * a;
-				color.b = color.b * (1 - a) + (b * color.b) * a;
-			}
-
-			@Override
-			protected boolean needsOriginal(float a) {
-				return true;
-			}
-		},
-		/**
-		 * Mix the original color with the new color by multiplying the inverses
-		 * together (r,g,b are processed separately). This will tend to lighten
-		 * the image. Original Alpha is left unchanged.
-		 */
-		SCREEN {
-			@Override
-			protected void apply(ColorRGBA color, float r, float g, float b,
-					float a) {
-				color.r = color.r * (1 - a) + (1 - (1 - r) * (1 - color.r)) * a;
-				color.g = color.g * (1 - a) + (1 - (1 - g) * (1 - color.g)) * a;
-				color.b = color.b * (1 - a) + (1 - (1 - b) * (1 - color.b)) * a;
-			}
-
-			@Override
-			protected boolean needsOriginal(float a) {
-				return true;
-			}
-		};
-
-		/**
-		 * Used to apply this blend mode to a pixel. Note that out of range
-		 * values are accepted at this point. Anything greater than 1 or less
-		 * than 0 will be clipped when the texture is generated.
-		 */
-		protected abstract void apply(ColorRGBA color, float r, float g,
-				float b, float a);
-
-		protected abstract boolean needsOriginal(float a);
-	}
-
 	Image image;
 	ImageRaster imageRaster;
 	ColorRGBA working;
-	BlendMode mode = BlendMode.SET;
 
 	public ObjectTexture(int width, int height) {
 		image = new Image(Image.Format.RGBA8, width, height,
@@ -201,21 +24,14 @@ public class ObjectTexture {
 
 		working = new ColorRGBA();
 	}
-
-	public ObjectTexture(Ellipse ellipse) {
-
-	}
-
-	public ObjectTexture(Rectangle rect) {
-
-	}
-
-	public ObjectTexture(Polygon polygon) {
-
-	}
-
-	public ObjectTexture(Polyline polyline) {
-
+	
+	public Texture2D createTexture() {
+		Texture2D tex = new Texture2D();
+		tex.setImage(image);
+		tex.setMagFilter(MagFilter.Bilinear);
+		tex.setWrap(WrapMode.Repeat);
+		
+		return tex;
 	}
 
 	/**
@@ -233,7 +49,7 @@ public class ObjectTexture {
 	 * @param color
 	 *            The color to paint the area with.
 	 */
-	public final void paintRect(int startX, int startY, int width, int height, ColorRGBA color) {
+	public final void paintRect(int startX, int startY, int width, int height) {
 		int endX = startX + width;
 		int endY = startY + height;
 		if (startX < 0) {
@@ -377,14 +193,19 @@ public class ObjectTexture {
 		return (int) (Math.round(v) & 0xFFFFFFFF);
 	}
 
-	public void ellipsePlotPoints(int xc, int yc, int x, int y) {
+	private void ellipsePlotPoints(int xc, int yc, int x, int y) {
 		paintPixel(xc + x, yc + y);
 		paintPixel(xc - x, yc + y);
 		paintPixel(xc + x, yc - y);
 		paintPixel(xc - x, yc - y);
 	}
 
-	public void ellipseMidPoint(int xc, int yc, int rx, int ry) {
+	public void paintEllipse(int px, int py, int width, int height) {
+		int xc = (px + width) / 2;
+		int yc = (py + height) / 2;
+		int rx = width / 2;
+		int ry = height / 2;
+		
 		int x, y, p1, p2;
 		int rx2 = rx * rx, ry2 = ry * ry;
 		x = 0;

@@ -21,7 +21,7 @@ import java.util.Properties;
  */
 public class Base {
 	
-	protected Properties properties = new Properties();
+	protected Properties properties;
 
 	public boolean hasProperties() {
 		return properties != null;

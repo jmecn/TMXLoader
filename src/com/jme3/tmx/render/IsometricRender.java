@@ -35,6 +35,7 @@ public class IsometricRender extends MapRender {
 				}
 
 				Geometry geom = tile.getGeometry().clone();
+				geom.scale(scale);
 				geom.scale(1f, aspect, 1f);
 				geom.setLocalTranslation(tileLoc2ScreenLoc(x, y));
 				bathNode.attachChild(geom);

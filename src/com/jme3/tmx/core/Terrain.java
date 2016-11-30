@@ -31,4 +31,44 @@ public class Terrain extends Base {
 	 */
 	private int tile;
 
+	/**
+	 * Default constructor
+	 */
+	public Terrain(String name) {
+		this.name = name;
+		this.tile = -1;
+	}
+	
+	public Tileset getTileset() {
+		return tileset;
+	}
+
+	public void setTileset(Tileset tileset) {
+		this.tileset = tileset;
+	}
+
+	public int getId() {
+		return id;
+	}
+
+	public void setId(int id) {
+		this.id = id;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public int getTile() {
+		return tile;
+	}
+
+	public void setTile(int tile) {
+		this.tile = tile;
+	}
+
 }

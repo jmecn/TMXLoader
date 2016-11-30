@@ -12,11 +12,14 @@ public abstract class MapRender {
 	protected int width;
 	protected int height;
 	protected float aspect = 1f;
+	protected float scale = 1f;
 	public MapRender(TiledMap map) {
 		this.map = map;
 		this.width = map.getWidth();
 		this.height = map.getHeight();
 		this.aspect = (float)map.getTileHeight() / map.getTileWidth();
+		this.aspect = 1f;
+		this.scale = 1f / map.getTileWidth();
 	}
 	
 	/**

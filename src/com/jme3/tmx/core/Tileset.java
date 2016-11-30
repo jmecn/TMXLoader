@@ -3,12 +3,10 @@ package com.jme3.tmx.core;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Logger;
 
 import com.jme3.material.Material;
-import com.jme3.math.ColorRGBA;
-import com.jme3.renderer.queue.RenderQueue.Bucket;
 import com.jme3.texture.Texture;
-import com.jme3.tmx.util.TileGeom;
 import com.jme3.tmx.util.TileCutter;
 
 /**
@@ -25,6 +23,8 @@ import com.jme3.tmx.util.TileCutter;
  */
 public class Tileset extends Base implements Iterable<Tile> {
 
+	static Logger logger = Logger.getLogger(Tileset.class.getName());
+	
 	/**
 	 * The first global tile ID of this tileset (this global ID maps to the
 	 * first tile in this tileset).
@@ -74,10 +74,15 @@ public class Tileset extends Base implements Iterable<Tile> {
 	private int columns;
 
 	/**
-	 * 
+	 * Horizontal offset in pixels.
 	 */
-	private ColorRGBA transparentColor;
-
+	private int tileOffsetX = 0;
+	/**
+	 * Vertical offset in pixels (positive is down)
+	 */
+	private int tileOffsetY = 0;
+	
+	private String imageSource;
 	private Texture texture;
 	private Material material;
 
@@ -104,77 +109,6 @@ public class Tileset extends Base implements Iterable<Tile> {
 		this.tileHeight = height;
 		this.tileSpacing = space;
 		this.tileMargin = margin;
-	}
-
-	/**
-	 * Adds the tile to the set, setting the id of the tile only if the current
-	 * value of id is -1.
-	 * 
-	 * @param t
-	 *            the tile to add
-	 * @return int The <b>local</b> id of the tile
-	 */
-	public int addTile(Tile t) {
-		if (t.getId() < 0) {
-			t.setId(tiles.size());
-		}
-
-		if (tileWidth < t.getWidth()) {
-			tileWidth = t.getWidth();
-		}
-
-		if (tileHeight < t.getHeight()) {
-			tileHeight = t.getHeight();
-		}
-
-		tiles.add(t);
-		t.setTileset(this);
-
-		return t.getId();
-	}
-
-	/**
-	 * This method takes a new Tile object as argument, and in addition to the
-	 * functionality of <code>addTile()</code>, sets the id of the tile to -1.
-	 * 
-	 * @see TileSet#addTile(Tile)
-	 * @param t
-	 *            the new tile to add.
-	 */
-	public void addNewTile(Tile t) {
-		t.setId(-1);
-		addTile(t);
-	}
-
-	/**
-	 * Removes a tile from this tileset. Does not invalidate other tile indices.
-	 * Removal is simply setting the reference at the specified index to
-	 * <b>null</b>.
-	 * 
-	 * @param i
-	 *            the index to remove
-	 */
-	public void removeTile(int i) {
-		tiles.set(i, null);
-	}
-
-	/**
-	 * Returns the amount of tiles in this tileset.
-	 * 
-	 * @return the amount of tiles in this tileset
-	 * @since 0.13
-	 */
-	public int size() {
-		return tiles.size();
-	}
-
-	/**
-	 * Returns the maximum tile id.
-	 * 
-	 * @return the maximum tile id, or -1 when there are no tiles
-	 */
-	public int getMaxTileId() {
-		return tiles.size() - 1;
 	}
 
 	/**
@@ -252,12 +186,12 @@ public class Tileset extends Base implements Iterable<Tile> {
 		this.columns = columns;
 	}
 
-	public ColorRGBA getTransparentColor() {
-		return transparentColor;
+	public String getImageSource() {
+		return imageSource;
 	}
 
-	public void setTransparentColor(ColorRGBA transparentColor) {
-		this.transparentColor = transparentColor;
+	public void setImageSource(String imageSource) {
+		this.imageSource = imageSource;
 	}
 
 	public Texture getTexture() {
@@ -279,9 +213,12 @@ public class Tileset extends Base implements Iterable<Tile> {
 
 		TileCutter cutter = new TileCutter(texture, tileWidth, tileHeight,
 				tileMargin, tileSpacing);
+		cutter.setTileOffset(tileOffsetX, tileOffsetY);
+		
 		Tile tile = cutter.getNextTile();
 		while (tile != null) {
 			addNewTile(tile);
+			tile.setTexture(texture);
 			tile = cutter.getNextTile();
 		}
 	}
@@ -292,6 +229,9 @@ public class Tileset extends Base implements Iterable<Tile> {
 
 	public void setMaterial(Material material) {
 		this.material = material;
+		for(Tile tile : tiles) {
+			tile.setMaterial(material);
+		}
 	}
 
 	public List<Terrain> getTerrains() {
@@ -302,12 +242,92 @@ public class Tileset extends Base implements Iterable<Tile> {
 		this.terrains = terrains;
 	}
 
+	public void addTerrain(Terrain terrain) {
+		terrain.setId(terrains.size());
+		terrains.add(terrain);
+	}
+	
+	public Terrain getTerrain(int id) {
+		return terrains.get(id);
+	}
+	
 	public List<Tile> getTiles() {
 		return tiles;
 	}
 
 	public void setTiles(List<Tile> tiles) {
 		this.tiles = tiles;
+	}
+	
+	/**
+	 * Adds the tile to the set, setting the id of the tile only if the current
+	 * value of id is -1.
+	 * 
+	 * @param t
+	 *            the tile to add
+	 * @return int The <b>local</b> id of the tile
+	 */
+	public int addTile(Tile t) {
+		if (t.getId() < 0) {
+			t.setId(tiles.size());
+		}
+
+		if (tileWidth < t.getWidth()) {
+			tileWidth = t.getWidth();
+		}
+
+		if (tileHeight < t.getHeight()) {
+			tileHeight = t.getHeight();
+		}
+
+		tiles.add(t);
+		t.setTileset(this);
+
+		return t.getId();
+	}
+
+	/**
+	 * This method takes a new Tile object as argument, and in addition to the
+	 * functionality of <code>addTile()</code>, sets the id of the tile to -1.
+	 * 
+	 * @see TileSet#addTile(Tile)
+	 * @param t
+	 *            the new tile to add.
+	 */
+	public void addNewTile(Tile t) {
+		t.setId(-1);
+		addTile(t);
+	}
+
+	/**
+	 * Removes a tile from this tileset. Does not invalidate other tile indices.
+	 * Removal is simply setting the reference at the specified index to
+	 * <b>null</b>.
+	 * 
+	 * @param i
+	 *            the index to remove
+	 */
+	public void removeTile(int i) {
+		tiles.set(i, null);
+	}
+
+	/**
+	 * Returns the amount of tiles in this tileset.
+	 * 
+	 * @return the amount of tiles in this tileset
+	 * @since 0.13
+	 */
+	public int size() {
+		return tiles.size();
+	}
+
+	/**
+	 * Returns the maximum tile id.
+	 * 
+	 * @return the maximum tile id, or -1 when there are no tiles
+	 */
+	public int getMaxTileId() {
+		return tiles.size() - 1;
 	}
 
 	/**
@@ -351,34 +371,14 @@ public class Tileset extends Base implements Iterable<Tile> {
 		return texture != null;
 	}
 
-	public void createSpatialForTile(float mapTileWidth, float mapTileHeight) {
-		/**
-		 * The unit size of each Quad is (1, 1). only if this TileSet's
-		 * (tileWidth, tileHeight) equals the Map's (tileWidth, tileHeight)
-		 */
-		float qx = tileWidth / mapTileWidth;
-		float qy = tileWidth / mapTileHeight;
-
-		for (int i = 0; i < tiles.size(); i++) {
-			Tile tile = tiles.get(i);
-
-			/**
-			 * Calculate texCoords for each tile, and create a Geometry for it.
-			 */
-			TileGeom sprite = new TileGeom("tile#" + tile.getId());
-			sprite.setSize(qx, qy);
-			sprite.setTexCoordFromTile(tile);
-
-			sprite.setMaterial(material);
-			sprite.setQueueBucket(Bucket.Translucent);
-
-			tile.setGeometry(sprite);
-		}
-	}
-
 	@Override
 	public Iterator<Tile> iterator() {
 		return tiles.iterator();
+	}
+
+	public void setTileOffset(int tileOffsetX, int tileOffsetY) {
+		this.tileOffsetX = tileOffsetX;
+		this.tileOffsetY = tileOffsetY;
 	}
 
 }

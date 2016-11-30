@@ -12,7 +12,7 @@ public class ColorUtil {
 			str = str.substring(1);
 		}
 
-		int argb = Integer.parseInt(str, 16);
+		int argb = (int) Long.parseLong(str.toUpperCase(), 16);
 		int alpha = (argb >> 24) & 0xFF;
 		int red = (argb >> 16) & 0xFF;
 		int green = (argb >> 8) & 0xFF;

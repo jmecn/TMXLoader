@@ -42,6 +42,8 @@ public class OrthogonalRender extends MapRender {
 				}
 				
 				Geometry geom = tile.getGeometry().clone();
+				geom.scale(scale);
+				geom.scale(1f, aspect, 1f);
 				geom.setLocalTranslation(x, h-(y+1)*aspect, 0);
 				bathNode.attachChild(geom);
 			}
