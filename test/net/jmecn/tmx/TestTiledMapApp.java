@@ -27,8 +27,6 @@ import javax.swing.UIManager;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-import tiled.core.Map;
-
 import com.jme3.app.SimpleApplication;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector3f;
@@ -37,6 +35,7 @@ import com.jme3.system.awt.AwtPanel;
 import com.jme3.system.awt.AwtPanelsContext;
 import com.jme3.system.awt.PaintMode;
 import com.jme3.tmx.TmxLoader;
+import com.jme3.tmx.core.TiledMap;
 
 /**
  * Chooser a tmx file and load it.
@@ -270,9 +269,9 @@ public class TestTiledMapApp extends SimpleApplication {
 		enqueue(new Callable<Void>() {
 			@Override
 			public Void call() throws Exception {
-				Map map = null;
+				TiledMap map = null;
 				try {
-					map = (Map) assetManager.loadAsset(assetPath);
+					map = (TiledMap) assetManager.loadAsset(assetPath);
 				} catch (Exception e) {
 					// i don't care
 				}

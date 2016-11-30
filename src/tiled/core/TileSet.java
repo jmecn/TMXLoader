@@ -38,7 +38,7 @@ import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector2f;
 import com.jme3.renderer.queue.RenderQueue.Bucket;
 import com.jme3.texture.Texture;
-import com.jme3.tmx.TileGeom;
+import com.jme3.tmx.util.TileGeom;
 
 /**
  * <p>

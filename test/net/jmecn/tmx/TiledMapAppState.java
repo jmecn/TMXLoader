@@ -2,10 +2,6 @@ package net.jmecn.tmx;
 
 import java.util.logging.Logger;
 
-import tiled.core.Map;
-import tiled.core.MapLayer;
-import tiled.core.TileLayer;
-
 import com.jme3.app.Application;
 import com.jme3.app.SimpleApplication;
 import com.jme3.app.state.BaseAppState;
@@ -13,6 +9,9 @@ import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.ViewPort;
 import com.jme3.scene.Node;
+import com.jme3.tmx.core.Layer;
+import com.jme3.tmx.core.TileLayer;
+import com.jme3.tmx.core.TiledMap;
 import com.jme3.tmx.render.HexagonalRender;
 import com.jme3.tmx.render.IsometricRender;
 import com.jme3.tmx.render.MapRender;
@@ -30,7 +29,7 @@ public class TiledMapAppState extends BaseAppState {
 	
 	private Node rootNode = new Node("TileMapRoot");
 	
-	private Map map;
+	private TiledMap map;
 	protected Vector3f centerOffset;
 	private MapRender mapRender;
 
@@ -39,11 +38,11 @@ public class TiledMapAppState extends BaseAppState {
 	public TiledMapAppState() {
 	}
 	
-	public TiledMapAppState(Map map) {
+	public TiledMapAppState(TiledMap map) {
 		setMap(map);
 	}
 
-	public Map getMap() {
+	public TiledMap getMap() {
 		return map;
 	}
 	
@@ -77,7 +76,7 @@ public class TiledMapAppState extends BaseAppState {
 		rootNode.removeFromParent();
 	}
 
-	public void setMap(Map map) {
+	public void setMap(TiledMap map) {
 		this.map = map;
 		float aspect = (float)map.getTileHeight() / map.getTileWidth();
 		this.centerOffset = new Vector3f(0.5f, 0.5f*aspect, 0f);
@@ -107,7 +106,7 @@ public class TiledMapAppState extends BaseAppState {
 		rootNode.detachAllChildren();
 		int len = map.getLayerCount();
 		for(int i=0; i<len; i++) {
-			MapLayer layer = map.getLayer(i);
+			Layer layer = map.getLayer(i);
 			
 			// skip invisible layer
 			if (!layer.isVisible()) {

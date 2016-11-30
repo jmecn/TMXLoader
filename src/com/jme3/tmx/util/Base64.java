@@ -59,7 +59,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  * #L%
  */
-package tiled.util;
+package com.jme3.tmx.util;
 
 import java.util.Arrays;
 

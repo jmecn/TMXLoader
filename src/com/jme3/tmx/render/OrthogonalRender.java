@@ -2,15 +2,14 @@ package com.jme3.tmx.render;
 
 import java.util.logging.Logger;
 
-import tiled.core.Map;
-import tiled.core.Tile;
-import tiled.core.TileLayer;
-
 import com.jme3.math.Vector2f;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.BatchNode;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Spatial;
+import com.jme3.tmx.core.Tile;
+import com.jme3.tmx.core.TileLayer;
+import com.jme3.tmx.core.TiledMap;
 
 /**
  * Orthogonal render
@@ -22,7 +21,7 @@ public class OrthogonalRender extends MapRender {
 	static Logger logger = Logger.getLogger(OrthogonalRender.class.getName());
 	
 	public Vector3f centerOffset;
-	public OrthogonalRender(Map map) {
+	public OrthogonalRender(TiledMap map) {
 		super(map);
 	}
 
@@ -38,11 +37,11 @@ public class OrthogonalRender extends MapRender {
 		for(int y=0; y<height; y++) {
 			for(int x=0; x<width; x++) {
 				final Tile tile = layer.getTileAt(x, y);
-				if (tile == null || tile.getGeom() == null) {
+				if (tile == null || tile.getGeometry() == null) {
 					continue;
 				}
 				
-				Geometry geom = tile.getGeom().clone();
+				Geometry geom = tile.getGeometry().clone();
 				geom.setLocalTranslation(x, h-(y+1)*aspect, 0);
 				bathNode.attachChild(geom);
 			}

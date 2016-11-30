@@ -1,12 +1,11 @@
-package com.jme3.tmx;
-
-import tiled.core.Tile;
+package com.jme3.tmx.util;
 
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Mesh;
 import com.jme3.scene.VertexBuffer.Type;
 import com.jme3.texture.Image;
 import com.jme3.texture.Texture;
+import com.jme3.tmx.core.Tile;
 
 public class TileGeom extends Geometry {
 

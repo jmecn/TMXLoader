@@ -4,9 +4,6 @@ import junit.framework.TestCase;
 
 import org.junit.Test;
 
-import tiled.core.Map;
-import tiled.core.TileLayer;
-
 import com.jme3.asset.AssetManager;
 import com.jme3.asset.DesktopAssetManager;
 import com.jme3.asset.plugins.ClasspathLocator;
@@ -14,6 +11,8 @@ import com.jme3.material.plugins.J3MLoader;
 import com.jme3.shader.plugins.GLSLLoader;
 import com.jme3.texture.plugins.AWTLoader;
 import com.jme3.tmx.TmxLoader;
+import com.jme3.tmx.core.TiledMap;
+import com.jme3.tmx.core.TileLayer;;
 
 public class TestTMXLoader extends TestCase {
 
@@ -49,10 +48,10 @@ public class TestTMXLoader extends TestCase {
     public void testReadingExampleMap() throws Exception {
 
         // Act
-        Map map = (Map) assetManager.loadAsset(sewers);
+    	TiledMap map = (TiledMap) assetManager.loadAsset(sewers);
 
         // Assert
-        assertEquals(Map.Orientation.ORTHOGONAL, map.getOrientation());
+        assertEquals(TiledMap.Orientation.ORTHOGONAL, map.getOrientation());
         assertEquals(50, map.getHeight());
         assertEquals(50, map.getHeight());
         assertEquals(24, map.getTileWidth());
@@ -64,10 +63,10 @@ public class TestTMXLoader extends TestCase {
     @Test
     public void testReadingExampleCsvMap() throws Exception {
         // Act
-        Map map = (Map) assetManager.loadAsset(csvmap);
+    	TiledMap map = (TiledMap) assetManager.loadAsset(csvmap);
 
         // Assert
-        assertEquals(Map.Orientation.ORTHOGONAL, map.getOrientation());
+        assertEquals(TiledMap.Orientation.ORTHOGONAL, map.getOrientation());
         assertEquals(100, map.getHeight());
         assertEquals(100, map.getHeight());
         assertEquals(32, map.getTileWidth());
@@ -79,43 +78,43 @@ public class TestTMXLoader extends TestCase {
     @Test
     public void testReadingExampleHexagonalMap() throws Exception {
         // Act
-        Map map = (Map) assetManager.loadAsset(hexagonal);
+    	TiledMap map = (TiledMap) assetManager.loadAsset(hexagonal);
 
         // Assert
-        assertEquals(Map.Orientation.HEXAGONAL, map.getOrientation());
+        assertEquals(TiledMap.Orientation.HEXAGONAL, map.getOrientation());
         assertEquals(9, map.getHeight());
         assertEquals(9, map.getHeight());
         assertEquals(32, map.getTileWidth());
         assertEquals(32, map.getTileHeight());
         assertEquals(16, map.getHexSideLength());
-        assertEquals(Map.StaggerAxis.Y, map.getStaggerAxis());
-        assertEquals(Map.StaggerIndex.ODD, map.getStaggerIndex());
+        assertEquals(TiledMap.StaggerAxis.Y, map.getStaggerAxis());
+        assertEquals(TiledMap.StaggerIndex.ODD, map.getStaggerIndex());
         assertEquals(1, map.getLayerCount());
     }
 
     @Test
     public void testReadingExampleStaggeredMap() throws Exception {
         // Act
-        Map map = (Map) assetManager.loadAsset(staggered);
+    	TiledMap map = (TiledMap) assetManager.loadAsset(staggered);
 
         // Assert
-        assertEquals(Map.Orientation.STAGGERED, map.getOrientation());
+        assertEquals(TiledMap.Orientation.STAGGERED, map.getOrientation());
         assertEquals(9, map.getHeight());
         assertEquals(9, map.getHeight());
         assertEquals(32, map.getTileWidth());
         assertEquals(32, map.getTileHeight());
-        assertEquals(Map.StaggerAxis.Y, map.getStaggerAxis());
-        assertEquals(Map.StaggerIndex.ODD, map.getStaggerIndex());
+        assertEquals(TiledMap.StaggerAxis.Y, map.getStaggerAxis());
+        assertEquals(TiledMap.StaggerIndex.ODD, map.getStaggerIndex());
         assertEquals(1, map.getLayerCount());
     }
 
     @Test
     public void testReadingExampleIsometricMap() throws Exception {
         // Act
-        Map map = (Map) assetManager.loadAsset(grass_and_water);
+    	TiledMap map = (TiledMap) assetManager.loadAsset(grass_and_water);
 
         // Assert
-        assertEquals(Map.Orientation.ISOMETRIC, map.getOrientation());
+        assertEquals(TiledMap.Orientation.ISOMETRIC, map.getOrientation());
         assertEquals(25, map.getHeight());
         assertEquals(25, map.getHeight());
         assertEquals(64, map.getTileWidth());

@@ -1,19 +1,18 @@
 package com.jme3.tmx.render;
 
-import tiled.core.Map;
-import tiled.core.TileLayer;
-
 import com.jme3.math.Vector2f;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Spatial;
+import com.jme3.tmx.core.TiledMap;
+import com.jme3.tmx.core.TileLayer;
 
 public abstract class MapRender {
 	
-	protected Map map;
+	protected TiledMap map;
 	protected int width;
 	protected int height;
 	protected float aspect = 1f;
-	public MapRender(Map map) {
+	public MapRender(TiledMap map) {
 		this.map = map;
 		this.width = map.getWidth();
 		this.height = map.getHeight();

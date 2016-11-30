@@ -7,16 +7,15 @@ import com.jme3.math.Vector3f;
 import com.jme3.scene.BatchNode;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Spatial;
-
-import tiled.core.Map;
-import tiled.core.Tile;
-import tiled.core.TileLayer;
+import com.jme3.tmx.core.Tile;
+import com.jme3.tmx.core.TileLayer;
+import com.jme3.tmx.core.TiledMap;
 
 public class IsometricRender extends MapRender {
 
 	static Logger logger = Logger.getLogger(IsometricRender.class.getName());
 
-	public IsometricRender(Map map) {
+	public IsometricRender(TiledMap map) {
 		super(map);
 		
 		aspect = 0.7071f;
@@ -31,11 +30,11 @@ public class IsometricRender extends MapRender {
 		for (int y = 0; y < height; y++) {
 			for (int x = 0; x < width; x++) {
 				final Tile tile = layer.getTileAt(x, y);
-				if (tile == null || tile.getGeom() == null) {
+				if (tile == null || tile.getGeometry() == null) {
 					continue;
 				}
 
-				Geometry geom = tile.getGeom().clone();
+				Geometry geom = tile.getGeometry().clone();
 				geom.scale(1f, aspect, 1f);
 				geom.setLocalTranslation(tileLoc2ScreenLoc(x, y));
 				bathNode.attachChild(geom);

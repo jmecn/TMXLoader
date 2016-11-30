@@ -8,11 +8,11 @@ import com.jme3.scene.BatchNode;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Spatial;
 
-import tiled.core.Map;
-import tiled.core.Map.StaggerAxis;
-import tiled.core.Map.StaggerIndex;
-import tiled.core.Tile;
-import tiled.core.TileLayer;
+import com.jme3.tmx.core.Tile;
+import com.jme3.tmx.core.TileLayer;
+import com.jme3.tmx.core.TiledMap;
+import com.jme3.tmx.core.TiledMap.StaggerAxis;
+import com.jme3.tmx.core.TiledMap.StaggerIndex;
 
 public class HexagonalRender extends MapRender {
 
@@ -20,7 +20,7 @@ public class HexagonalRender extends MapRender {
 	
 	private boolean staggerX = false;
 	private boolean staggerEven = false;
-	public HexagonalRender(Map map) {
+	public HexagonalRender(TiledMap map) {
 		super(map);
 		
 		staggerX = map.getStaggerAxis() == StaggerAxis.X;
@@ -37,11 +37,11 @@ public class HexagonalRender extends MapRender {
 		for(int y=0; y<height; y++) {
 			for(int x=0; x<width; x++) {
 				final Tile tile = layer.getTileAt(x, y);
-				if (tile == null || tile.getGeom() == null) {
+				if (tile == null || tile.getGeometry() == null) {
 					continue;
 				}
 				
-				Geometry geom = tile.getGeom().clone();
+				Geometry geom = tile.getGeometry().clone();
 				geom.scale(1f, aspect, 1f);
 				geom.setLocalTranslation(tileLoc2ScreenLoc(x, y));
 				bathNode.attachChild(geom);
@@ -55,7 +55,13 @@ public class HexagonalRender extends MapRender {
 
 	@Override
 	public Vector3f tileLoc2ScreenLoc(int x, int y) {
-		int odd = y % 2;
+		int odd;
+		if (staggerX) {
+			odd = x % 2;
+		} else {
+			odd = y % 2;
+		}
+		
 		if (staggerEven) {
 			odd = 1 - odd;
 		}
