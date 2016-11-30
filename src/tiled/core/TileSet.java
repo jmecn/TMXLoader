@@ -439,7 +439,6 @@ public class TileSet implements Iterable<Tile> {
 			 */
 			TileGeom sprite = new TileGeom("tile#"+tile.getId());
 			sprite.setSize(qx, qy);
-			sprite.setTexCoordFromTile(tile);
 			
 			sprite.setMaterial(material);
 			sprite.setQueueBucket(Bucket.Translucent);
