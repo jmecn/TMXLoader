@@ -11,6 +11,7 @@ import com.jme3.texture.Texture2D;
 import com.jme3.texture.image.ColorSpace;
 import com.jme3.texture.image.ImageRaster;
 import com.jme3.tmx.core.ObjectNode;
+import com.jme3.tmx.core.ObjectNode.ObjectType;
 import com.jme3.util.BufferUtils;
 
 /**
@@ -35,11 +36,6 @@ public class ObjectTexture extends Texture2D {
 	 */
 	private int width, height;
 	/**
-	 * The width to paint the line at (in pixels), default 2f
-	 */
-	private float lineWidth = 1f;
-	
-	/**
 	 * an image, Format.RGBA8
 	 */
 	private Image image;
@@ -59,9 +55,8 @@ public class ObjectTexture extends Texture2D {
 		
 		this.obj = object;
 
-		// may the image a little larger
-		width = round(obj.getWidth() * 4);
-		height = round(obj.getHeight() * 4);
+		width = round(obj.getWidth());
+		height = round(obj.getHeight());
 		
 		if (width == 0 && height == 0) {
 			throw new IllegalArgumentException("ObjectNode size is zero.");
@@ -91,8 +86,8 @@ public class ObjectTexture extends Texture2D {
 		
 		setImage(image);
 		setWrap(WrapMode.Repeat);
-		setMagFilter(MagFilter.Bilinear);
-        setMinFilter(MinFilter.Trilinear);
+		setMagFilter(MagFilter.Nearest);
+        setMinFilter(MinFilter.NearestNoMipMaps);
 	}
 	
 	private void paint() {
@@ -181,16 +176,7 @@ public class ObjectTexture extends Texture2D {
 	}
 
 	/**
-	 * Paints a straight line between two points on the ImageRaster. This is not
-	 * clipped so all points must be greater than width/2 from the edges of the
-	 * ImageRaster. It copes with lines in any direction including negative x
-	 * and y.
-	 * 
-	 * The edges of the line are anti-aliased and it copes with non-integer
-	 * (even smaller than 1 although the results may not be ideal) widths.
-	 * Currently there is no special handling of the end of the line and it just
-	 * just cut off either vertically or horizontally so wide lines may need
-	 * some work at the ends to tidy them up.
+	 * draw a line
 	 * 
 	 * @param x1
 	 *            The x co-ordinate of the start of the line
@@ -204,75 +190,23 @@ public class ObjectTexture extends Texture2D {
 	 *            The width to paint the line at (in pixels)
 	 */
 	private void paintLine(int x1, int y1, int x2, int y2) {
-		float alpha = color.a;
 		int xWidth = x2 - x1;
 		int yHeight = y2 - y1;
 
-		// Is the line more horizontal or more vertical?
 		if (FastMath.abs(xWidth) > FastMath.abs(yHeight)) {
 			float yStep = (float) yHeight / xWidth;
-			// Trig to work out the angle needed then rotate the width
-			// accordingly
-			// Using atan not atan2 as we don't actually need the sign of the
-			// result
-			float angle = FastMath.HALF_PI + FastMath.atan(yStep);
-			float rotatedHeight = lineWidth / FastMath.sin(angle);
-
 			int xStep = xWidth < 0 ? -1 : 1;
-			float y = y1 - rotatedHeight * 0.5f;
-
+			float y = y1;
 			for (int x = x1; x != x2; x += xStep, y += yStep) {
-
-				// Draw bottom pixel at correct opacity
-				color.a = alpha * (1 - (y - (int) y));
 				paintPixel(x, (int) y);
-
-				float remainder = y + rotatedHeight;
-
-				// Draw center full opacity pixels
-				for (int h = (int) y + 1; h < remainder - 1; h++) {
-					paintPixel(x, h);
-				}
-
-				// Narrow lines (width < 1) may draw on same pixel twice which
-				// makes the
-				// line look a little dotty but we ned to handle that case
-				// somehow...
-				color.a = alpha * (remainder - (int) remainder);
-				paintPixel(x, (int) (remainder));
 			}
 		} else {
-
 			float xStep = (float) xWidth / yHeight;
-			// Trig to work out the angle needed then rotate the width
-			// accordingly
-			// Using atan not atan2 as we don't actually need the sign of the
-			// result
-			float rotatedWidth = lineWidth / FastMath.sin(FastMath.HALF_PI + FastMath.atan(xStep));
 			int yStep = yHeight < 0 ? -1 : 1;
-			float x = x1 - rotatedWidth * 0.5f;
-
+			float x = x1;
 			for (int y = y1; y != y2; x += xStep, y += yStep) {
-
-				// Draw bottom pixel at correct opacity
-				color.a = alpha * (1 - (x - (int) x));
 				paintPixel((int) x, y);
-
-				float remainder = x + rotatedWidth;
-
-				// Draw center full opacity pixels
-				for (int w = (int) x + 1; w < remainder - 1; w++) {
-					paintPixel(w, y);
-				}
-
-				// Narrow lines (width < 1) may draw on same pixel twice which
-				// makes the
-				// line look a little dotty but we ned to handle that case
-				// somehow...
-				color.a = alpha * (remainder - (int) remainder);
-				paintPixel((int) (remainder), y);
 			}
-
 		}
 	}
 	
@@ -408,6 +342,12 @@ public class ObjectTexture extends Texture2D {
 	
 	private void paintPolyline() {
 		List<Vector2f> points = obj.getPoints();
+		
+		if (obj.getObjectType() == ObjectType.Polygon) {
+			// close path
+			points.add(points.get(0));
+		}
+		
 		paintPolyline(points);
 	}
 	
@@ -418,17 +358,19 @@ public class ObjectTexture extends Texture2D {
 		
 		int len = points.size();
 		Vector2f start = new Vector2f(points.get(0));
+		Vector2f end = new Vector2f();
 		for(int i=1; i<len; i++) {
-			paintLine(start, points.get(i));
-			start.set(points.get(i));
+			end.set(points.get(i));
+			paintLine(start, end);
+			start.set(end);
 		}
 	}
 	
 	private void paintLine(Vector2f start, Vector2f end) {
 		int startX = (int) start.x;
-		int startY = (int) (height - start.y);
+		int startY = (int) (start.y);
 		int endX = (int) end.x;
-		int endY = (int) (height - end.y);
+		int endY = (int) (end.y);
 		
 		paintLine(startX, startY, endX, endY);
 	}

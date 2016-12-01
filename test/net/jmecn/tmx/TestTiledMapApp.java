@@ -258,12 +258,12 @@ public class TestTiledMapApp extends SimpleApplication {
 				}
 
 				if (map != null) {
-					TiledMapAppState tiledMap = stateManager
-							.getState(TiledMapAppState.class);
+					TiledMapAppState tiledMap = stateManager.getState(TiledMapAppState.class);
 					tiledMap.setMap(map);
 					tiledMap.render();
 
-					Vector3f location = tiledMap.getLocation(0, 0);
+					// look at the center of this map
+					Vector3f location = tiledMap.getLocation(map.getWidth() /2, map.getHeight()/2);
 					cam.setLocation(location);
 				}
 				return null;

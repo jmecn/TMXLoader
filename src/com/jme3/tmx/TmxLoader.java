@@ -871,14 +871,11 @@ public class TmxLoader implements AssetLoader {
 				break;
 			} else if ("polygon".equalsIgnoreCase(nodeName)) {
 				obj.setObjectType(ObjectType.Polygon);
-				List<Vector2f> points = readPoints(child, x, y);
-				points.add(points.get(0));// close path
-				obj.setPoints(points);
+				obj.setPoints(readPoints(child, x, y));
 				break;
 			} else if ("polyline".equalsIgnoreCase(nodeName)) {
 				obj.setObjectType(ObjectType.Polyline);
-				List<Vector2f> points = readPoints(child, x, y);
-				obj.setPoints(points);
+				obj.setPoints(readPoints(child, x, y));
 				break;
 			}
 		}
