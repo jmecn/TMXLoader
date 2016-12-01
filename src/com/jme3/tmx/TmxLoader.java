@@ -787,6 +787,14 @@ public class TmxLoader implements AssetLoader {
 		if (color != null) {
 			layer.setColor(ColorUtil.toColorRGBA(color));
 		}
+		
+//		// TODO This material applies to the shapes in this ObjectGroup using LineMesh
+//		Material mat = new Material(assetManager, "com/jme3/tmx/render/Tiled.j3md");
+//		if (color != null) {
+//			mat.setColor("Color", layer.getColor());
+//		} else {
+//			mat.setColor("Color", ColorRGBA.LightGray);
+//		}
 
 		final String draworder = getAttributeValue(node, "draworder");
 		if (draworder != null) {

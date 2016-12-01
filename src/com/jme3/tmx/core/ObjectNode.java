@@ -127,11 +127,11 @@ public class ObjectNode extends Base {
 
 	// ObjectGroupType == Image
 	private String imageSource = "";
-	
+
 	private Texture texture;
 	private Material material;
 	private Geometry geometry;
-	
+
 	/**
 	 * Default constructor
 	 */
@@ -255,13 +255,49 @@ public class ObjectNode extends Base {
 
 	public void setPoints(List<Vector2f> points) {
 		this.points = points;
-		
+
 		// it a polygon or polyline, let's calculate it's size;
+		float minX = 0;
+		float minY = 0;
 		int len = points.size();
-		for(int i=0; i<len; i++) {
+		for (int i = 0; i < len; i++) {
 			Vector2f p = points.get(i);
-			if (p.x > width) width = p.x;
-			if (p.y > height) height = p.y;
+			if (p.x > width)
+				width = p.x;
+			if (p.y > height)
+				height = p.y;
+			if (p.x < minX)
+				minX = p.x;
+			if (p.y < minY)
+				minY = p.y;
+		}
+
+		/*
+		 * When draw an image for polygon, the image size depends on width and
+		 * height of this ObjectNode. the point's xy can not be smaller than 0.
+		 * That's why I need this offsets.
+		 * 
+		 * Maybe I should use com.jme3.tmx.util.ObjectMesh instead of
+		 * com.jme3.tmx.util.ObjectTexture?
+		 */
+		// move x
+		if (minX < 0) {
+			x = minX;
+			width -= minX;
+			for (int i = 0; i < len; i++) {
+				Vector2f p = points.get(i);
+				p.x -= minX;
+			}
+		}
+
+		// move y
+		if (minY < 0) {
+			y = minY;
+			height -= minY;
+			for (int i = 0; i < len; i++) {
+				Vector2f p = points.get(i);
+				p.y -= minY;
+			}
 		}
 	}
 
@@ -293,32 +329,18 @@ public class ObjectNode extends Base {
 	public void setMaterial(Material material) {
 		this.material = material;
 	}
-	
+
 	public Geometry getGeometry() {
 		if (geometry == null && material != null) {
-			float[] vertices = new float[] {
-					0, 0, 0,
-					(float) width, 0, 0,
-					(float) width, (float) height, 0,
-					0, (float) height, 0 };
-			
-			float[] normals = new float[] {
-					0, 0, 1,
-					0, 0, 1,
-					0, 0, 1,
-					0, 0, 1 };
-			
-			float[] texCoord = new float[] {
-				0, 0,
-				1, 0,
-				1, 1,
-				0, 1,
-			};
-			
-			short[] indexes = new short[] {
-					0, 1, 2,
-					0, 2, 3 };
-			
+			float[] vertices = new float[] { 0, 0, 0, (float) width, 0, 0,
+					(float) width, (float) height, 0, 0, (float) height, 0 };
+
+			float[] normals = new float[] { 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1 };
+
+			float[] texCoord = new float[] { 0, 0, 1, 0, 1, 1, 0, 1, };
+
+			short[] indexes = new short[] { 0, 1, 2, 0, 2, 3 };
+
 			Mesh mesh = new Mesh();
 			mesh.setBuffer(Type.Position, 3, vertices);
 			mesh.setBuffer(Type.TexCoord, 2, texCoord);
@@ -326,11 +348,11 @@ public class ObjectNode extends Base {
 			mesh.setBuffer(Type.Index, 3, indexes);
 			mesh.updateBound();
 			mesh.setStatic();
-			
-			geometry = new Geometry("tile#"+id, mesh);
+
+			geometry = new Geometry("tile#" + id, mesh);
 			geometry.setMaterial(material);
 			geometry.setQueueBucket(Bucket.Translucent);
-			
+
 		}
 		return geometry;
 	}

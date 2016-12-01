@@ -255,9 +255,9 @@ public class RPGCamAppState extends BaseAppState implements AnalogListener, Acti
 		} else if (name.equals(DRAG)) {
 			dragCamera(true);
 		}else if (name.equals(ZOOMIN)){
-            zoomCamera(value);
-        }else if (name.equals(ZOOMOUT)){
             zoomCamera(-value);
+        }else if (name.equals(ZOOMOUT)){
+            zoomCamera(value);
         }
 	}
 
