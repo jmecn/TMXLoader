@@ -11,7 +11,6 @@ import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.tmx.core.ImageLayer;
 import com.jme3.tmx.core.ObjectLayer;
-import com.jme3.tmx.core.ObjectLayer.DrawOrderType;
 import com.jme3.tmx.core.ObjectNode;
 import com.jme3.tmx.core.Tile;
 import com.jme3.tmx.core.TileLayer;
@@ -37,8 +36,6 @@ public class OrthogonalRender extends MapRender {
 		int width = layer.getWidth();
 		int height = layer.getHeight();
 		
-		float h = map.getHeight() * aspect;
-		
 		BatchNode bathNode = new BatchNode(layer.getName());
 		for(int y=0; y<height; y++) {
 			for(int x=0; x<width; x++) {
@@ -50,7 +47,7 @@ public class OrthogonalRender extends MapRender {
 				Geometry geom = tile.getGeometry().clone();
 				geom.scale(scale);
 				geom.scale(1f, aspect, 1f);
-				geom.setLocalTranslation(x, h-(y+1)*aspect, 0);
+				geom.setLocalTranslation(tileLoc2ScreenLoc(x, y));
 				bathNode.attachChild(geom);
 			}
 		}
@@ -62,7 +59,6 @@ public class OrthogonalRender extends MapRender {
 	@Override
 	public Spatial createObjectLayer(ObjectLayer layer) {
 		float h = map.getHeight() * aspect;
-		DrawOrderType drawOrder = layer.getDraworder();
 		
 		List<ObjectNode> objects = layer.getObjects();
 		int len = objects.size();
@@ -71,17 +67,21 @@ public class OrthogonalRender extends MapRender {
 		for(int i=0; i<len; i++) {
 			ObjectNode obj = objects.get(i);
 			
-			if (obj.getGeometry() == null ) {
-				logger.info("obj has no geometry:" + obj.toString());
+			if (!obj.isVisible()) {
+				//continue;
+			}
+			
+			if (obj.getVisual() == null ) {
+				logger.info("obj has no visual part:" + obj.toString());
 				continue;
 			}
 			
-			Geometry geom = obj.getGeometry().clone();
-			geom.scale(scale);
+			Spatial visual = obj.getVisual().clone();
+			visual.scale(scale);
 			float x = (float) (scale * obj.getX());
-			float y = (float) (scale * (obj.getY() + obj.getHeight()));
-			geom.setLocalTranslation(x, h-(y)*aspect, 0);
-			node.attachChild(geom);
+			float y = (float) (scale * obj.getY());
+			visual.setLocalTranslation(x, h-y, 0);
+			node.attachChild(visual);
 			
 		}
 		
@@ -95,7 +95,7 @@ public class OrthogonalRender extends MapRender {
 	}
 	
 	@Override
-	public Vector3f tileLoc2ScreenLoc(int x, int y) {
+	public Vector3f tileLoc2ScreenLoc(float x, float y) {
 		return new Vector3f(x, (height-y-1)*aspect, 0);
 	}
 

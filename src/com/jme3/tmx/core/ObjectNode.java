@@ -5,10 +5,7 @@ import java.util.logging.Logger;
 
 import com.jme3.material.Material;
 import com.jme3.math.Vector2f;
-import com.jme3.renderer.queue.RenderQueue.Bucket;
-import com.jme3.scene.Geometry;
-import com.jme3.scene.Mesh;
-import com.jme3.scene.VertexBuffer.Type;
+import com.jme3.scene.Spatial;
 import com.jme3.texture.Texture;
 
 /**
@@ -130,7 +127,7 @@ public class ObjectNode extends Base {
 
 	private Texture texture;
 	private Material material;
-	private Geometry geometry;
+	private Spatial spatial;
 
 	/**
 	 * Default constructor
@@ -255,50 +252,6 @@ public class ObjectNode extends Base {
 
 	public void setPoints(List<Vector2f> points) {
 		this.points = points;
-
-		// it a polygon or polyline, let's calculate it's size;
-		float minX = 0;
-		float minY = 0;
-		int len = points.size();
-		for (int i = 0; i < len; i++) {
-			Vector2f p = points.get(i);
-			if (p.x > width)
-				width = p.x;
-			if (p.y > height)
-				height = p.y;
-			if (p.x < minX)
-				minX = p.x;
-			if (p.y < minY)
-				minY = p.y;
-		}
-
-		/*
-		 * When draw an image for polygon, the image size depends on width and
-		 * height of this ObjectNode. the point's xy can not be smaller than 0.
-		 * That's why I need this offsets.
-		 * 
-		 * Maybe I should use com.jme3.tmx.util.ObjectMesh instead of
-		 * com.jme3.tmx.util.ObjectTexture?
-		 */
-		// move x
-		if (minX < 0) {
-			x = minX;
-			width -= minX;
-			for (int i = 0; i < len; i++) {
-				Vector2f p = points.get(i);
-				p.x -= minX;
-			}
-		}
-
-		// move y
-		if (minY < 0) {
-			y = minY;
-			height -= minY;
-			for (int i = 0; i < len; i++) {
-				Vector2f p = points.get(i);
-				p.y -= minY;
-			}
-		}
 	}
 
 	public String getImageSource() {
@@ -330,38 +283,20 @@ public class ObjectNode extends Base {
 		this.material = material;
 	}
 
-	public Geometry getGeometry() {
-		if (geometry == null && material != null) {
-			float[] vertices = new float[] { 0, 0, 0, (float) width, 0, 0,
-					(float) width, (float) height, 0, 0, (float) height, 0 };
-
-			float[] normals = new float[] { 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1 };
-
-			float[] texCoord = new float[] { 0, 0, 1, 0, 1, 1, 0, 1, };
-
-			short[] indexes = new short[] { 0, 1, 2, 0, 2, 3 };
-
-			Mesh mesh = new Mesh();
-			mesh.setBuffer(Type.Position, 3, vertices);
-			mesh.setBuffer(Type.TexCoord, 2, texCoord);
-			mesh.setBuffer(Type.Normal, 3, normals);
-			mesh.setBuffer(Type.Index, 3, indexes);
-			mesh.updateBound();
-			mesh.setStatic();
-
-			geometry = new Geometry("tile#" + id, mesh);
-			geometry.setMaterial(material);
-			geometry.setQueueBucket(Bucket.Translucent);
-
-		}
-		return geometry;
+	public Spatial getVisual() {
+		return spatial;
 	}
 
+	public void setVisual(Spatial spatial) {
+		this.spatial = spatial;
+	}
+	
 	@Override
 	public String toString() {
 		return "ObjectNode [id=" + id + ", name=" + name + ", type=" + type
 				+ ", objectType=" + objectType + ", x=" + x + ", y=" + y
 				+ ", width=" + width + ", height=" + height + "]";
 	}
+
 
 }

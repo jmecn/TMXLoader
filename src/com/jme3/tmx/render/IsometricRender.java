@@ -15,7 +15,6 @@ import com.jme3.tmx.core.ObjectNode;
 import com.jme3.tmx.core.Tile;
 import com.jme3.tmx.core.TileLayer;
 import com.jme3.tmx.core.TiledMap;
-import com.jme3.tmx.core.ObjectLayer.DrawOrderType;
 
 public class IsometricRender extends MapRender {
 
@@ -53,7 +52,7 @@ public class IsometricRender extends MapRender {
 	}
 
 	@Override
-	public Vector3f tileLoc2ScreenLoc(int x, int y) {
+	public Vector3f tileLoc2ScreenLoc(float x, float y) {
 		return new Vector3f((height + x - y) * 0.5f, (width + height - x - y - 2) * 0.5f * aspect, 0);
 	}
 
@@ -69,7 +68,6 @@ public class IsometricRender extends MapRender {
 	@Override
 	public Spatial createObjectLayer(ObjectLayer layer) {
 		float h = map.getHeight() * aspect;
-		DrawOrderType drawOrder = layer.getDraworder();
 		
 		List<ObjectNode> objects = layer.getObjects();
 		int len = objects.size();
@@ -78,17 +76,17 @@ public class IsometricRender extends MapRender {
 		for(int i=0; i<len; i++) {
 			ObjectNode obj = objects.get(i);
 			
-			if (obj.getGeometry() == null ) {
-				logger.info("obj has no geometry:" + obj.toString());
+			if (obj.getVisual() == null ) {
+				logger.info("obj has no visual part:" + obj.toString());
 				continue;
 			}
 			
-			Geometry geom = obj.getGeometry().clone();
-			geom.scale(scale);
+			Spatial visual = obj.getVisual().clone();
+			visual.scale(scale);
 			float x = (float) (scale * obj.getX());
 			float y = (float) (scale * (obj.getY() + obj.getHeight()));
-			geom.setLocalTranslation(x, h-(y)*aspect, 0);
-			node.attachChild(geom);
+			visual.setLocalTranslation(x, h-(y)*aspect, 0);
+			node.attachChild(visual);
 			
 		}
 		

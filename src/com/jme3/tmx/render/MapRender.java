@@ -42,7 +42,7 @@ public abstract class MapRender {
 	 * @param y
 	 * @return
 	 */
-	public abstract Vector3f tileLoc2ScreenLoc(int x, int y);
+	public abstract Vector3f tileLoc2ScreenLoc(float x, float y);
 	
 	public abstract Vector2f screenLoc2TileLoc(Vector3f location);
 }
