@@ -9,7 +9,9 @@ import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.ViewPort;
 import com.jme3.scene.Node;
+import com.jme3.tmx.core.ImageLayer;
 import com.jme3.tmx.core.Layer;
+import com.jme3.tmx.core.ObjectLayer;
 import com.jme3.tmx.core.TileLayer;
 import com.jme3.tmx.core.TiledMap;
 import com.jme3.tmx.render.HexagonalRender;
@@ -115,6 +117,14 @@ public class TiledMapAppState extends BaseAppState {
 			
 			if (layer instanceof TileLayer) {
 				rootNode.attachChild(mapRender.createTileLayer((TileLayer) layer));
+			}
+			
+			if (layer instanceof ObjectLayer) {
+				rootNode.attachChild(mapRender.createObjectLayer((ObjectLayer) layer));
+			}
+			
+			if (layer instanceof ImageLayer) {
+				rootNode.attachChild(mapRender.createImageLayer((ImageLayer) layer));
 			}
 		}
 	}

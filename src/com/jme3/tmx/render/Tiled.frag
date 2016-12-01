@@ -1,7 +1,7 @@
 #import "Common/ShaderLib/GLSLCompat.glsllib"
 
-#if defined(DISCARD_ALPHA)
-    uniform float m_AlphaDiscardThreshold;
+#ifdef TRANS_COLOR
+    uniform vec4 m_TransColor;
 #endif
 
 uniform vec4 m_Color;
@@ -16,15 +16,19 @@ void main(){
         color *= texture2D(m_ColorMap, texCoord);     
     #endif
 
+    #ifdef TRANS_COLOR
+        if(color.rgb == m_TransColor.rgb) {
+            color.a = 0.;
+        }
+    #endif
+    
     #ifdef HAS_COLOR
         color *= m_Color;
     #endif
     
-    #if defined(DISCARD_ALPHA)
-        if(color.a < m_AlphaDiscardThreshold){
-           discard;
-        }
-    #endif
+    if(color.a < 0.01){
+       discard;
+    }
     
     gl_FragColor = color;
 }

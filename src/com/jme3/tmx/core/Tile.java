@@ -149,31 +149,6 @@ public class Tile extends Base {
 		this.height = height;
 	}
 
-	/**
-	 * Calculate TexCoord of this tile in a TextureAtlas.
-	 * @param imageWidth
-	 * @param imageHeight
-	 * @return
-	 */
-	private float[] getTexCoord() {
-		Image image = texture.getImage();
-		float imageWidth = image.getWidth();
-		float imageHeight = image.getHeight();
-		
-		float u0 = (float)(x) / imageWidth;
-		float v0 = (float)(imageHeight - y - height) / imageHeight;
-		float u1 = (float)(x + width) / imageWidth;
-		float v1 = (float)(imageHeight - y) / imageHeight;
-		
-		float[] texCoord = new float[] {
-				u0, v0,
-				u1, v0,
-				u1, v1,
-				u0, v1 };
-		
-		return texCoord;
-	}
-	
 	public String getImgSource() {
 		return imgSource;
 	}
@@ -200,6 +175,23 @@ public class Tile extends Base {
 
 	public Geometry getGeometry() {
 		if (geometry == null && material != null) {
+			
+			// Calculate TexCoord of this tile in a TextureAtlas.
+			Image image = texture.getImage();
+			float imageWidth = image.getWidth();
+			float imageHeight = image.getHeight();
+			
+			float u0 = (float)(x) / imageWidth;
+			float v0 = (float)(imageHeight - y - height) / imageHeight;
+			float u1 = (float)(x + width) / imageWidth;
+			float v1 = (float)(imageHeight - y) / imageHeight;
+			
+			float[] texCoord = new float[] {
+					u0, v0,
+					u1, v0,
+					u1, v1,
+					u0, v1 };
+			
 			float[] vertices = new float[] {
 					0, 0, 0,
 					width, 0, 0,
@@ -218,7 +210,7 @@ public class Tile extends Base {
 			
 			Mesh mesh = new Mesh();
 			mesh.setBuffer(Type.Position, 3, vertices);
-			mesh.setBuffer(Type.TexCoord, 2, getTexCoord());
+			mesh.setBuffer(Type.TexCoord, 2, texCoord);
 			mesh.setBuffer(Type.Normal, 3, normals);
 			mesh.setBuffer(Type.Index, 3, indexes);
 			mesh.updateBound();
@@ -230,10 +222,6 @@ public class Tile extends Base {
 			
 		}
 		return geometry;
-	}
-
-	public void setGeometry(Geometry geometry) {
-		this.geometry = geometry;
 	}
 
 	public boolean isFlippedHorizontally() {

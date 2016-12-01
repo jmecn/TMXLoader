@@ -1,12 +1,15 @@
 package com.jme3.tmx.core;
 
 import java.util.List;
+import java.util.logging.Logger;
 
 import com.jme3.material.Material;
 import com.jme3.math.Vector2f;
+import com.jme3.renderer.queue.RenderQueue.Bucket;
+import com.jme3.scene.Geometry;
+import com.jme3.scene.Mesh;
+import com.jme3.scene.VertexBuffer.Type;
 import com.jme3.texture.Texture;
-import com.jme3.tmx.math2d.Rectangle;
-import com.jme3.tmx.math2d.Shape;
 
 /**
  * An object occupying an {@link com.jme3.tmx.core.ObjectLayer}.
@@ -32,7 +35,9 @@ import com.jme3.tmx.math2d.Shape;
  */
 public class ObjectNode extends Base {
 
-	public enum ObjectGroupType {
+	static Logger logger = Logger.getLogger(ObjectNode.class.getName());
+
+	public enum ObjectType {
 		/**
 		 * No need to explain.
 		 */
@@ -83,8 +88,7 @@ public class ObjectNode extends Base {
 	 * The type of the object. An arbitrary string.
 	 */
 	private String type;
-	private ObjectGroupType objectGroupType;
-	private Shape shape = new Rectangle();
+	private ObjectType objectType = ObjectType.Rectangle;
 
 	/**
 	 * The (x, y) coordinate of the object in pixels.
@@ -108,9 +112,12 @@ public class ObjectNode extends Base {
 	private boolean visible;
 
 	/**
-	 * An reference to a tile (optional). 
+	 * An reference to a tile (optional).
 	 * 
-	 * When the object has a gid set, then it is represented by the image of the tile with that global ID. The image alignment currently depends on the map orientation. In orthogonal orientation it's aligned to the bottom-left while in isometric it's aligned to the bottom-center.
+	 * When the object has a gid set, then it is represented by the image of the
+	 * tile with that global ID. The image alignment currently depends on the
+	 * map orientation. In orthogonal orientation it's aligned to the
+	 * bottom-left while in isometric it's aligned to the bottom-center.
 	 */
 	private int gid;
 	private Tile tile;// when ObjectGroupType == Tile
@@ -120,9 +127,11 @@ public class ObjectNode extends Base {
 
 	// ObjectGroupType == Image
 	private String imageSource = "";
+	
 	private Texture texture;
 	private Material material;
-
+	private Geometry geometry;
+	
 	/**
 	 * Default constructor
 	 */
@@ -168,20 +177,12 @@ public class ObjectNode extends Base {
 		this.type = type;
 	}
 
-	public ObjectGroupType getObjectGroupType() {
-		return objectGroupType;
+	public ObjectType getObjectType() {
+		return objectType;
 	}
 
-	public void setObjectGroupType(ObjectGroupType objectGroupType) {
-		this.objectGroupType = objectGroupType;
-	}
-
-	public Shape getShape() {
-		return shape;
-	}
-
-	public void setShape(Shape shape) {
-		this.shape = shape;
+	public void setObjectType(ObjectType objectType) {
+		this.objectType = objectType;
 	}
 
 	public double getX() {
@@ -254,6 +255,14 @@ public class ObjectNode extends Base {
 
 	public void setPoints(List<Vector2f> points) {
 		this.points = points;
+		
+		// it a polygon or polyline, let's calculate it's size;
+		int len = points.size();
+		for(int i=0; i<len; i++) {
+			Vector2f p = points.get(i);
+			if (p.x > width) width = p.x;
+			if (p.y > height) height = p.y;
+		}
 	}
 
 	public String getImageSource() {
@@ -264,6 +273,11 @@ public class ObjectNode extends Base {
 		this.imageSource = imageSource;
 	}
 
+	/**
+	 * Get texture of this object.
+	 * 
+	 * @return
+	 */
 	public Texture getTexture() {
 		return texture;
 	}
@@ -280,4 +294,52 @@ public class ObjectNode extends Base {
 		this.material = material;
 	}
 	
+	public Geometry getGeometry() {
+		if (geometry == null && material != null) {
+			float[] vertices = new float[] {
+					0, 0, 0,
+					(float) width, 0, 0,
+					(float) width, (float) height, 0,
+					0, (float) height, 0 };
+			
+			float[] normals = new float[] {
+					0, 0, 1,
+					0, 0, 1,
+					0, 0, 1,
+					0, 0, 1 };
+			
+			float[] texCoord = new float[] {
+				0, 0,
+				1, 0,
+				1, 1,
+				0, 1,
+			};
+			
+			short[] indexes = new short[] {
+					0, 1, 2,
+					0, 2, 3 };
+			
+			Mesh mesh = new Mesh();
+			mesh.setBuffer(Type.Position, 3, vertices);
+			mesh.setBuffer(Type.TexCoord, 2, texCoord);
+			mesh.setBuffer(Type.Normal, 3, normals);
+			mesh.setBuffer(Type.Index, 3, indexes);
+			mesh.updateBound();
+			mesh.setStatic();
+			
+			geometry = new Geometry("tile#"+id, mesh);
+			geometry.setMaterial(material);
+			geometry.setQueueBucket(Bucket.Translucent);
+			
+		}
+		return geometry;
+	}
+
+	@Override
+	public String toString() {
+		return "ObjectNode [id=" + id + ", name=" + name + ", type=" + type
+				+ ", objectType=" + objectType + ", x=" + x + ", y=" + y
+				+ ", width=" + width + ", height=" + height + "]";
+	}
+
 }

@@ -1,15 +1,21 @@
 package com.jme3.tmx.render;
 
+import java.util.List;
 import java.util.logging.Logger;
 
 import com.jme3.math.Vector2f;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.BatchNode;
 import com.jme3.scene.Geometry;
+import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
+import com.jme3.tmx.core.ImageLayer;
+import com.jme3.tmx.core.ObjectLayer;
+import com.jme3.tmx.core.ObjectNode;
 import com.jme3.tmx.core.Tile;
 import com.jme3.tmx.core.TileLayer;
 import com.jme3.tmx.core.TiledMap;
+import com.jme3.tmx.core.ObjectLayer.DrawOrderType;
 
 public class IsometricRender extends MapRender {
 
@@ -58,6 +64,41 @@ public class IsometricRender extends MapRender {
 	    float tileX = location.x;
 
 	    return new Vector2f((tileY + tileX), (tileY - tileX));
+	}
+
+	@Override
+	public Spatial createObjectLayer(ObjectLayer layer) {
+		float h = map.getHeight() * aspect;
+		DrawOrderType drawOrder = layer.getDraworder();
+		
+		List<ObjectNode> objects = layer.getObjects();
+		int len = objects.size();
+		
+		Node node = new Node("ObjectGroup#" + layer.getName());
+		for(int i=0; i<len; i++) {
+			ObjectNode obj = objects.get(i);
+			
+			if (obj.getGeometry() == null ) {
+				logger.info("obj has no geometry:" + obj.toString());
+				continue;
+			}
+			
+			Geometry geom = obj.getGeometry().clone();
+			geom.scale(scale);
+			float x = (float) (scale * obj.getX());
+			float y = (float) (scale * (obj.getY() + obj.getHeight()));
+			geom.setLocalTranslation(x, h-(y)*aspect, 0);
+			node.attachChild(geom);
+			
+		}
+		
+		return node;
+	}
+
+	@Override
+	public Spatial createImageLayer(ImageLayer layer) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

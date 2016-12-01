@@ -1,21 +1,14 @@
-MaterialDef TransColor {
+MaterialDef Tiled {
 
     MaterialParameters {
         Texture2D ColorMap
         Color Color (Color)
-
-        // For instancing
-        Boolean UseInstancing
-
-        // Alpha threshold for fragment discarding
-        Float AlphaDiscardThreshold (AlphaTestFallOff)
-        
         Color TransColor
     }
-
+    
     Technique {
-        VertexShader GLSL150:   Shader/TransColor.vert
-        FragmentShader GLSL150: Shader/TransColor.frag
+        VertexShader GLSL150:   com/jme3/tmx/render/Tiled.vert
+        FragmentShader GLSL150: com/jme3/tmx/render/Tiled.frag
 
         WorldParameters {
             WorldViewProjectionMatrix
@@ -23,18 +16,20 @@ MaterialDef TransColor {
             ViewMatrix
         }
 
+        RenderState {
+            Blend Alpha
+        }
+        
         Defines {
-            INSTANCING : UseInstancing
             HAS_COLORMAP : ColorMap
             HAS_COLOR : Color
-            DISCARD_ALPHA : AlphaDiscardThreshold
             TRANS_COLOR: TransColor
         }
     }
 
     Technique {
-        VertexShader GLSL100:   Shader/TransColor.vert
-        FragmentShader GLSL100: Shader/TransColor.frag
+        VertexShader GLSL100:   com/jme3/tmx/render/Tiled.vert
+        FragmentShader GLSL100: com/jme3/tmx/render/Tiled.frag
 
         WorldParameters {
             WorldViewProjectionMatrix
@@ -42,11 +37,13 @@ MaterialDef TransColor {
             ViewMatrix
         }
 
+        RenderState {
+            Blend Alpha
+        }
+        
         Defines {
-            INSTANCING : UseInstancing
             HAS_COLORMAP : ColorMap
             HAS_COLOR : Color
-            DISCARD_ALPHA : AlphaDiscardThreshold
             TRANS_COLOR: TransColor
         }
     }

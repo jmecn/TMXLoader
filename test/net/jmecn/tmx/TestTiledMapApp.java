@@ -28,7 +28,6 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import com.jme3.app.SimpleApplication;
-import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector3f;
 import com.jme3.system.AppSettings;
 import com.jme3.system.awt.AwtPanel;
@@ -55,8 +54,7 @@ public class TestTiledMapApp extends SimpleApplication {
 			"Models/Examples/Orthogonal/07.tmx",
 			"Models/Examples/Orthogonal/orthogonal-outside.tmx",
 			"Models/Examples/Orthogonal/perspective_walls.tmx",
-			"Models/Examples/csvmap.tmx",
-			"Models/Examples/sewers.tmx",
+			"Models/Examples/csvmap.tmx", "Models/Examples/sewers.tmx",
 			"Models/Examples/Desert/desert.tmx",
 
 			"Models/Examples/Isometric/01.tmx",
@@ -79,13 +77,13 @@ public class TestTiledMapApp extends SimpleApplication {
 
 	final static private String[] names = { "orthogonal_01", "orthogonal_02",
 			"orthogonal_03", "orthogonal_04", "orthogonal_05", "orthogonal_06",
-			"orthogonal_07", "orthogonal_08", "orthogonal_09", "orthogonal_10",
-			"orthogonal_11", "orthogonal_12",
+			"orthogonal_07", "orthogonal_outside", "orthogonal_perspective_walls", "orthogonal_csvmap",
+			"orthogonal_sewers", "orthogonal_desert",
 
-			"isometric_01", "isometric_02", "isometric_03", "isometric_04",
+			"isometric_01", "isometric_02", "isometric_03", "isometric_grass_and_water",
 
 			"hexagonal_01", "hexagonal_02", "hexagonal_03", "hexagonal_04",
-			"hexagonal_05", "hexagonal_06",
+			"hexagonal_05", "hexagonal_mini",
 
 			"staggered_01", "staggered_02", "staggered_03", "staggered_04",
 			"staggered_05", };
@@ -210,8 +208,7 @@ public class TestTiledMapApp extends SimpleApplication {
 				/*
 				 * center
 				 */
-				Dimension screenSize = Toolkit.getDefaultToolkit()
-						.getScreenSize();
+				Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 				Dimension frameSize = frame.getSize();
 				if (frameSize.height > screenSize.height) {
 					frameSize.height = screenSize.height;
@@ -231,26 +228,10 @@ public class TestTiledMapApp extends SimpleApplication {
 		});
 	}
 
-	/**
-	 * display how many columns in a screen
-	 */
-	private int viewColumn = 24;
-
-	private TiledMapAppState tiledMap;
-	private RPGCamAppState rpgCam;
-
 	@Override
 	public void simpleInitApp() {
 		assetManager.registerLoader(TmxLoader.class, "tmx", "tsx");
-
-		viewPort.setBackgroundColor(ColorRGBA.DarkGray);
-
-		tiledMap = new TiledMapAppState();
-		stateManager.attach(tiledMap);
-
-		rpgCam = new RPGCamAppState();
-		rpgCam.setParallelCamera(viewColumn);
-		stateManager.attach(rpgCam);
+		stateManager.attachAll(new TiledMapAppState(), new RPGCamAppState(24));
 
 		/*
 		 * Wait until both AWT panels are ready.
@@ -277,6 +258,8 @@ public class TestTiledMapApp extends SimpleApplication {
 				}
 
 				if (map != null) {
+					TiledMapAppState tiledMap = stateManager
+							.getState(TiledMapAppState.class);
 					tiledMap.setMap(map);
 					tiledMap.render();
 

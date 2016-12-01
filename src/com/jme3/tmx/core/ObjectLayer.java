@@ -78,9 +78,10 @@ public class ObjectLayer extends Layer {
 		return objects;
 	}
 
-	public void add(ObjectNode o) {
-		objects.add(o);
-		o.setObjectGroup(this);
+	public void add(ObjectNode obj) {
+		obj.setId(objects.size());
+		obj.setObjectGroup(this);
+		objects.add(obj);
 	}
 
 	public void remove(ObjectNode o) {

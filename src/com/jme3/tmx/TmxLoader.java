@@ -30,9 +30,9 @@ import com.jme3.asset.AssetLoader;
 import com.jme3.asset.AssetManager;
 import com.jme3.asset.TextureKey;
 import com.jme3.material.Material;
-import com.jme3.material.RenderState.BlendMode;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector2f;
+import com.jme3.texture.Texture;
 import com.jme3.texture.Texture.MagFilter;
 import com.jme3.texture.Texture.WrapMode;
 import com.jme3.texture.Texture2D;
@@ -41,7 +41,7 @@ import com.jme3.tmx.core.ImageLayer;
 import com.jme3.tmx.core.Layer;
 import com.jme3.tmx.core.ObjectLayer;
 import com.jme3.tmx.core.ObjectNode;
-import com.jme3.tmx.core.ObjectNode.ObjectGroupType;
+import com.jme3.tmx.core.ObjectNode.ObjectType;
 import com.jme3.tmx.core.Terrain;
 import com.jme3.tmx.core.Tile;
 import com.jme3.tmx.core.TileLayer;
@@ -51,6 +51,7 @@ import com.jme3.tmx.core.TiledMap.RenderOrder;
 import com.jme3.tmx.core.Tileset;
 import com.jme3.tmx.util.Base64;
 import com.jme3.tmx.util.ColorUtil;
+import com.jme3.tmx.util.ObjectTexture;
 import com.sun.istack.internal.logging.Logger;
 
 public class TmxLoader implements AssetLoader {
@@ -798,7 +799,30 @@ public class TmxLoader implements AssetLoader {
 		for (int i = 0; i < children.getLength(); i++) {
 			Node child = children.item(i);
 			if ("object".equalsIgnoreCase(child.getNodeName())) {
-				layer.add(readObjectNode(child));
+				ObjectNode obj = readObjectNode(child);
+				
+				/**
+				 * Create texture for it
+				 */
+				if (obj.getObjectType() != ObjectType.Image &&
+						obj.getObjectType() != ObjectType.Tile) {
+					Texture texture = new ObjectTexture(obj);
+					obj.setTexture(texture);
+				}
+				
+				if (obj.getTexture() != null) {
+					Material mat = new Material(assetManager, "com/jme3/tmx/render/Tiled.j3md");
+					mat.setTexture("ColorMap", obj.getTexture());
+					if (color != null) {
+						mat.setColor("Color", layer.getColor());
+					} else {
+						mat.setColor("Color", ColorRGBA.LightGray);
+					}
+					
+					obj.setMaterial(mat);
+				}
+				
+				layer.add(obj);
 			}
 		}
 
@@ -822,7 +846,7 @@ public class TmxLoader implements AssetLoader {
 			obj.setType(type);
 		}
 		if (gid != null) {
-			obj.setObjectGroupType(ObjectGroupType.Tile);
+			obj.setObjectType(ObjectType.Tile);
 
 			int id = (int) Long.parseLong(gid);
 			Tile tile = getTileForTileGID(id);
@@ -834,7 +858,7 @@ public class TmxLoader implements AssetLoader {
 			Node child = children.item(i);
 			String nodeName = child.getNodeName();
 			if ("image".equalsIgnoreCase(nodeName)) {
-				obj.setObjectGroupType(ObjectGroupType.Image);
+				obj.setObjectType(ObjectType.Image);
 
 				AnImage image = readImage(child);
 				obj.setImageSource(image.source);
@@ -843,23 +867,25 @@ public class TmxLoader implements AssetLoader {
 
 				break;
 			} else if ("ellipse".equalsIgnoreCase(nodeName)) {
-				obj.setObjectGroupType(ObjectGroupType.Ellipse);
-
+				obj.setObjectType(ObjectType.Ellipse);
+				break;
 			} else if ("polygon".equalsIgnoreCase(nodeName)) {
-				obj.setObjectGroupType(ObjectGroupType.Polygon);
-
+				obj.setObjectType(ObjectType.Polygon);
 				List<Vector2f> points = readPoints(child, x, y);
+				points.add(points.get(0));// close path
 				obj.setPoints(points);
+				break;
 			} else if ("polyline".equalsIgnoreCase(nodeName)) {
-				obj.setObjectGroupType(ObjectGroupType.Polyline);
-
+				obj.setObjectType(ObjectType.Polyline);
 				List<Vector2f> points = readPoints(child, x, y);
 				obj.setPoints(points);
+				break;
 			}
 		}
 
 		Properties props = readProperties(children);
 		obj.setProperties(props);
+		
 		return obj;
 	}
 
@@ -1017,6 +1043,7 @@ public class TmxLoader implements AssetLoader {
 			tile = ts.getValue().getTile(gid - ts.getKey());
 
 			if (tile != null) {
+				// TODO what should I do to this mass?
 				tile.setFlippedHorizontally(flipped_horizontally);
 				tile.setFlippedVertically(flipped_vertically);
 				tile.setFlippedAntiDiagonally(flipped_diagonally);
@@ -1182,24 +1209,21 @@ public class TmxLoader implements AssetLoader {
 		String trans;
 
 		/*
-		 * // useless for jme3 String format; int width; int height;
+		 * // useless for jme3
+		 * String format;
+		 * int width;
+		 * int height;
 		 */
 
 		Texture2D texture = null;
 
 		private Material createMaterial() {
-			Material mat = new Material(assetManager, "Shader/TransColor.j3md");
+			Material mat = new Material(assetManager, "com/jme3/tmx/render/Tiled.j3md");
 			mat.setTexture("ColorMap", texture);
-			mat.setFloat("AlphaDiscardThreshold", 0.01f);
-
 			if (trans != null) {
 				ColorRGBA transparentColor = ColorUtil.toColorRGBA(trans);
 				mat.setColor("TransColor", transparentColor);
 			}
-
-			// debug
-			// mat.getAdditionalRenderState().setWireframe(true);
-			mat.getAdditionalRenderState().setBlendMode(BlendMode.Alpha);
 
 			return mat;
 		}

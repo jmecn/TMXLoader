@@ -13,10 +13,15 @@ public class ColorUtil {
 		}
 
 		int argb = (int) Long.parseLong(str.toUpperCase(), 16);
-		int alpha = (argb >> 24) & 0xFF;
+		int alpha = 0xFF;
+		if (str.length() >= 8) {// use AARRGGBB
+			alpha = (argb >> 24) & 0xFF;
+		}
 		int red = (argb >> 16) & 0xFF;
 		int green = (argb >> 8) & 0xFF;
 		int blue = (argb >> 0) & 0xFF;
+		
+		
 		ColorRGBA color = new ColorRGBA(red * scalor, green * scalor,
 				blue * scalor, alpha * scalor);
 
