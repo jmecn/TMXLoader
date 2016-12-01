@@ -1,4 +1,4 @@
-package net.jmecn.tmx;
+package com.jme3.tmx.debug;
 
 import java.util.logging.Logger;
 

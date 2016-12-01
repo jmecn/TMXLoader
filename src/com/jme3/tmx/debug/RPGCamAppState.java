@@ -1,4 +1,4 @@
-package net.jmecn.tmx;
+package com.jme3.tmx.debug;
 
 import com.jme3.app.Application;
 import com.jme3.app.FlyCamAppState;

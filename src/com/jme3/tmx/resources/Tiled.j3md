@@ -7,8 +7,8 @@ MaterialDef Tiled {
     }
     
     Technique {
-        VertexShader GLSL150:   com/jme3/tmx/render/Tiled.vert
-        FragmentShader GLSL150: com/jme3/tmx/render/Tiled.frag
+        VertexShader GLSL150:   com/jme3/tmx/resources/Tiled.vert
+        FragmentShader GLSL150: com/jme3/tmx/resources/Tiled.frag
 
         WorldParameters {
             WorldViewProjectionMatrix

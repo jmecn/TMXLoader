@@ -789,7 +789,7 @@ public class TmxLoader implements AssetLoader {
 		}
 		
 //		// TODO This material applies to the shapes in this ObjectGroup using LineMesh
-//		Material mat = new Material(assetManager, "com/jme3/tmx/render/Tiled.j3md");
+//		Material mat = new Material(assetManager, "com/jme3/tmx/resources/Tiled.j3md");
 //		if (color != null) {
 //			mat.setColor("Color", layer.getColor());
 //		} else {
@@ -819,7 +819,7 @@ public class TmxLoader implements AssetLoader {
 				}
 				
 				if (obj.getTexture() != null) {
-					Material mat = new Material(assetManager, "com/jme3/tmx/render/Tiled.j3md");
+					Material mat = new Material(assetManager, "com/jme3/tmx/resources/Tiled.j3md");
 					mat.setTexture("ColorMap", obj.getTexture());
 					if (color != null) {
 						mat.setColor("Color", layer.getColor());
@@ -1223,7 +1223,7 @@ public class TmxLoader implements AssetLoader {
 		Texture2D texture = null;
 
 		private Material createMaterial() {
-			Material mat = new Material(assetManager, "com/jme3/tmx/render/Tiled.j3md");
+			Material mat = new Material(assetManager, "com/jme3/tmx/resources/Tiled.j3md");
 			mat.setTexture("ColorMap", texture);
 			if (trans != null) {
 				ColorRGBA transparentColor = ColorUtil.toColorRGBA(trans);
