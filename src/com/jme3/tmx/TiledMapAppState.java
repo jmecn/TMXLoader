@@ -15,11 +15,11 @@ import com.jme3.tmx.core.Layer;
 import com.jme3.tmx.core.ObjectLayer;
 import com.jme3.tmx.core.TileLayer;
 import com.jme3.tmx.core.TiledMap;
-import com.jme3.tmx.render.HexagonalRender;
-import com.jme3.tmx.render.IsometricRender;
-import com.jme3.tmx.render.MapRender;
-import com.jme3.tmx.render.OrthogonalRender;
-import com.jme3.tmx.render.StaggeredRender;
+import com.jme3.tmx.render.HexagonalRenderer;
+import com.jme3.tmx.render.IsometricRenderer;
+import com.jme3.tmx.render.MapRenderer;
+import com.jme3.tmx.render.OrthogonalRenderer;
+import com.jme3.tmx.render.StaggeredRenderer;
 
 /**
  * TiledMapAppState will create a Spatial for tile.ore.Map. Only TileLayer will
@@ -36,7 +36,7 @@ public class TiledMapAppState extends BaseAppState {
 
 	private TiledMap map;
 	protected Vector3f centerOffset;
-	private MapRender mapRender;
+	private MapRenderer mapRender;
 
 	private ViewPort viewPort;
 
@@ -88,16 +88,16 @@ public class TiledMapAppState extends BaseAppState {
 		
 		switch (map.getOrientation()) {
 		case ORTHOGONAL:
-			mapRender = new OrthogonalRender(map);
+			mapRender = new OrthogonalRenderer(map);
 			break;
 		case ISOMETRIC:
-			mapRender = new IsometricRender(map);
+			mapRender = new IsometricRenderer(map);
 			break;
 		case HEXAGONAL:
-			mapRender = new HexagonalRender(map);
+			mapRender = new HexagonalRenderer(map);
 			break;
 		case STAGGERED:
-			mapRender = new StaggeredRender(map);
+			mapRender = new StaggeredRenderer(map);
 			break;
 		}
 
@@ -114,6 +114,9 @@ public class TiledMapAppState extends BaseAppState {
 
 		rootNode.detachAllChildren();
 		int len = map.getLayerCount();
+		
+		int layerCnt = 0;
+		
 		for (int i = 0; i < len; i++) {
 			Layer layer = map.getLayer(i);
 
@@ -137,11 +140,16 @@ public class TiledMapAppState extends BaseAppState {
 
 			if (visual != null) {
 				rootNode.attachChild(visual);
+				
 				// this is a little magic to make let top layer block off the
 				// bottom layer
-				float y = (float) (i+1) / len - 1f;
-				visual.setLocalTranslation(0, y, 0);
+				visual.setLocalTranslation(0, layerCnt++, 0);
 			}
+		}
+		
+		// make the whole map thinner
+		if (layerCnt > 0) {
+			rootNode.setLocalScale(1, 1f / layerCnt, 1);
 		}
 	}
 }

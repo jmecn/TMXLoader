@@ -785,7 +785,7 @@ public class TmxLoader implements AssetLoader {
 		if (color != null) {
 			borderColor = ColorUtil.toColorRGBA(color);
 		} else {
-			borderColor = ColorRGBA.DarkGray.clone();
+			borderColor = ColorRGBA.LightGray.clone();
 		}
 		layer.setColor(borderColor);
 
@@ -823,16 +823,21 @@ public class TmxLoader implements AssetLoader {
 	 * @throws Exception
 	 */
 	private ObjectNode readObjectNode(Node node) throws Exception {
+		final int id = getAttribute(node, "id", 0);
 		final String name = getAttributeValue(node, "name");
 		final String type = getAttributeValue(node, "type");
-		final String gid = getAttributeValue(node, "gid");
 		final double x = getDoubleAttribute(node, "x", 0);
 		final double y = getDoubleAttribute(node, "y", 0);
 		final double width = getDoubleAttribute(node, "width", 0);
 		final double height = getDoubleAttribute(node, "height", 0);
+		final int rotation = getAttribute(node, "rotation", 0);
+		final String gid = getAttributeValue(node, "gid");
+		final int visible = getAttribute(node, "visible", 1);
 
 		ObjectNode obj = new ObjectNode(x, y, width, height);
-		
+		obj.setId(id);
+		obj.setRotation(rotation);
+		obj.setVisible(visible == 1);
 		if (name != null) {
 			obj.setName(name);
 		}
@@ -849,8 +854,8 @@ public class TmxLoader implements AssetLoader {
 		if (gid != null) {
 			obj.setObjectType(ObjectType.Tile);
 
-			int id = (int) Long.parseLong(gid);
-			Tile tile = getTileForTileGID(id);
+			int gidValue = (int) Long.parseLong(gid);
+			Tile tile = getTileForTileGID(gidValue);
 			obj.setTile(tile);
 		}
 
@@ -872,11 +877,11 @@ public class TmxLoader implements AssetLoader {
 				break;
 			} else if ("polygon".equalsIgnoreCase(nodeName)) {
 				obj.setObjectType(ObjectType.Polygon);
-				obj.setPoints(readPoints(child, x, y));
+				obj.setPoints(readPoints(child));
 				break;
 			} else if ("polyline".equalsIgnoreCase(nodeName)) {
 				obj.setObjectType(ObjectType.Polyline);
-				obj.setPoints(readPoints(child, x, y));
+				obj.setPoints(readPoints(child));
 				break;
 			}
 		}
@@ -892,17 +897,14 @@ public class TmxLoader implements AssetLoader {
 	 * @param y
 	 * @return
 	 */
-	private List<Vector2f> readPoints(Node child, double x, double y) {
+	private List<Vector2f> readPoints(Node child) {
 		List<Vector2f> points = new ArrayList<Vector2f>();
 		final String pointsAttribute = getAttributeValue(child, "points");
 		StringTokenizer st = new StringTokenizer(pointsAttribute, ", ");
 		while (st.hasMoreElements()) {
-			double pointX = Double.parseDouble(st.nextToken());
-			double pointY = Double.parseDouble(st.nextToken());
-
 			Vector2f p = new Vector2f();
-			p.x = (float) (x + pointX);
-			p.y = (float) (y + pointY);
+			p.x = Float.parseFloat(st.nextToken());
+			p.y = Float.parseFloat(st.nextToken());
 
 			points.add(p);
 		}

@@ -1,10 +1,13 @@
 package com.jme3.tmx.render;
 
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.logging.Logger;
 
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
+import com.jme3.math.FastMath;
 import com.jme3.math.Vector2f;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.queue.RenderQueue.Bucket;
@@ -59,9 +62,9 @@ import com.jme3.tmx.util.ObjectMesh;
  * @author yanmaoyuan
  * 
  */
-public abstract class MapRender {
+public abstract class MapRenderer {
 
-	static Logger logger = Logger.getLogger(MapRender.class.getName());
+	static Logger logger = Logger.getLogger(MapRenderer.class.getName());
 
 	/**
 	 * This value used to generate ellipse mesh.
@@ -84,7 +87,7 @@ public abstract class MapRender {
 	 */
 	protected int[] tileZOrders;
 
-	public MapRender(TiledMap map) {
+	public MapRenderer(TiledMap map) {
 		this.map = map;
 		this.width = map.getWidth();
 		this.height = map.getHeight();
@@ -92,20 +95,14 @@ public abstract class MapRender {
 		this.tileHeight = map.getTileHeight();
 		
 		this.mapSize = new Point();
-		this.updateRenderParams();
+		this.mapSize.set(width * tileWidth, height * tileHeight);
 		
 		this.tileZOrders = new int[height * width];
 		
-		// TODO debug
-		logger.info("z orders:" + tileZOrders.length + " = " + width + "*" + height);
 		this.setupTileZOrder();
 	}
 
-	public void updateRenderParams() {
-		this.mapSize.set(width * tileWidth, height * tileHeight);
-	}
-	
-	public abstract void setupTileZOrder();
+	protected abstract void setupTileZOrder();
 
 	/**
 	 * return the z order of a tile
@@ -122,40 +119,8 @@ public abstract class MapRender {
 	}
 
 	public abstract Spatial render(TileLayer layer);
-
-	// OrthogonalRenderer, StaggeredRenderer, HexagonalRenderer
-	public Spatial render(ObjectLayer layer) {
-		List<ObjectNode> objects = layer.getObjects();
-		int len = objects.size();
-
-		Node node = new Node("ObjectGroup#" + layer.getName());
-		for (int i = 0; i < len; i++) {
-			ObjectNode obj = objects.get(i);
-
-			if (!obj.isVisible()) {
-				// continue;
-			}
-
-			if (obj.getVisual() == null) {
-				logger.info("obj has no visual part:" + obj.toString());
-				continue;
-			}
-
-			float x = (float) obj.getX();
-			float y = (float) obj.getY();
-
-			Spatial visual = obj.getVisual().clone();
-			visual.setLocalTranslation(x, 0, y);
-			node.attachChild(visual);
-		}
-
-		return node;
-	}
-
-	// OrthogonalRenderer, StaggeredRenderer, HexagonalRenderer
-	public Spatial render(ImageLayer layer) {
-		return layer.getVisual();
-	}
+	public abstract Spatial render(ObjectLayer layer);
+	public abstract Spatial render(ImageLayer layer);
 
 	/**
 	 * convert tile location to screen location
@@ -166,24 +131,21 @@ public abstract class MapRender {
 	 */
 	public abstract Vector3f tileLoc2ScreenLoc(float x, float y);
 
-	public abstract Vector2f screenLoc2TileLoc(Vector3f location);
-
 	/******************************
 	 * Coordinates System Convert *
 	 ******************************/
 	
-	public abstract Point pixelToScreenCoords(Point pos);
+	public abstract Vector2f pixelToScreenCoords(float x, float y);
 
-	public abstract Point pixelToTileCoords(Point pos);
+	public abstract Point pixelToTileCoords(float x, float y);
 
-	public abstract Point tileToPixelCoords(Point pos);
+	public abstract Vector2f tileToPixelCoords(float x, float y);
 
-	public abstract Point tileToScreenCoords(Point pos);
+	public abstract Vector2f tileToScreenCoords(float x, float y);
 
-	public abstract Point screenToPixelCoords(Point pos);
+	public abstract Vector2f screenToPixelCoords(float x, float y);
 
-	public abstract Point screenToTileCoords(Point pos);
-
+	public abstract Point screenToTileCoords(float x, float y);
 	
 	/**
 	 * update the visual part of tileset
@@ -300,6 +262,25 @@ public abstract class MapRender {
 			float u1 = (x + width) / imageWidth;
 			float v1 = (imageHeight - y) / imageHeight;
 
+			float tmp;
+			if (tile.isFlippedAntiDiagonally()) {
+				// TODO 
+				logger.info("flipped anti diagonally:" + tileset.getImageSource() + " " +  tile.getId());
+			}
+			if (tile.isFlippedHorizontally()) {
+				// TODO 
+				tmp = u0;
+				u0 = u1;
+				u1 = tmp;
+				logger.info("flipped horizontally:" + tileset.getImageSource() + " " +  tile.getId());
+			}
+			if (tile.isFlippedVertically()) {
+				// TODO 
+				tmp = v0;
+				v0 = v1;
+				v1 = tmp;
+				logger.info("flipped vertically:" + tileset.getImageSource() + " " +  tile.getId());
+			}
 			float[] texCoord = new float[] { u0, v0, u1, v0, u1, v1, u0, v1 };
 
 			/**
@@ -431,12 +412,34 @@ public abstract class MapRender {
 				break;
 			}
 			case Polyline: {
-				Geometry geom = new Geometry(obj.getName());
-				geom.setMesh(ObjectMesh.makePolyline(obj.getPoints(), false));
-				geom.setMaterial(mat);
-				geom.setQueueBucket(Bucket.Translucent);
-
-				obj.setVisual(geom);
+				// move the background a little
+				List<Vector2f> points = obj.getPoints();
+				Vector2f min = new Vector2f();
+				Vector2f max = new Vector2f();
+				int size = points.size();
+				for(int k=0; k<size; k++) {
+					Vector2f p = points.get(k);
+					if(p.x > max.x) max.x = p.x;
+					if(p.y > max.y) max.y = p.y;
+					if(p.x < min.x) min.x = p.x;
+					if(p.y < min.y) min.y = p.y;
+				}
+				
+				Geometry border = new Geometry("polyline", 
+						ObjectMesh.makePolyline(obj.getPoints(), false));
+				border.setMaterial(mat);
+				
+				Geometry back = new Geometry("back",
+						ObjectMesh.makeRectangle(max.x - min.x, max.y - min.y));
+				back.setMaterial(bgMat);
+				back.move(min.x, 0, min.y);
+				
+				Node visual = new Node(obj.getName());
+				visual.attachChild(back);
+				visual.attachChild(border);
+				visual.setQueueBucket(Bucket.Translucent);
+				
+				obj.setVisual(visual);
 				break;
 			}
 			case Image: {
@@ -454,6 +457,24 @@ public abstract class MapRender {
 				break;
 			}
 			}
+			
+			float deg = obj.getRotation();
+			if (deg != 0) {
+				float radian = FastMath.DEG_TO_RAD * deg;
+				Spatial visual = obj.getVisual();
+				// rotate the spatial clockwise
+				visual.rotate(0, -radian, 0);
+			}
+		}
+		
+		// sort draw order
+		switch (layer.getDraworder()) {
+		case TOPDOWN:
+			Collections.sort(objects, new CompareTopdown());
+			break;
+		case INDEX:
+			Collections.sort(objects, new CompareIndex());
+			break;
 		}
 	}
 
@@ -469,4 +490,34 @@ public abstract class MapRender {
 
 		layer.setVisual(geom);
 	}
+	
+	private final class CompareTopdown implements Comparator<ObjectNode> {
+		@Override
+		public int compare(ObjectNode o1, ObjectNode o2) {
+			double a = o1.getY();
+            double b = o2.getY();
+
+            if (a > b)
+                return 1;
+            else if (a == b)
+                return 0;
+            else
+                return -1;
+		}
+	}
+	
+    private final class CompareIndex implements Comparator<ObjectNode> {
+        @Override
+        public int compare(ObjectNode o1, ObjectNode o2) {
+            int a = o1.getId();
+            int b = o2.getId();
+
+            if (a > b)
+                return 1;
+            else if (a == b)
+                return 0;
+            else
+                return -1;
+        }
+    }
 }

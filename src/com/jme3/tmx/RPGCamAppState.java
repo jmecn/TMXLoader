@@ -113,6 +113,10 @@ public class RPGCamAppState extends BaseAppState implements AnalogListener,
 		unregisterInput();
 	}
 
+	public void useBestViewColumn() {
+		setViewColumn((float) width / tileWidth);
+	}
+	
 	public void setTileWidth(int tileWidth) {
 		this.tileWidth = tileWidth;
 
@@ -209,7 +213,7 @@ public class RPGCamAppState extends BaseAppState implements AnalogListener,
 	 * @param value
 	 * @param sideways
 	 */
-	protected void moveCamera(float value, boolean sideways) {
+	public void moveCamera(float value, boolean sideways) {
 		Vector3f vel = new Vector3f();
 		Vector3f pos = cam.getLocation().clone();
 
@@ -255,7 +259,7 @@ public class RPGCamAppState extends BaseAppState implements AnalogListener,
 	 * 
 	 * @param value
 	 */
-	protected void zoomCamera(float value) {
+	public void zoomCamera(float value) {
 		viewColumns += value;
 
 		// at less see 1 tile on screen

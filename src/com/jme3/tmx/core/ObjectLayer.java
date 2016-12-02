@@ -26,7 +26,7 @@ public class ObjectLayer extends Layer {
 	 * ("index") or sorted by their y-coordinate ("topdown"). Defaults to
 	 * "topdown".
 	 */
-	public enum DrawOrderType {
+	public enum DrawOrder {
 		INDEX, TOPDOWN;
 	}
 
@@ -46,7 +46,7 @@ public class ObjectLayer extends Layer {
 	 * ("index") or sorted by their y-coordinate ("topdown"). Defaults to
 	 * "topdown".
 	 */
-	private DrawOrderType draworder = DrawOrderType.TOPDOWN;
+	private DrawOrder draworder = DrawOrder.TOPDOWN;
 
 	private List<ObjectNode> objects = new LinkedList<ObjectNode>();
 
@@ -73,19 +73,19 @@ public class ObjectLayer extends Layer {
 		this.material = material;
 	}
 
-	public DrawOrderType getDraworder() {
+	public DrawOrder getDraworder() {
 		return draworder;
 	}
 
 	public void setDraworder(String draworder) {
 		try {
-			this.draworder = DrawOrderType.valueOf(draworder.toUpperCase());
+			this.draworder = DrawOrder.valueOf(draworder.toUpperCase());
 		} catch (IllegalArgumentException e) {
 			logger.warning("Unknown draworder '" + draworder + "'");
 		}
 	}
 
-	public void setDraworder(DrawOrderType draworder) {
+	public void setDraworder(DrawOrder draworder) {
 		this.draworder = draworder;
 	}
 
@@ -93,8 +93,18 @@ public class ObjectLayer extends Layer {
 		return objects;
 	}
 
+	public ObjectNode get(int id) {
+		int len = objects.size();
+		for(int i=0; i<len; i++) {
+			ObjectNode obj = objects.get(i);
+			if (obj.getId() == id) {
+				return obj;
+			}
+		}
+		return null;
+	}
+	
 	public void add(ObjectNode obj) {
-		obj.setId(objects.size());
 		obj.setObjectGroup(this);
 		objects.add(obj);
 	}
@@ -113,7 +123,7 @@ public class ObjectLayer extends Layer {
 	 *            a double.
 	 * @param y
 	 *            a double.
-	 * @return a {@link tiled.core.MapObject} object.
+	 * @return a {@link com.jme3.tmx.core.ObjectNode} object.
 	 */
 	public ObjectNode getObjectAt(double x, double y) {
 		for (ObjectNode obj : objects) {
