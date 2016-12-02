@@ -1,4 +1,4 @@
-package com.jme3.tmx.debug;
+package com.jme3.tmx;
 
 import java.util.logging.Logger;
 
@@ -19,28 +19,30 @@ import com.jme3.tmx.render.HexagonalRender;
 import com.jme3.tmx.render.IsometricRender;
 import com.jme3.tmx.render.MapRender;
 import com.jme3.tmx.render.OrthogonalRender;
+import com.jme3.tmx.render.StaggeredRender;
 
 /**
- * TiledMapAppState will create a Spatial for tile.ore.Map.
- * Only TileLayer will be shown, ObjectGroups are not support for now.
+ * TiledMapAppState will create a Spatial for tile.ore.Map. Only TileLayer will
+ * be shown, ObjectGroups are not support for now.
+ * 
  * @author yanmaoyuan
- *
+ * 
  */
 public class TiledMapAppState extends BaseAppState {
 
 	static Logger logger = Logger.getLogger(TiledMapAppState.class.getName());
-	
+
 	private Node rootNode = new Node("TileMapRoot");
-	
+
 	private TiledMap map;
 	protected Vector3f centerOffset;
 	private MapRender mapRender;
 
 	private ViewPort viewPort;
-	
+
 	public TiledMapAppState() {
 	}
-	
+
 	public TiledMapAppState(TiledMap map) {
 		setMap(map);
 	}
@@ -48,30 +50,31 @@ public class TiledMapAppState extends BaseAppState {
 	public TiledMap getMap() {
 		return map;
 	}
-	
-	public Vector3f getLocation(int x, int y) {
+
+	public Vector3f getLocation(float x, float y) {
 		return mapRender.tileLoc2ScreenLoc(x, y);
 	}
-	
-	public Vector3f getCameraLocation(int x, int y) {
+
+	public Vector3f getCameraLocation(float x, float y) {
 		return mapRender.tileLoc2ScreenLoc(x, y).addLocal(centerOffset);
 	}
-	
+
 	@Override
 	protected void initialize(Application app) {
 		viewPort = app.getViewPort();
-		
+
 		if (map != null)
 			render();
 	}
-	
+
 	@Override
 	protected void cleanup(Application app) {
 	}
 
 	@Override
 	protected void onEnable() {
-		((SimpleApplication) getApplication()).getRootNode().attachChild(rootNode);
+		((SimpleApplication) getApplication()).getRootNode().attachChild(
+				rootNode);
 	}
 
 	@Override
@@ -81,25 +84,26 @@ public class TiledMapAppState extends BaseAppState {
 
 	public void setMap(TiledMap map) {
 		this.map = map;
-		float aspect = (float)map.getTileHeight() / map.getTileWidth();
-		this.centerOffset = new Vector3f(0.5f, 0.5f*aspect, 0f);
-		switch (map.getOrientation()) {
-        case ORTHOGONAL:
-            mapRender = new OrthogonalRender(map);
-            break;
-        case ISOMETRIC:
-        	mapRender = new IsometricRender(map);
-        	break;
-        case HEXAGONAL:
-        	mapRender = new HexagonalRender(map);
-        	break;
-        case STAGGERED:
-        	mapRender = new HexagonalRender(map);
-		}
+		this.centerOffset = new Vector3f(map.getTileWidth() * 0.5f, 0f, map.getTileHeight() * 0.5f);
 		
-		mapRender.createVisual();
+		switch (map.getOrientation()) {
+		case ORTHOGONAL:
+			mapRender = new OrthogonalRender(map);
+			break;
+		case ISOMETRIC:
+			mapRender = new IsometricRender(map);
+			break;
+		case HEXAGONAL:
+			mapRender = new HexagonalRender(map);
+			break;
+		case STAGGERED:
+			mapRender = new StaggeredRender(map);
+			break;
+		}
+
+		mapRender.updateVisual();
 	}
-	
+
 	public void render() {
 		// background color
 		if (map.getBackgroundColor() != null) {
@@ -107,35 +111,36 @@ public class TiledMapAppState extends BaseAppState {
 		} else {
 			viewPort.setBackgroundColor(ColorRGBA.Black);
 		}
-		
+
 		rootNode.detachAllChildren();
 		int len = map.getLayerCount();
-		for(int i=0; i<len; i++) {
+		for (int i = 0; i < len; i++) {
 			Layer layer = map.getLayer(i);
-			
+
 			// skip invisible layer
 			if (!layer.isVisible()) {
 				continue;
 			}
-			
-			Spatial visualLayer = null;
+
+			Spatial visual = null;
 			if (layer instanceof TileLayer) {
-				visualLayer = mapRender.createTileLayer((TileLayer) layer);
+				visual = mapRender.render((TileLayer) layer);
 			}
-			
+
 			if (layer instanceof ObjectLayer) {
-				visualLayer = mapRender.createObjectLayer((ObjectLayer) layer);
+				visual = mapRender.render((ObjectLayer) layer);
 			}
-			
+
 			if (layer instanceof ImageLayer) {
-				visualLayer = mapRender.createImageLayer((ImageLayer) layer);
+				visual = mapRender.render((ImageLayer) layer);
 			}
-			
-			if (visualLayer != null) {
-				rootNode.attachChild(visualLayer);
-				// this is a little magic to make let top layer the bottom layer
-				float y = (float) i / len - 1f;
-				visualLayer.setLocalTranslation(0, y, 0);
+
+			if (visual != null) {
+				rootNode.attachChild(visual);
+				// this is a little magic to make let top layer block off the
+				// bottom layer
+				float y = (float) (i+1) / len - 1f;
+				visual.setLocalTranslation(0, y, 0);
 			}
 		}
 	}

@@ -1,20 +1,16 @@
 package com.jme3.tmx.render;
 
-import java.util.List;
 import java.util.logging.Logger;
 
 import com.jme3.math.Vector2f;
 import com.jme3.math.Vector3f;
-import com.jme3.renderer.queue.RenderQueue.Bucket;
 import com.jme3.scene.BatchNode;
-import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
-import com.jme3.tmx.core.ImageLayer;
-import com.jme3.tmx.core.ObjectLayer;
-import com.jme3.tmx.core.ObjectNode;
 import com.jme3.tmx.core.Tile;
 import com.jme3.tmx.core.TileLayer;
 import com.jme3.tmx.core.TiledMap;
+import com.jme3.tmx.core.TiledMap.RenderOrder;
+import com.jme3.tmx.math2d.Point;
 
 /**
  * Orthogonal render
@@ -28,9 +24,65 @@ public class OrthogonalRender extends MapRender {
 	public OrthogonalRender(TiledMap map) {
 		super(map);
 	}
+	
+	@Override
+	public void setupTileZOrder() {
+	    int startX = 0;
+	    int startY = 0;
+	    int endX = width - 1;
+	    int endY = height - 1;
+	    
+	    int incX = 1, incY = 1;
+	    int tmp;
+	    RenderOrder renderOrder = map.getRenderOrder();
+	    switch (renderOrder) {
+	        case RightUp: {
+	        	// swap y
+	        	tmp = endY;
+	        	endY = startY;
+	        	startY = tmp;
+	            incY = -1;
+	            break;
+	        }
+	        case LeftDown: {
+	        	// swap x
+	        	tmp = endX;
+	        	endX = startX;
+	        	startX = tmp;
+	            incX = -1;
+	            break;
+	        }
+	        case LeftUp: {
+	        	// swap x
+	        	tmp = endX;
+	        	endX = startX;
+	        	startX = tmp;
+	        	incX = -1;
+	        	
+	        	// swap y
+	        	tmp = endY;
+	        	endY = startY;
+	        	startY = tmp;
+	            incY = -1;
+	            break;
+	        }
+	        case RightDown:{
+	            break;
+	        }
+	    }
+	    endX += incX;
+	    endY += incY;
+	    
+	    int tileZIndex = 0;
+	    for (int y = startY; y != endY; y += incY) {
+	        for (int x = startX; x != endX; x += incX) {
+	        	tileZOrders[x + y * width] = tileZIndex++;
+	        }
+	    }
+	}
 
 	@Override
-	public Spatial createTileLayer(TileLayer layer) {
+	public Spatial render(TileLayer layer) {
 		int width = layer.getWidth();
 		int height = layer.getHeight();
 		
@@ -49,55 +101,47 @@ public class OrthogonalRender extends MapRender {
 		}
 		bathNode.batch();
 		
-		bathNode.setQueueBucket(Bucket.Sky);
-		
 		return bathNode;
 	}
 
 	@Override
-	public Spatial createObjectLayer(ObjectLayer layer) {
-		List<ObjectNode> objects = layer.getObjects();
-		int len = objects.size();
-		
-		Node node = new Node("ObjectGroup#" + layer.getName());
-		for(int i=0; i<len; i++) {
-			ObjectNode obj = objects.get(i);
-			
-			if (!obj.isVisible()) {
-				//continue;
-			}
-			
-			if (obj.getVisual() == null ) {
-				logger.info("obj has no visual part:" + obj.toString());
-				continue;
-			}
-			
-			float x = (float) obj.getX();
-			float y = (float) obj.getY();
-			
-			Spatial visual = obj.getVisual().clone();
-			visual.setLocalTranslation(x, 0, y);
-			node.attachChild(visual);
-		}
-		
-		node.setQueueBucket(Bucket.Sky);
-		return node;
-	}
-
-	@Override
-	public Spatial createImageLayer(ImageLayer layer) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-	
-	@Override
 	public Vector3f tileLoc2ScreenLoc(float x, float y) {
-		return new Vector3f(x * map.getTileWidth(), 0, y * map.getTileHeight());
+		return new Vector3f(x * tileWidth, 0, y * tileHeight);
 	}
 
 	@Override
 	public Vector2f screenLoc2TileLoc(Vector3f location) {
 		return null;
+	}
+	
+	// Coordinates System Convert
+	
+	// OrthogonalRenderer, StaggeredRenderer, HexagonalRenderer
+	public Point pixelToScreenCoords(Point pos) {
+	    return new Point(pos.x, mapSize.y - pos.y);
+	}
+	
+	public Point pixelToTileCoords(Point pos) {
+	    return new Point((int)(pos.x / tileWidth), (int)(pos.y / tileHeight));
+	}
+	
+	public Point tileToPixelCoords(Point pos) {
+	    return new Point(pos.x * tileWidth, pos.y * tileHeight);
+	}
+	
+	public Point tileToScreenCoords(Point pos) {
+		Point pixel = tileToPixelCoords(pos);
+	    return pixelToScreenCoords(pixel);
+	}
+	
+	// OrthogonalRenderer, StaggeredRenderer, HexagonalRenderer
+	public Point screenToPixelCoords(Point pos) {
+	    return new Point(pos.x, mapSize.y - pos.y);
+	}
+	
+	public Point screenToTileCoords(Point pos) {
+		Point pixel = screenToPixelCoords(pos);
+	    return pixelToTileCoords(pixel);
 	}
 
 }

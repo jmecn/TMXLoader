@@ -799,7 +799,6 @@ public class TmxLoader implements AssetLoader {
 
 		final String draworder = getAttributeValue(node, "draworder");
 		if (draworder != null) {
-			logger.info("draworder:" + draworder);
 			layer.setDraworder(draworder);
 		}
 

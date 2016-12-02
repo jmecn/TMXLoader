@@ -10,9 +10,9 @@ import com.jme3.math.Vector3f;
 import com.jme3.renderer.queue.RenderQueue.Bucket;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Mesh;
+import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.VertexBuffer.Type;
-import com.jme3.scene.shape.Quad;
 import com.jme3.texture.Image;
 import com.jme3.texture.Texture;
 import com.jme3.tmx.core.ImageLayer;
@@ -23,6 +23,7 @@ import com.jme3.tmx.core.Tile;
 import com.jme3.tmx.core.TileLayer;
 import com.jme3.tmx.core.TiledMap;
 import com.jme3.tmx.core.Tileset;
+import com.jme3.tmx.math2d.Point;
 import com.jme3.tmx.util.ObjectMesh;
 
 /**
@@ -62,40 +63,157 @@ public abstract class MapRender {
 
 	static Logger logger = Logger.getLogger(MapRender.class.getName());
 
+	/**
+	 * This value used to generate ellipse mesh.
+	 */
+	private final static int ELLIPSE_POINTS = 36;
+
 	protected TiledMap map;
 	protected int width;
 	protected int height;
-	protected float aspect = 1f;
+	protected int tileWidth;
+	protected int tileHeight;
+
+	/**
+	 * The whole map size in pixel
+	 */
+	protected Point mapSize;
+
+	/**
+	 * tile z order depends on the render order
+	 */
+	protected int[] tileZOrders;
 
 	public MapRender(TiledMap map) {
 		this.map = map;
 		this.width = map.getWidth();
 		this.height = map.getHeight();
-		this.aspect = (float) map.getTileHeight() / map.getTileWidth();
-		this.aspect = 1f;
+		this.tileWidth = map.getTileWidth();
+		this.tileHeight = map.getTileHeight();
+		
+		this.mapSize = new Point();
+		this.updateRenderParams();
+		
+		this.tileZOrders = new int[height * width];
+		
+		// TODO debug
+		logger.info("z orders:" + tileZOrders.length + " = " + width + "*" + height);
+		this.setupTileZOrder();
 	}
 
-	public void createVisual() {
+	public void updateRenderParams() {
+		this.mapSize.set(width * tileWidth, height * tileHeight);
+	}
+	
+	public abstract void setupTileZOrder();
+
+	/**
+	 * return the z order of a tile
+	 * 
+	 * @param x
+	 * @param y
+	 * @return
+	 */
+	public int getZOrderInTile(int x, int y) {
+		if (x < 0 || x >= width || y < 0 || y >= height) {
+			return 0;
+		}
+		return tileZOrders[x + y * width];
+	}
+
+	public abstract Spatial render(TileLayer layer);
+
+	// OrthogonalRenderer, StaggeredRenderer, HexagonalRenderer
+	public Spatial render(ObjectLayer layer) {
+		List<ObjectNode> objects = layer.getObjects();
+		int len = objects.size();
+
+		Node node = new Node("ObjectGroup#" + layer.getName());
+		for (int i = 0; i < len; i++) {
+			ObjectNode obj = objects.get(i);
+
+			if (!obj.isVisible()) {
+				// continue;
+			}
+
+			if (obj.getVisual() == null) {
+				logger.info("obj has no visual part:" + obj.toString());
+				continue;
+			}
+
+			float x = (float) obj.getX();
+			float y = (float) obj.getY();
+
+			Spatial visual = obj.getVisual().clone();
+			visual.setLocalTranslation(x, 0, y);
+			node.attachChild(visual);
+		}
+
+		return node;
+	}
+
+	// OrthogonalRenderer, StaggeredRenderer, HexagonalRenderer
+	public Spatial render(ImageLayer layer) {
+		return layer.getVisual();
+	}
+
+	/**
+	 * convert tile location to screen location
+	 * 
+	 * @param x
+	 * @param y
+	 * @return
+	 */
+	public abstract Vector3f tileLoc2ScreenLoc(float x, float y);
+
+	public abstract Vector2f screenLoc2TileLoc(Vector3f location);
+
+	/******************************
+	 * Coordinates System Convert *
+	 ******************************/
+	
+	public abstract Point pixelToScreenCoords(Point pos);
+
+	public abstract Point pixelToTileCoords(Point pos);
+
+	public abstract Point tileToPixelCoords(Point pos);
+
+	public abstract Point tileToScreenCoords(Point pos);
+
+	public abstract Point screenToPixelCoords(Point pos);
+
+	public abstract Point screenToTileCoords(Point pos);
+
+	
+	/**
+	 * update the visual part of tileset
+	 */
+	public void updateVisual() {
 		List<Tileset> sets = map.getTileSets();
-		for(int i=0; i<sets.size(); i++) {
+		for (int i = 0; i < sets.size(); i++) {
 			createVisual(sets.get(i));
 		}
-		
+
 		int len = map.getLayerCount();
-		for(int i=0; i<len; i++) {
+		for (int i = 0; i < len; i++) {
 			Layer layer = map.getLayer(i);
-			
+
 			// skip invisible layer
 			if (!layer.isVisible()) {
 				continue;
 			}
-			
+
 			if (layer instanceof ObjectLayer) {
 				createVisual((ObjectLayer) layer);
 			}
+
+			if (layer instanceof ImageLayer) {
+				createVisual((ImageLayer) layer);
+			}
 		}
-		
+
 	}
+
 	/**
 	 * Create the visual part for every tile of a given Tileset.
 	 * 
@@ -227,20 +345,15 @@ public abstract class MapRender {
 
 			// TODO handle the animated tile
 			if (tile.isAnimated()) {
-				
+
 			} else {
-				
+
 			}
-			
+
 			tile.setVisual(geometry);
 		}
 
 	}
-
-	/**
-	 * This value used to generate ellipse mesh.
-	 */
-	private final static int ELLIPSE_POINTS = 36;
 
 	/**
 	 * Create the visual part for every ObjectNode in a ObjectLayer.
@@ -271,11 +384,10 @@ public abstract class MapRender {
 
 				Geometry back = new Geometry("rectangle",
 						ObjectMesh.makeRectangle(obj.getWidth(),
-						obj.getHeight()));
+								obj.getHeight()));
 				back.setMaterial(bgMat);
 
-				com.jme3.scene.Node visual = new com.jme3.scene.Node(
-						obj.getName());
+				Node visual = new Node(obj.getName());
 				visual.attachChild(back);
 				visual.attachChild(border);
 				visual.setQueueBucket(Bucket.Translucent);
@@ -293,8 +405,7 @@ public abstract class MapRender {
 						obj.getWidth(), obj.getHeight(), ELLIPSE_POINTS));
 				back.setMaterial(bgMat);
 
-				com.jme3.scene.Node visual = new com.jme3.scene.Node(
-						obj.getName());
+				Node visual = new Node(obj.getName());
 				visual.attachChild(back);
 				visual.attachChild(border);
 				visual.setQueueBucket(Bucket.Translucent);
@@ -303,14 +414,15 @@ public abstract class MapRender {
 				break;
 			}
 			case Polygon: {
-				Geometry border = new Geometry("border", ObjectMesh.makePolyline(obj.getPoints(), true));
+				Geometry border = new Geometry("border",
+						ObjectMesh.makePolyline(obj.getPoints(), true));
 				border.setMaterial(mat);
 
-				Geometry back = new Geometry("polygon", ObjectMesh.makePolygon(obj.getPoints()));
+				Geometry back = new Geometry("polygon",
+						ObjectMesh.makePolygon(obj.getPoints()));
 				back.setMaterial(bgMat);
 
-				com.jme3.scene.Node visual = new com.jme3.scene.Node(
-						obj.getName());
+				Node visual = new Node(obj.getName());
 				visual.attachChild(back);
 				visual.attachChild(border);
 				visual.setQueueBucket(Bucket.Translucent);
@@ -328,8 +440,9 @@ public abstract class MapRender {
 				break;
 			}
 			case Image: {
-				Geometry geom = new Geometry(obj.getName(), new Quad(
-						(float) obj.getWidth(), (float) -obj.getHeight()));
+				Geometry geom = new Geometry(obj.getName(),
+						ObjectMesh.makeRectangle(obj.getWidth(),
+								obj.getHeight()));
 				geom.setMaterial(obj.getMaterial());
 
 				obj.setVisual(geom);
@@ -344,20 +457,16 @@ public abstract class MapRender {
 		}
 	}
 
-	public abstract Spatial createTileLayer(TileLayer layer);
-
-	public abstract Spatial createObjectLayer(ObjectLayer layer);
-
-	public abstract Spatial createImageLayer(ImageLayer layer);
-
 	/**
-	 * convert tile location to screen location
+	 * ImageLayer only need to display an image.
 	 * 
-	 * @param x
-	 * @param y
-	 * @return
+	 * @param layer
 	 */
-	public abstract Vector3f tileLoc2ScreenLoc(float x, float y);
+	protected void createVisual(ImageLayer layer) {
+		Mesh mesh = ObjectMesh.makeRectangle(mapSize.x, mapSize.y);
+		Geometry geom = new Geometry(layer.getName(), mesh);
+		geom.setMaterial(layer.getMaterial());
 
-	public abstract Vector2f screenLoc2TileLoc(Vector3f location);
+		layer.setVisual(geom);
+	}
 }

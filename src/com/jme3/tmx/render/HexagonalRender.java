@@ -1,114 +1,106 @@
 package com.jme3.tmx.render;
 
-import java.util.List;
 import java.util.logging.Logger;
 
-import com.jme3.math.Vector2f;
-import com.jme3.math.Vector3f;
-import com.jme3.scene.BatchNode;
-import com.jme3.scene.Node;
-import com.jme3.scene.Spatial;
-import com.jme3.tmx.core.ImageLayer;
-import com.jme3.tmx.core.ObjectLayer;
-import com.jme3.tmx.core.ObjectNode;
-import com.jme3.tmx.core.Tile;
-import com.jme3.tmx.core.TileLayer;
 import com.jme3.tmx.core.TiledMap;
-import com.jme3.tmx.core.TiledMap.StaggerAxis;
-import com.jme3.tmx.core.TiledMap.StaggerIndex;
+import com.jme3.tmx.math2d.Point;
 
-public class HexagonalRender extends MapRender {
+/**
+ * Hexagonal render
+ * 
+ * @author yanmaoyuan
+ *
+ */
+public class HexagonalRender extends StaggeredRender {
 
 	static Logger logger = Logger.getLogger(HexagonalRender.class.getName());
 	
-	private boolean staggerX = false;
-	private boolean staggerEven = false;
 	public HexagonalRender(TiledMap map) {
 		super(map);
-		
-		staggerX = map.getStaggerAxis() == StaggerAxis.X;
-		staggerEven = map.getStaggerIndex() == StaggerIndex.EVEN;
 	}
-
-	@Override
-	public Spatial createTileLayer(TileLayer layer) {
-		
-		int width = layer.getWidth();
-		int height = layer.getHeight();
-		
-		BatchNode bathNode = new BatchNode(layer.getName());
-		for(int y=0; y<height; y++) {
-			for(int x=0; x<width; x++) {
-				final Tile tile = layer.getTileAt(x, y);
-				if (tile == null || tile.getVisual() == null) {
-					continue;
-				}
-				
-				Spatial visual = tile.getVisual().clone();
-				visual.setLocalTranslation(tileLoc2ScreenLoc(x, y));
-				bathNode.attachChild(visual);
-				
-			}
-		}
-		bathNode.batch();
-		
-		return bathNode;
-	}
-
-	@Override
-	public Vector3f tileLoc2ScreenLoc(float x, float y) {
-		int odd;
-		if (staggerX) {
-			odd = (int)x % 2;
-		} else {
-			odd = (int)y % 2;
-		}
-		
-		if (staggerEven) {
-			odd = 1 - odd;
-		}
-		
-		if (staggerX) {
-			return new Vector3f(x*0.75f * map.getTileWidth(), 0, (y+odd*0.5f)*map.getTileHeight());
-		} else {
-			return new Vector3f((x+odd*0.5f) * map.getTileWidth(), 0, y*0.75f*map.getTileHeight());
-		}
-	}
-
-	@Override
-	public Vector2f screenLoc2TileLoc(Vector3f location) {
-		return null;
-	}
-
-	@Override
-	public Spatial createObjectLayer(ObjectLayer layer) {
-		List<ObjectNode> objects = layer.getObjects();
-		int len = objects.size();
-		
-		Node node = new Node("ObjectGroup#" + layer.getName());
-		for(int i=0; i<len; i++) {
-			ObjectNode obj = objects.get(i);
-			
-			if (obj.getVisual() == null ) {
-				logger.info("obj has no visual part:" + obj.toString());
-				continue;
-			}
-			
-			Spatial visual = obj.getVisual().clone();
-			float x = (float) obj.getX();
-			float y = (float) obj.getY();
-			visual.setLocalTranslation(tileLoc2ScreenLoc(x, y));
-			node.attachChild(visual);
-			
-		}
-		
-		return node;
-	}
-
-	@Override
-	public Spatial createImageLayer(ImageLayer layer) {
-		// TODO Auto-generated method stub
-		return null;
+	
+    
+    static final Point[] offsetsStaggerX = {
+        new Point(0, 0), new Point(1, -1), new Point(1, 0), new Point(2, 0)
+    };
+    
+    static final Point[] offsetsStaggerY = {
+    	new Point(0, 0), new Point(-1, 1), new Point(0, 1), new Point(0, 2)
+    };
+    
+    
+	/**
+	 * Converts screen to tile coordinates.
+	 * Sub-tile return values are not supported by this renderer.
+	 */
+	public Point screenToTileCoords(Point pos) {
+	    
+	    pos.y = mapSize.y - pos.y;
+	    
+	    if (staggerX)
+	        pos.x -= staggerEven ? tileWidth : sideOffsetX;
+	    else
+	        pos.y -= staggerEven ? tileHeight : sideOffsetY;
+	    
+	    // Start with the coordinates of a grid-aligned tile
+	    Point referencePoint = new Point((float)(pos.x / (tileWidth + sideLengthX)),
+	    		(float)(pos.y / (tileHeight + sideLengthY)));
+	    
+	    // Relative x and y position on the base square of the grid-aligned tile
+	    Point rel = new Point(pos.x - referencePoint.x * (tileWidth + sideLengthX),
+	                              pos.y - referencePoint.y * (tileHeight + sideLengthY));
+	    
+	    // Adjust the reference point to the correct tile coordinates
+	    if (staggerX) {
+	        referencePoint.x *= 2;
+	        if (staggerEven)
+	            referencePoint.x++;
+	    } else {
+	        referencePoint.y *= 2;
+	        if (staggerEven)
+	            referencePoint.y++;
+	    }
+	    
+	    // Determine the nearest hexagon tile by the distance to the center
+	    Point[] centers = new Point[4];
+	    
+	    if (staggerX) {
+	        int left = sideLengthX / 2;
+	        int centerX = left + columnWidth;
+	        int centerY = tileHeight / 2;
+	        
+	        centers[0] = new Point(left, centerY);
+	        centers[1] = new Point(centerX, centerY - rowHeight);
+	        centers[2] = new Point(centerX, centerY + rowHeight);
+	        centers[3] = new Point(centerX + columnWidth, centerY);
+	    } else {
+	        int top = sideLengthY / 2;
+	        int centerX = tileWidth / 2;
+	        int centerY = top + rowHeight;
+	        
+	        centers[0] = new Point(centerX, top);
+	        centers[1] = new Point(centerX - columnWidth, centerY);
+	        centers[2] = new Point(centerX + columnWidth, centerY);
+	        centers[3] = new Point(centerX, centerY + rowHeight);
+	    }
+	    
+	    int nearest = 0;
+	    float minDist = Float.MAX_VALUE;
+	    
+	    for (int i = 0; i < 4; i++) {
+	        Point center = centers[i];
+	        float dx = center.x - rel.x;
+	        float dy = center.y - rel.y;
+	        //        float dc = (center - rel).lengthSquared();
+	        float dc = dx*dx + dy+dy;
+	        if (dc < minDist) {
+	            minDist = dc;
+	            nearest = i;
+	        }
+	    }
+	    
+	    final Point[] offsets = staggerX ? offsetsStaggerX : offsetsStaggerY;
+	    return new Point(referencePoint.x + offsets[nearest].x, referencePoint.y + offsets[nearest].y);
 	}
 
 }

@@ -19,6 +19,15 @@ public class Point {
 		this.y = y;
 	}
 	
+	public Point(float x, float y) {
+		this.x = (int) x;
+		this.y = (int) y;
+	}
+	
+	public void set(float x, float y) {
+		this.x = (int) x;
+		this.y = (int) y;
+	}
 	public void setLocation(int x, int y) {
 		this.x = x;
 		this.y = y;
