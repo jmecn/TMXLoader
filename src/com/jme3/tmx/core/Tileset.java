@@ -218,7 +218,6 @@ public class Tileset extends Base implements Iterable<Tile> {
 		Tile tile = cutter.getNextTile();
 		while (tile != null) {
 			addNewTile(tile);
-			tile.setTexture(texture);
 			tile = cutter.getNextTile();
 		}
 	}
@@ -229,9 +228,6 @@ public class Tileset extends Base implements Iterable<Tile> {
 
 	public void setMaterial(Material material) {
 		this.material = material;
-		for(Tile tile : tiles) {
-			tile.setMaterial(material);
-		}
 	}
 
 	public List<Terrain> getTerrains() {

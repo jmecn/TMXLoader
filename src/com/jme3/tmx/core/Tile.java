@@ -4,11 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.jme3.material.Material;
-import com.jme3.renderer.queue.RenderQueue.Bucket;
-import com.jme3.scene.Geometry;
-import com.jme3.scene.Mesh;
-import com.jme3.scene.VertexBuffer.Type;
-import com.jme3.texture.Image;
+import com.jme3.scene.Spatial;
 import com.jme3.texture.Texture;
 
 public class Tile extends Base {
@@ -31,7 +27,7 @@ public class Tile extends Base {
 
 	// setup in jme3
 	private Material material;
-	private Geometry geometry = null;
+	private Spatial visual = null;
 
 	/**
 	 * When you use the tile flipping feature added in Tiled Qt 0.7, the highest
@@ -173,55 +169,12 @@ public class Tile extends Base {
 		this.material = material;
 	}
 
-	public Geometry getGeometry() {
-		if (geometry == null && material != null) {
-			
-			// Calculate TexCoord of this tile in a TextureAtlas.
-			Image image = texture.getImage();
-			float imageWidth = image.getWidth();
-			float imageHeight = image.getHeight();
-			
-			float u0 = (float)(x) / imageWidth;
-			float v0 = (float)(imageHeight - y - height) / imageHeight;
-			float u1 = (float)(x + width) / imageWidth;
-			float v1 = (float)(imageHeight - y) / imageHeight;
-			
-			float[] texCoord = new float[] {
-					u0, v0,
-					u1, v0,
-					u1, v1,
-					u0, v1 };
-			
-			float[] vertices = new float[] {
-					0, 0, 0,
-					width, 0, 0,
-					width, height, 0,
-					0, height, 0 };
-			
-			float[] normals = new float[] {
-					0, 0, 1,
-					0, 0, 1,
-					0, 0, 1,
-					0, 0, 1 };
-			
-			short[] indexes = new short[] {
-					0, 1, 2,
-					0, 2, 3 };
-			
-			Mesh mesh = new Mesh();
-			mesh.setBuffer(Type.Position, 3, vertices);
-			mesh.setBuffer(Type.TexCoord, 2, texCoord);
-			mesh.setBuffer(Type.Normal, 3, normals);
-			mesh.setBuffer(Type.Index, 3, indexes);
-			mesh.updateBound();
-			mesh.setStatic();
-			
-			geometry = new Geometry("tile#"+id, mesh);
-			geometry.setMaterial(material);
-			geometry.setQueueBucket(Bucket.Translucent);
-			
-		}
-		return geometry;
+	public Spatial getVisual() {
+		return visual;
+	}
+	
+	public void setVisual(Spatial visual) {
+		this.visual = visual;
 	}
 
 	public boolean isFlippedHorizontally() {

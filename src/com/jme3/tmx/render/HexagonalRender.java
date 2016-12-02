@@ -6,7 +6,6 @@ import java.util.logging.Logger;
 import com.jme3.math.Vector2f;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.BatchNode;
-import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.tmx.core.ImageLayer;
@@ -41,15 +40,13 @@ public class HexagonalRender extends MapRender {
 		for(int y=0; y<height; y++) {
 			for(int x=0; x<width; x++) {
 				final Tile tile = layer.getTileAt(x, y);
-				if (tile == null || tile.getGeometry() == null) {
+				if (tile == null || tile.getVisual() == null) {
 					continue;
 				}
 				
-				Geometry geom = tile.getGeometry().clone();
-				geom.scale(scale);
-				geom.scale(1f, aspect, 1f);
-				geom.setLocalTranslation(tileLoc2ScreenLoc(x, y));
-				bathNode.attachChild(geom);
+				Spatial visual = tile.getVisual().clone();
+				visual.setLocalTranslation(tileLoc2ScreenLoc(x, y));
+				bathNode.attachChild(visual);
 				
 			}
 		}
@@ -72,9 +69,9 @@ public class HexagonalRender extends MapRender {
 		}
 		
 		if (staggerX) {
-			return new Vector3f(x*0.75f, (height-y-odd*0.5f)*aspect, 0);
+			return new Vector3f(x*0.75f * map.getTileWidth(), 0, (y+odd*0.5f)*map.getTileHeight());
 		} else {
-			return new Vector3f(x+odd*0.5f, (height-y-1)*0.75f*aspect, 0);
+			return new Vector3f((x+odd*0.5f) * map.getTileWidth(), 0, y*0.75f*map.getTileHeight());
 		}
 	}
 
@@ -85,8 +82,6 @@ public class HexagonalRender extends MapRender {
 
 	@Override
 	public Spatial createObjectLayer(ObjectLayer layer) {
-		float h = map.getHeight() * aspect;
-		
 		List<ObjectNode> objects = layer.getObjects();
 		int len = objects.size();
 		
@@ -100,10 +95,9 @@ public class HexagonalRender extends MapRender {
 			}
 			
 			Spatial visual = obj.getVisual().clone();
-			visual.scale(scale);
-			float x = (float) (scale * obj.getX());
-			float y = (float) (scale * (obj.getY() + obj.getHeight()));
-			visual.setLocalTranslation(x, h-(y)*aspect, 0);
+			float x = (float) obj.getX();
+			float y = (float) obj.getY();
+			visual.setLocalTranslation(tileLoc2ScreenLoc(x, y));
 			node.attachChild(visual);
 			
 		}

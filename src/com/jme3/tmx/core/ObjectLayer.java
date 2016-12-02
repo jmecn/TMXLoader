@@ -7,6 +7,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Logger;
 
+import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 
 /**
@@ -33,6 +34,12 @@ public class ObjectLayer extends Layer {
 	 * The color used to display the objects in this group.
 	 */
 	private ColorRGBA color;
+	
+	/**
+	 * This material applies to the shapes in this ObjectGroup using
+	 * LineMesh
+	 */
+	private Material material;
 
 	/**
 	 * Whether the objects are drawn according to the order of appearance
@@ -56,6 +63,14 @@ public class ObjectLayer extends Layer {
 
 	public void setColor(ColorRGBA color) {
 		this.color = color;
+	}
+	
+	public Material getMaterial() {
+		return this.material;
+	}
+
+	public void setMaterial(Material material) {
+		this.material = material;
 	}
 
 	public DrawOrderType getDraworder() {
@@ -162,5 +177,5 @@ public class ObjectLayer extends Layer {
 
 		return null;
 	}
-
+	
 }

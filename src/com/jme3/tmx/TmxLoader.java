@@ -32,9 +32,6 @@ import com.jme3.asset.TextureKey;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector2f;
-import com.jme3.renderer.queue.RenderQueue.Bucket;
-import com.jme3.scene.Geometry;
-import com.jme3.scene.shape.Quad;
 import com.jme3.texture.Texture.MagFilter;
 import com.jme3.texture.Texture.WrapMode;
 import com.jme3.texture.Texture2D;
@@ -53,7 +50,6 @@ import com.jme3.tmx.core.TiledMap.RenderOrder;
 import com.jme3.tmx.core.Tileset;
 import com.jme3.tmx.util.Base64;
 import com.jme3.tmx.util.ColorUtil;
-import com.jme3.tmx.util.ObjectMesh;
 import com.sun.istack.internal.logging.Logger;
 
 public class TmxLoader implements AssetLoader {
@@ -183,8 +179,7 @@ public class TmxLoader implements AssetLoader {
 		try {
 			ext = (Tileset) assetManager.loadAsset(assetPath);
 		} catch (Exception e) {
-			logger.warning("Tileset " + source + " was not loaded correctly!",
-					e);
+			logger.warning("Tileset " + source + " was not loaded correctly!", e);
 		}
 
 		return ext;
@@ -786,23 +781,21 @@ public class TmxLoader implements AssetLoader {
 		readLayerBase(node, layer);
 
 		final String color = getAttributeValue(node, "color");
+		final ColorRGBA borderColor;
 		if (color != null) {
-			layer.setColor(ColorUtil.toColorRGBA(color));
-		}
-		
-		// TODO This material applies to the shapes in this ObjectGroup using LineMesh
-		Material mat = new Material(assetManager, "com/jme3/tmx/resources/Tiled.j3md");
-		if (color != null) {
-			mat.setColor("Color", layer.getColor());
+			borderColor = ColorUtil.toColorRGBA(color);
 		} else {
-			mat.setColor("Color", ColorRGBA.LightGray);
+			borderColor = ColorRGBA.DarkGray.clone();
 		}
-		
-		Material ellipseMat = mat.clone();
-		ellipseMat.setTexture("ColorMap", assetManager.loadTexture("com/jme3/tmx/resources/ellipse128.png"));
-		
-		Material rectMat = mat.clone();
-		rectMat.setTexture("ColorMap", assetManager.loadTexture("com/jme3/tmx/resources/rect128.png"));
+		layer.setColor(borderColor);
+
+		/**
+		 * This material applies to the shapes in this ObjectGroup using
+		 * LineMesh
+		 */
+		Material mat = new Material(assetManager, "com/jme3/tmx/resources/Tiled.j3md");
+		mat.setColor("Color", borderColor);
+		layer.setMaterial(mat);
 
 		final String draworder = getAttributeValue(node, "draworder");
 		if (draworder != null) {
@@ -817,82 +810,19 @@ public class TmxLoader implements AssetLoader {
 			if ("object".equalsIgnoreCase(child.getNodeName())) {
 				ObjectNode obj = readObjectNode(child);
 				layer.add(obj);
-				
-				switch (obj.getObjectType()) {
-				case Rectangle: {
-					Geometry border = new Geometry("border", ObjectMesh.makeRectangle(obj.getWidth(), -obj.getHeight()));
-					border.setMaterial(mat);
-					
-					Geometry back = new Geometry("rectangle", new Quad((float)obj.getWidth(), -(float)obj.getHeight()));
-					back.setMaterial(rectMat);
-					
-					com.jme3.scene.Node visual = new com.jme3.scene.Node(obj.getName());
-					visual.attachChild(back);
-					visual.attachChild(border);
-					visual.setQueueBucket(Bucket.Translucent);
-					
-					obj.setVisual(visual);
-					break;
-				}
-				case Ellipse: {
-					Geometry border = new Geometry("border", ObjectMesh.makeEllipse(obj.getWidth(), -obj.getHeight()));
-					border.setMaterial(mat);
-					
-					Geometry back = new Geometry("ellipse", new Quad((float)obj.getWidth(), -(float)obj.getHeight()));
-					back.setMaterial(ellipseMat);
-					
-					com.jme3.scene.Node visual = new com.jme3.scene.Node(obj.getName());
-					visual.attachChild(back);
-					visual.attachChild(border);
-					visual.setQueueBucket(Bucket.Translucent);
-					
-					obj.setVisual(visual);
-					break;
-				}
-				case Polygon: {
-					Geometry border = new Geometry("border", ObjectMesh.makePolyline(obj.getPoints(), true));
-					border.setMaterial(mat);
-					
-					Geometry back = new Geometry("polygon", ObjectMesh.makePolygon(obj.getPoints()));
-					back.setMaterial(rectMat);
-					
-					com.jme3.scene.Node visual = new com.jme3.scene.Node(obj.getName());
-					visual.attachChild(back);
-					visual.attachChild(border);
-					visual.setQueueBucket(Bucket.Translucent);
-					
-					obj.setVisual(visual);
-					break;
-				}
-				case Polyline: {
-					Geometry geom = new Geometry(obj.getName());
-					geom.setMesh(ObjectMesh.makePolyline(obj.getPoints(), false));
-					geom.setMaterial(mat);
-					geom.setQueueBucket(Bucket.Translucent);
-					
-					obj.setVisual(geom);
-					break;
-				}
-				case Image: {
-					Geometry geom = new Geometry(obj.getName(), new Quad((float)obj.getWidth(), (float)obj.getHeight()));
-					geom.setMaterial(obj.getMaterial());
-					
-					obj.setVisual(geom);
-					break;
-				}
-				case Tile: {
-					Geometry geom = obj.getTile().getGeometry().clone();
-					obj.setVisual(geom);
-					break;
-				}
-				}
-				
 			}
 		}
 
 		return layer;
 	}
 
+	/**
+	 * Read an object of the ObjectGroup.
+	 * 
+	 * @param node
+	 * @return
+	 * @throws Exception
+	 */
 	private ObjectNode readObjectNode(Node node) throws Exception {
 		final String name = getAttributeValue(node, "name");
 		final String type = getAttributeValue(node, "type");
@@ -903,12 +833,20 @@ public class TmxLoader implements AssetLoader {
 		final double height = getDoubleAttribute(node, "height", 0);
 
 		ObjectNode obj = new ObjectNode(x, y, width, height);
+		
 		if (name != null) {
 			obj.setName(name);
 		}
 		if (type != null) {
 			obj.setType(type);
 		}
+		
+		Properties props = readProperties(node.getChildNodes());
+		obj.setProperties(props);
+		
+		/**
+		 * if an object have "gid" attribute means it references to a tile.
+		 */
 		if (gid != null) {
 			obj.setObjectType(ObjectType.Tile);
 
@@ -944,9 +882,6 @@ public class TmxLoader implements AssetLoader {
 			}
 		}
 
-		Properties props = readProperties(children);
-		obj.setProperties(props);
-		
 		return obj;
 	}
 
@@ -1270,10 +1205,7 @@ public class TmxLoader implements AssetLoader {
 		String trans;
 
 		/*
-		 * // useless for jme3
-		 * String format;
-		 * int width;
-		 * int height;
+		 * // useless for jme3 String format; int width; int height;
 		 */
 
 		Texture2D texture = null;

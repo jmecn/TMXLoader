@@ -6,7 +6,6 @@ import java.util.logging.Logger;
 import com.jme3.math.Vector2f;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.BatchNode;
-import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.tmx.core.ImageLayer;
@@ -35,15 +34,13 @@ public class IsometricRender extends MapRender {
 		for (int y = 0; y < height; y++) {
 			for (int x = 0; x < width; x++) {
 				final Tile tile = layer.getTileAt(x, y);
-				if (tile == null || tile.getGeometry() == null) {
+				if (tile == null || tile.getVisual() == null) {
 					continue;
 				}
 
-				Geometry geom = tile.getGeometry().clone();
-				geom.scale(scale);
-				geom.scale(1f, aspect, 1f);
-				geom.setLocalTranslation(tileLoc2ScreenLoc(x, y));
-				bathNode.attachChild(geom);
+				Spatial visual = tile.getVisual().clone();
+				visual.setLocalTranslation(tileLoc2ScreenLoc(x, y));
+				bathNode.attachChild(visual);
 			}
 		}
 		bathNode.batch();
@@ -53,7 +50,7 @@ public class IsometricRender extends MapRender {
 
 	@Override
 	public Vector3f tileLoc2ScreenLoc(float x, float y) {
-		return new Vector3f((height + x - y) * 0.5f, (width + height - x - y - 2) * 0.5f * aspect, 0);
+		return new Vector3f((height + x - y) * 0.5f * map.getTileWidth(), 0, (x + y) * 0.5f * map.getTileHeight());
 	}
 
 	@Override
@@ -67,7 +64,6 @@ public class IsometricRender extends MapRender {
 
 	@Override
 	public Spatial createObjectLayer(ObjectLayer layer) {
-		float h = map.getHeight() * aspect;
 		
 		List<ObjectNode> objects = layer.getObjects();
 		int len = objects.size();
@@ -82,10 +78,9 @@ public class IsometricRender extends MapRender {
 			}
 			
 			Spatial visual = obj.getVisual().clone();
-			visual.scale(scale);
-			float x = (float) (scale * obj.getX());
-			float y = (float) (scale * (obj.getY() + obj.getHeight()));
-			visual.setLocalTranslation(x, h-(y)*aspect, 0);
+			float x = (float) (obj.getX());
+			float y = (float) (obj.getY() + obj.getHeight());
+			visual.setLocalTranslation(tileLoc2ScreenLoc(x, y));
 			node.attachChild(visual);
 			
 		}

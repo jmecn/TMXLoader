@@ -5,8 +5,8 @@ import java.util.logging.Logger;
 
 import com.jme3.math.Vector2f;
 import com.jme3.math.Vector3f;
+import com.jme3.renderer.queue.RenderQueue.Bucket;
 import com.jme3.scene.BatchNode;
-import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.tmx.core.ImageLayer;
@@ -25,12 +25,10 @@ public class OrthogonalRender extends MapRender {
 	
 	static Logger logger = Logger.getLogger(OrthogonalRender.class.getName());
 	
-	public Vector3f centerOffset;
 	public OrthogonalRender(TiledMap map) {
 		super(map);
 	}
 
-	/** {@inheritDoc} */
 	@Override
 	public Spatial createTileLayer(TileLayer layer) {
 		int width = layer.getWidth();
@@ -40,26 +38,24 @@ public class OrthogonalRender extends MapRender {
 		for(int y=0; y<height; y++) {
 			for(int x=0; x<width; x++) {
 				final Tile tile = layer.getTileAt(x, y);
-				if (tile == null || tile.getGeometry() == null) {
+				if (tile == null || tile.getVisual() == null) {
 					continue;
 				}
 				
-				Geometry geom = tile.getGeometry().clone();
-				geom.scale(scale);
-				geom.scale(1f, aspect, 1f);
-				geom.setLocalTranslation(tileLoc2ScreenLoc(x, y));
-				bathNode.attachChild(geom);
+				Spatial visual = tile.getVisual().clone();
+				visual.setLocalTranslation(tileLoc2ScreenLoc(x, y));
+				bathNode.attachChild(visual);
 			}
 		}
 		bathNode.batch();
+		
+		bathNode.setQueueBucket(Bucket.Sky);
 		
 		return bathNode;
 	}
 
 	@Override
 	public Spatial createObjectLayer(ObjectLayer layer) {
-		float h = map.getHeight() * aspect;
-		
 		List<ObjectNode> objects = layer.getObjects();
 		int len = objects.size();
 		
@@ -76,15 +72,15 @@ public class OrthogonalRender extends MapRender {
 				continue;
 			}
 			
-			Spatial visual = obj.getVisual().clone();
-			visual.scale(scale);
-			float x = (float) (scale * obj.getX());
-			float y = (float) (scale * obj.getY());
-			visual.setLocalTranslation(x, h-y, 0);
-			node.attachChild(visual);
+			float x = (float) obj.getX();
+			float y = (float) obj.getY();
 			
+			Spatial visual = obj.getVisual().clone();
+			visual.setLocalTranslation(x, 0, y);
+			node.attachChild(visual);
 		}
 		
+		node.setQueueBucket(Bucket.Sky);
 		return node;
 	}
 
@@ -96,7 +92,7 @@ public class OrthogonalRender extends MapRender {
 	
 	@Override
 	public Vector3f tileLoc2ScreenLoc(float x, float y) {
-		return new Vector3f(x, (height-y-1)*aspect, 0);
+		return new Vector3f(x * map.getTileWidth(), 0, y * map.getTileHeight());
 	}
 
 	@Override

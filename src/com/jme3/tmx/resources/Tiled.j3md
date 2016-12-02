@@ -7,8 +7,8 @@ MaterialDef Tiled {
     }
     
     Technique {
-        VertexShader GLSL150:   com/jme3/tmx/resources/Tiled.vert
-        FragmentShader GLSL150: com/jme3/tmx/resources/Tiled.frag
+        VertexShader GLSL100:   com/jme3/tmx/resources/Tiled.vert
+        FragmentShader GLSL100: com/jme3/tmx/resources/Tiled.frag
 
         WorldParameters {
             WorldViewProjectionMatrix
@@ -18,27 +18,7 @@ MaterialDef Tiled {
 
         RenderState {
             Blend Alpha
-        }
-        
-        Defines {
-            HAS_COLORMAP : ColorMap
-            HAS_COLOR : Color
-            TRANS_COLOR: TransColor
-        }
-    }
-
-    Technique {
-        VertexShader GLSL100:   com/jme3/tmx/render/Tiled.vert
-        FragmentShader GLSL100: com/jme3/tmx/render/Tiled.frag
-
-        WorldParameters {
-            WorldViewProjectionMatrix
-            ViewProjectionMatrix
-            ViewMatrix
-        }
-
-        RenderState {
-            Blend Alpha
+            FaceCull Off
         }
         
         Defines {

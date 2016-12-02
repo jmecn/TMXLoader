@@ -9,6 +9,7 @@ import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.ViewPort;
 import com.jme3.scene.Node;
+import com.jme3.scene.Spatial;
 import com.jme3.tmx.core.ImageLayer;
 import com.jme3.tmx.core.Layer;
 import com.jme3.tmx.core.ObjectLayer;
@@ -95,6 +96,8 @@ public class TiledMapAppState extends BaseAppState {
         case STAGGERED:
         	mapRender = new HexagonalRender(map);
 		}
+		
+		mapRender.createVisual();
 	}
 	
 	public void render() {
@@ -115,16 +118,24 @@ public class TiledMapAppState extends BaseAppState {
 				continue;
 			}
 			
+			Spatial visualLayer = null;
 			if (layer instanceof TileLayer) {
-				rootNode.attachChild(mapRender.createTileLayer((TileLayer) layer));
+				visualLayer = mapRender.createTileLayer((TileLayer) layer);
 			}
 			
 			if (layer instanceof ObjectLayer) {
-				rootNode.attachChild(mapRender.createObjectLayer((ObjectLayer) layer));
+				visualLayer = mapRender.createObjectLayer((ObjectLayer) layer);
 			}
 			
 			if (layer instanceof ImageLayer) {
-				rootNode.attachChild(mapRender.createImageLayer((ImageLayer) layer));
+				visualLayer = mapRender.createImageLayer((ImageLayer) layer);
+			}
+			
+			if (visualLayer != null) {
+				rootNode.attachChild(visualLayer);
+				// this is a little magic to make let top layer the bottom layer
+				float y = (float) i / len - 1f;
+				visualLayer.setLocalTranslation(0, y, 0);
 			}
 		}
 	}

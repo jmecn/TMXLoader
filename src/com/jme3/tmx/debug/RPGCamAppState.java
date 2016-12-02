@@ -17,12 +17,14 @@ import com.jme3.math.Vector3f;
 import com.jme3.renderer.Camera;
 
 /**
- * This RPG Camera AppState is for debug use. It will disable the FlyCamAppState.
- * Move camera with wsad keys or up/down/left/right keys.
+ * This RPG Camera AppState is for debug use. It will disable the
+ * FlyCamAppState. Move camera with wsad keys or up/down/left/right keys.
+ * 
  * @author yanmaoyuan
- *
+ * 
  */
-public class RPGCamAppState extends BaseAppState implements AnalogListener, ActionListener {
+public class RPGCamAppState extends BaseAppState implements AnalogListener,
+		ActionListener {
 
 	public static String LEFT = "left";
 	public static String RIGHT = "right";
@@ -32,7 +34,8 @@ public class RPGCamAppState extends BaseAppState implements AnalogListener, Acti
 	public static String ZOOMIN = "zoomin";
 	public static String ZOOMOUT = "zoomout";
 
-	private static String[] mappings = new String[] { LEFT, RIGHT, UP, DOWN, DRAG, ZOOMIN, ZOOMOUT};
+	private static String[] mappings = new String[] { LEFT, RIGHT, UP, DOWN,
+			DRAG, ZOOMIN, ZOOMOUT };
 
 	/**
 	 * record the orgin size of the camera
@@ -41,18 +44,22 @@ public class RPGCamAppState extends BaseAppState implements AnalogListener, Acti
 	private Vector3f dir = new Vector3f(0f, 0f, -1f);
 	private Vector3f up = new Vector3f(0f, 1f, 0f);
 	private boolean isParallelProjection;
-	
+
+	/**
+	 * tile width in pixel
+	 */
+	private int tileWidth = 32;// default
 	private float viewColumns;
 	private Camera cam;
 	private InputManager inputManager;
-	protected float moveSpeed = 10f;
-	protected float zoomSpeed = 1f;
-	
+	protected float moveSpeed = 10f;// in tiles
+	protected float zoomSpeed = 1f;// in tiles
+
 	public RPGCamAppState() {
 		this.viewColumns = 8f;
 		this.moveSpeed = 10f;
 	}
-	
+
 	public RPGCamAppState(float viewColumns) {
 		this.viewColumns = viewColumns;
 		this.moveSpeed = 10f;
@@ -62,16 +69,16 @@ public class RPGCamAppState extends BaseAppState implements AnalogListener, Acti
 	protected void initialize(Application app) {
 		this.cam = app.getCamera();
 		this.inputManager = app.getInputManager();
-		
+
 		// record the orgin setting of the camera
 		width = cam.getWidth();
 		cam.getDirection(dir);
 		cam.getUp(up);
 		isParallelProjection = cam.isParallelProjection();
-		
+
 		cam.setParallelProjection(true);
-		cam.lookAtDirection(Vector3f.UNIT_Z.negate(), Vector3f.UNIT_Y);
-		setParallelCamera(viewColumns);
+		cam.lookAtDirection(new Vector3f(0, -1, 0), new Vector3f(0, 0, -1));
+		setViewColumn(viewColumns);
 	}
 
 	@Override
@@ -79,49 +86,58 @@ public class RPGCamAppState extends BaseAppState implements AnalogListener, Acti
 		// recover camera
 		cam.setParallelProjection(isParallelProjection);
 		cam.lookAtDirection(dir, up);
-		setParallelCamera(width);
+		setViewColumn(width);
 	}
 
 	@Override
 	protected void onEnable() {
 		// disable flyCamAppState
-		FlyCamAppState flyCamAppState = getStateManager().getState(FlyCamAppState.class);
+		FlyCamAppState flyCamAppState = getStateManager().getState(
+				FlyCamAppState.class);
 		if (flyCamAppState != null) {
 			flyCamAppState.setEnabled(false);
 		}
-		
+
 		registerWithInput(inputManager);
 	}
 
 	@Override
 	protected void onDisable() {
 		// enable flyCamAppState
-		FlyCamAppState flyCamAppState = getStateManager().getState(FlyCamAppState.class);
+		FlyCamAppState flyCamAppState = getStateManager().getState(
+				FlyCamAppState.class);
 		if (flyCamAppState != null) {
 			flyCamAppState.setEnabled(true);
 		}
-		
+
 		unregisterInput();
 	}
-	
+
+	public void setTileWidth(int tileWidth) {
+		this.tileWidth = tileWidth;
+
+		setViewColumn(viewColumns);
+	}
+
 	/**
+	 * Set view columns. It changes the number of tiles you can see in a row.
 	 * 
 	 * @param columns
-	 *            How many tiles you want to see in a row?
 	 */
-	public void setParallelCamera(float columns) {
-		
+	public void setViewColumn(float columns) {
+
 		this.viewColumns = columns;
-		
+
 		if (cam == null) {
 			return;
 		}
-		
-		float frustumSize = viewColumns * 0.5f;
+
+		float frustumSize = viewColumns * tileWidth * 0.5f;
 		float aspect = (float) cam.getHeight() / cam.getWidth();
-		cam.setFrustum(-1000, 1000, - frustumSize, frustumSize, aspect * frustumSize, - aspect * frustumSize);
+		cam.setFrustum(-1000, 1000, -frustumSize, frustumSize, aspect
+				* frustumSize, -aspect * frustumSize);
 	}
-	
+
 	/**
 	 * Sets the move speed. The speed is given in world units per second.
 	 * 
@@ -152,10 +168,13 @@ public class RPGCamAppState extends BaseAppState implements AnalogListener, Acti
 				new KeyTrigger(KeyInput.KEY_UP));
 		inputManager.addMapping(DOWN, new KeyTrigger(KeyInput.KEY_S),
 				new KeyTrigger(KeyInput.KEY_DOWN));
-		
-		inputManager.addMapping(ZOOMIN, new MouseAxisTrigger(MouseInput.AXIS_WHEEL, false));
-		inputManager.addMapping(ZOOMOUT, new MouseAxisTrigger(MouseInput.AXIS_WHEEL, true));
-		inputManager.addMapping(DRAG, new MouseButtonTrigger(MouseInput.BUTTON_LEFT));
+
+		inputManager.addMapping(ZOOMIN, new MouseAxisTrigger(
+				MouseInput.AXIS_WHEEL, false));
+		inputManager.addMapping(ZOOMOUT, new MouseAxisTrigger(
+				MouseInput.AXIS_WHEEL, true));
+		inputManager.addMapping(DRAG, new MouseButtonTrigger(
+				MouseInput.BUTTON_LEFT));
 
 		inputManager.addListener(this, mappings);
 
@@ -186,6 +205,7 @@ public class RPGCamAppState extends BaseAppState implements AnalogListener, Acti
 
 	/**
 	 * move camera
+	 * 
 	 * @param value
 	 * @param sideways
 	 */
@@ -196,69 +216,72 @@ public class RPGCamAppState extends BaseAppState implements AnalogListener, Acti
 		if (sideways) {
 			vel.set(1f, 0f, 0f);
 		} else {
-			vel.set(0f, -1f, 0f);
+			vel.set(0f, 0f, -1f);
 		}
-		vel.multLocal(value * moveSpeed);
+		vel.multLocal(value * moveSpeed * tileWidth);
 
 		pos.addLocal(vel);
 
 		cam.setLocation(pos);
 	}
-	
+
 	boolean isPressed = false;
 	private Vector3f startLoc = new Vector3f();
 	private Vector2f startPos = new Vector2f();
 	private Vector2f stopPos = new Vector2f();
+
 	/**
 	 * drag camera
+	 * 
 	 * @param isPressed
 	 */
 	private void dragCamera(boolean isPressed) {
-		
+
 		if (isPressed) {
 			// recored the mouse position
 			stopPos.set(inputManager.getCursorPosition());
 			stopPos.subtractLocal(startPos);
-			stopPos.multLocal(viewColumns/width);
-			
+			stopPos.multLocal(tileWidth * viewColumns / width);
+
 			// move camera
 			Vector3f loc = new Vector3f(startLoc);
-			loc.addLocal(-stopPos.x, -stopPos.y, 0);
+			loc.addLocal(-stopPos.x, 0, stopPos.y);
 			cam.setLocation(loc);
 		}
 	}
-	
+
 	/**
 	 * zoom camera
+	 * 
 	 * @param value
 	 */
-	protected void zoomCamera(float value){
+	protected void zoomCamera(float value) {
 		viewColumns += value;
-		
+
 		// at less see 1 tile on screen
 		if (viewColumns < 1f) {
 			viewColumns = 1f;
 		}
-		
-		setParallelCamera(viewColumns);
-    }
+
+		setViewColumn(viewColumns);
+	}
 
 	public void onAnalog(String name, float value, float tpf) {
 		if (name.equals(UP)) {
-			moveCamera(-tpf, false);
-		} else if (name.equals(DOWN)) {
 			moveCamera(tpf, false);
+		} else if (name.equals(DOWN)) {
+			moveCamera(-tpf, false);
 		} else if (name.equals(LEFT)) {
 			moveCamera(-tpf, true);
 		} else if (name.equals(RIGHT)) {
 			moveCamera(tpf, true);
 		} else if (name.equals(DRAG)) {
 			dragCamera(true);
-		}else if (name.equals(ZOOMIN)){
-            zoomCamera(-value);
-        }else if (name.equals(ZOOMOUT)){
-            zoomCamera(value);
-        }
+		} else if (name.equals(ZOOMIN)) {
+			zoomCamera(value);
+		} else if (name.equals(ZOOMOUT)) {
+			zoomCamera(-value);
+		}
 	}
 
 	@Override
@@ -273,6 +296,6 @@ public class RPGCamAppState extends BaseAppState implements AnalogListener, Acti
 				dragCamera(true);
 			}
 		}
-		
+
 	}
 }
