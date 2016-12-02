@@ -82,11 +82,6 @@ public abstract class MapRenderer {
 	 */
 	protected Point mapSize;
 
-	/**
-	 * tile z order depends on the render order
-	 */
-	protected int[] tileZOrders;
-
 	public MapRenderer(TiledMap map) {
 		this.map = map;
 		this.width = map.getWidth();
@@ -96,26 +91,6 @@ public abstract class MapRenderer {
 		
 		this.mapSize = new Point();
 		this.mapSize.set(width * tileWidth, height * tileHeight);
-		
-		this.tileZOrders = new int[height * width];
-		
-		this.setupTileZOrder();
-	}
-
-	protected abstract void setupTileZOrder();
-
-	/**
-	 * return the z order of a tile
-	 * 
-	 * @param x
-	 * @param y
-	 * @return
-	 */
-	public int getZOrderInTile(int x, int y) {
-		if (x < 0 || x >= width || y < 0 || y >= height) {
-			return 0;
-		}
-		return tileZOrders[x + y * width];
 	}
 
 	public abstract Spatial render(TileLayer layer);

@@ -29,62 +29,6 @@ public class OrthogonalRenderer extends MapRenderer {
 	public OrthogonalRenderer(TiledMap map) {
 		super(map);
 	}
-	
-	@Override
-	public void setupTileZOrder() {
-	    int startX = 0;
-	    int startY = 0;
-	    int endX = width - 1;
-	    int endY = height - 1;
-	    
-	    int incX = 1, incY = 1;
-	    int tmp;
-	    RenderOrder renderOrder = map.getRenderOrder();
-	    switch (renderOrder) {
-	        case RightUp: {
-	        	// swap y
-	        	tmp = endY;
-	        	endY = startY;
-	        	startY = tmp;
-	            incY = -1;
-	            break;
-	        }
-	        case LeftDown: {
-	        	// swap x
-	        	tmp = endX;
-	        	endX = startX;
-	        	startX = tmp;
-	            incX = -1;
-	            break;
-	        }
-	        case LeftUp: {
-	        	// swap x
-	        	tmp = endX;
-	        	endX = startX;
-	        	startX = tmp;
-	        	incX = -1;
-	        	
-	        	// swap y
-	        	tmp = endY;
-	        	endY = startY;
-	        	startY = tmp;
-	            incY = -1;
-	            break;
-	        }
-	        case RightDown:{
-	            break;
-	        }
-	    }
-	    endX += incX;
-	    endY += incY;
-	    
-	    int tileZIndex = 0;
-	    for (int y = startY; y != endY; y += incY) {
-	        for (int x = startX; x != endX; x += incX) {
-	        	tileZOrders[x + y * width] = tileZIndex++;
-	        }
-	    }
-	}
 
 	@Override
 	public Spatial render(TileLayer layer) {

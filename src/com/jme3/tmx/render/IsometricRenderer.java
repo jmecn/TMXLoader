@@ -34,20 +34,6 @@ public class IsometricRenderer extends MapRenderer {
 	}
 
 	@Override
-	public void setupTileZOrder() {
-	    int tileZIndex = 0;
-	    for(int p=0; p < height + width - 1; p++) {
-	        for(int r=0; r <= p; r++) {
-	            int c = p-r;
-	            if(r < height && c < width) {
-	                int tileIndex = c + r*width;
-	                tileZOrders[tileIndex] = tileZIndex++;
-	            }
-	        }
-	    }
-	}
-	
-	@Override
 	public Spatial render(TileLayer layer) {
 	    int tileZIndex = 0;
 	    
