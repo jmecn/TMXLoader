@@ -5,6 +5,7 @@ import java.util.logging.Logger;
 
 import com.jme3.math.Vector2f;
 import com.jme3.math.Vector3f;
+import com.jme3.renderer.queue.RenderQueue.Bucket;
 import com.jme3.scene.BatchNode;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
@@ -38,6 +39,7 @@ public class IsometricRenderer extends MapRenderer {
 	    int tileZIndex = 0;
 	    
 	    BatchNode batchNode = new BatchNode(layer.getName());
+	    batchNode.setQueueBucket(Bucket.Gui);
 	    for(int p=0; p < height + width - 1; p++) {
 	        for(int y=0; y <= p; y++) {
 	            int x = p-y;
@@ -59,12 +61,9 @@ public class IsometricRenderer extends MapRenderer {
 	        }
 	    }
 	    batchNode.batch();
-	    
 	    if (tileZIndex > 0) {
 	    	batchNode.setLocalScale(1, 1f / tileZIndex, 1);
 	    }
-	    
-
 		return batchNode;
 	}
 
@@ -90,7 +89,6 @@ public class IsometricRenderer extends MapRenderer {
 			node.attachChild(visual);
 			
 		}
-		
 		return node;
 	}
 

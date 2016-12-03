@@ -26,9 +26,5 @@ void main(){
         color *= m_Color;
     #endif
     
-    if(color.a < 0.01){
-       discard;
-    }
-    
     gl_FragColor = color;
 }

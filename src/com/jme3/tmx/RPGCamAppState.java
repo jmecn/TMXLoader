@@ -40,7 +40,9 @@ public class RPGCamAppState extends BaseAppState implements AnalogListener,
 	/**
 	 * record the orgin size of the camera
 	 */
-	private float width;
+	private float screenWidth;
+	private float screenHeight;
+	
 	private Vector3f dir = new Vector3f(0f, 0f, -1f);
 	private Vector3f up = new Vector3f(0f, 1f, 0f);
 	private boolean isParallelProjection;
@@ -71,13 +73,15 @@ public class RPGCamAppState extends BaseAppState implements AnalogListener,
 		this.inputManager = app.getInputManager();
 
 		// record the orgin setting of the camera
-		width = cam.getWidth();
+		screenWidth = cam.getWidth();
+		screenHeight = cam.getHeight();
+		
 		cam.getDirection(dir);
 		cam.getUp(up);
 		isParallelProjection = cam.isParallelProjection();
 
 		cam.setParallelProjection(true);
-		cam.lookAtDirection(new Vector3f(0, -1, 0), new Vector3f(0, 0, -1));
+		cam.lookAtDirection(new Vector3f(0f, 0f, -1f), Vector3f.UNIT_Y);
 		setViewColumn(viewColumns);
 	}
 
@@ -86,7 +90,7 @@ public class RPGCamAppState extends BaseAppState implements AnalogListener,
 		// recover camera
 		cam.setParallelProjection(isParallelProjection);
 		cam.lookAtDirection(dir, up);
-		setViewColumn(width);
+		setViewColumn(screenWidth);
 	}
 
 	@Override
@@ -114,7 +118,7 @@ public class RPGCamAppState extends BaseAppState implements AnalogListener,
 	}
 
 	public void useBestViewColumn() {
-		setViewColumn((float) width / tileWidth);
+		setViewColumn((float) screenWidth / tileWidth);
 	}
 	
 	public void setTileWidth(int tileWidth) {
@@ -245,11 +249,12 @@ public class RPGCamAppState extends BaseAppState implements AnalogListener,
 			// recored the mouse position
 			stopPos.set(inputManager.getCursorPosition());
 			stopPos.subtractLocal(startPos);
-			stopPos.multLocal(tileWidth * viewColumns / width);
+			stopPos.multLocal(tileWidth * viewColumns / screenWidth);
 
 			// move camera
 			Vector3f loc = new Vector3f(startLoc);
 			loc.addLocal(-stopPos.x, 0, stopPos.y);
+			
 			cam.setLocation(loc);
 		}
 	}

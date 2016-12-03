@@ -5,6 +5,7 @@ import java.util.logging.Logger;
 
 import com.jme3.math.Vector2f;
 import com.jme3.math.Vector3f;
+import com.jme3.renderer.queue.RenderQueue.Bucket;
 import com.jme3.scene.BatchNode;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
@@ -80,7 +81,7 @@ public class OrthogonalRenderer extends MapRenderer {
 	    
 	    int tileZIndex = 0;
 	    
-	    BatchNode bathNode = new BatchNode(layer.getName());
+	    BatchNode batchNode = new BatchNode(layer.getName());
 	    for (int y = startY; y != endY; y += incY) {
 	        for (int x = startX; x != endX; x += incX) {
 	        	final Tile tile = layer.getTileAt(x, y);
@@ -90,17 +91,18 @@ public class OrthogonalRenderer extends MapRenderer {
 				
 				Spatial visual = tile.getVisual().clone();
 				visual.setLocalTranslation(x * tileWidth, tileZIndex++, y * tileHeight);
-				bathNode.attachChild(visual);
+				visual.setQueueBucket(Bucket.Gui);
+				batchNode.attachChild(visual);
 	        }
 	    }
-		bathNode.batch();
-		
+	    batchNode.setQueueBucket(Bucket.Gui);
+		batchNode.batch();
 		// make it thinner
 		if (tileZIndex > 0) {
-			bathNode.setLocalScale(1, 1f / tileZIndex, 1);
+			batchNode.setLocalScale(1, 1f / tileZIndex, 1);
 		}
 		
-		return bathNode;
+		return batchNode;
 	}
 	
 	@Override
@@ -128,7 +130,6 @@ public class OrthogonalRenderer extends MapRenderer {
 			visual.setLocalTranslation(x, visualCnt++, y);
 			node.attachChild(visual);
 		}
-		
 		if (visualCnt > 0) {
 			node.setLocalScale(1f, 1f / visualCnt, 1f);
 		}

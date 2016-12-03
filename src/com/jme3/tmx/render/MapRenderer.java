@@ -18,6 +18,7 @@ import com.jme3.scene.Spatial;
 import com.jme3.scene.VertexBuffer.Type;
 import com.jme3.texture.Image;
 import com.jme3.texture.Texture;
+import com.jme3.tmx.core.AnimatedFrame;
 import com.jme3.tmx.core.ImageLayer;
 import com.jme3.tmx.core.Layer;
 import com.jme3.tmx.core.ObjectLayer;
@@ -237,23 +238,16 @@ public abstract class MapRenderer {
 			float u1 = (x + width) / imageWidth;
 			float v1 = (imageHeight - y) / imageHeight;
 
-			float tmp;
 			if (tile.isFlippedAntiDiagonally()) {
 				// TODO 
 				logger.info("flipped anti diagonally:" + tileset.getImageSource() + " " +  tile.getId());
 			}
 			if (tile.isFlippedHorizontally()) {
 				// TODO 
-				tmp = u0;
-				u0 = u1;
-				u1 = tmp;
 				logger.info("flipped horizontally:" + tileset.getImageSource() + " " +  tile.getId());
 			}
 			if (tile.isFlippedVertically()) {
 				// TODO 
-				tmp = v0;
-				v0 = v1;
-				v1 = tmp;
 				logger.info("flipped vertically:" + tileset.getImageSource() + " " +  tile.getId());
 			}
 			float[] texCoord = new float[] { u0, v0, u1, v0, u1, v1, u0, v1 };
@@ -291,7 +285,7 @@ public abstract class MapRenderer {
 			mesh.setStatic();
 
 			Geometry geometry = new Geometry(name, mesh);
-			geometry.setQueueBucket(Bucket.Translucent);
+			geometry.setQueueBucket(Bucket.Gui);
 
 			if (useSharedImage) {
 				geometry.setMaterial(sharedMat);
@@ -301,7 +295,13 @@ public abstract class MapRenderer {
 
 			// TODO handle the animated tile
 			if (tile.isAnimated()) {
+				logger.info("animated tile:" + tileset.getImageSource() + " " +  tile.getId());
 
+				List<AnimatedFrame> frames = tile.getAnimatedFrames();
+				for(int k=0; k<frames.size(); k++) {
+					AnimatedFrame frame = frames.get(k);
+					logger.info("frame" + k + " : " + "id=" + frame.tileId + " duration=" + frame.duration);
+				}
 			} else {
 
 			}
@@ -337,16 +337,18 @@ public abstract class MapRenderer {
 						ObjectMesh.makeRectangleBorder(obj.getWidth(),
 								obj.getHeight()));
 				border.setMaterial(mat);
+				border.setQueueBucket(Bucket.Gui);
 
 				Geometry back = new Geometry("rectangle",
 						ObjectMesh.makeRectangle(obj.getWidth(),
 								obj.getHeight()));
 				back.setMaterial(bgMat);
+				back.setQueueBucket(Bucket.Gui);
 
 				Node visual = new Node(obj.getName());
 				visual.attachChild(back);
 				visual.attachChild(border);
-				visual.setQueueBucket(Bucket.Translucent);
+				visual.setQueueBucket(Bucket.Gui);
 
 				obj.setVisual(visual);
 				break;
@@ -356,15 +358,17 @@ public abstract class MapRenderer {
 						ObjectMesh.makeEllipseBorder(obj.getWidth(),
 								obj.getHeight(), ELLIPSE_POINTS));
 				border.setMaterial(mat);
-
+				border.setQueueBucket(Bucket.Gui);
+				
 				Geometry back = new Geometry("ellipse", ObjectMesh.makeEllipse(
 						obj.getWidth(), obj.getHeight(), ELLIPSE_POINTS));
 				back.setMaterial(bgMat);
+				back.setQueueBucket(Bucket.Gui);
 
 				Node visual = new Node(obj.getName());
 				visual.attachChild(back);
 				visual.attachChild(border);
-				visual.setQueueBucket(Bucket.Translucent);
+				visual.setQueueBucket(Bucket.Gui);
 
 				obj.setVisual(visual);
 				break;
@@ -373,15 +377,17 @@ public abstract class MapRenderer {
 				Geometry border = new Geometry("border",
 						ObjectMesh.makePolyline(obj.getPoints(), true));
 				border.setMaterial(mat);
+				border.setQueueBucket(Bucket.Gui);
 
 				Geometry back = new Geometry("polygon",
 						ObjectMesh.makePolygon(obj.getPoints()));
 				back.setMaterial(bgMat);
+				back.setQueueBucket(Bucket.Gui);
 
 				Node visual = new Node(obj.getName());
 				visual.attachChild(back);
 				visual.attachChild(border);
-				visual.setQueueBucket(Bucket.Translucent);
+				visual.setQueueBucket(Bucket.Gui);
 
 				obj.setVisual(visual);
 				break;
@@ -403,16 +409,18 @@ public abstract class MapRenderer {
 				Geometry border = new Geometry("polyline", 
 						ObjectMesh.makePolyline(obj.getPoints(), false));
 				border.setMaterial(mat);
+				border.setQueueBucket(Bucket.Gui);
 				
 				Geometry back = new Geometry("back",
 						ObjectMesh.makeRectangle(max.x - min.x, max.y - min.y));
 				back.setMaterial(bgMat);
 				back.move(min.x, 0, min.y);
+				back.setQueueBucket(Bucket.Gui);
 				
 				Node visual = new Node(obj.getName());
 				visual.attachChild(back);
 				visual.attachChild(border);
-				visual.setQueueBucket(Bucket.Translucent);
+				visual.setQueueBucket(Bucket.Gui);
 				
 				obj.setVisual(visual);
 				break;
@@ -422,12 +430,14 @@ public abstract class MapRenderer {
 						ObjectMesh.makeRectangle(obj.getWidth(),
 								obj.getHeight()));
 				geom.setMaterial(obj.getMaterial());
+				geom.setQueueBucket(Bucket.Gui);
 
 				obj.setVisual(geom);
 				break;
 			}
 			case Tile: {
 				Spatial visual = obj.getTile().getVisual().clone();
+				visual.setQueueBucket(Bucket.Gui);
 				obj.setVisual(visual);
 				break;
 			}
@@ -462,6 +472,7 @@ public abstract class MapRenderer {
 		Mesh mesh = ObjectMesh.makeRectangle(mapSize.x, mapSize.y);
 		Geometry geom = new Geometry(layer.getName(), mesh);
 		geom.setMaterial(layer.getMaterial());
+		geom.setQueueBucket(Bucket.Gui);
 
 		layer.setVisual(geom);
 	}
@@ -495,4 +506,8 @@ public abstract class MapRenderer {
                 return -1;
         }
     }
+
+	public Point getSize() {
+		return mapSize;
+	}
 }

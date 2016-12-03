@@ -1218,7 +1218,6 @@ public class TmxLoader implements AssetLoader {
 				ColorRGBA transparentColor = ColorUtil.toColorRGBA(trans);
 				mat.setColor("TransColor", transparentColor);
 			}
-
 			return mat;
 		}
 	}

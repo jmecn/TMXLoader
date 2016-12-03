@@ -19,6 +19,9 @@ MaterialDef Tiled {
         RenderState {
             Blend Alpha
             FaceCull Off
+//            DepthWrite On
+//            DepthTest On
+//            ColorWrite On
         }
         
         Defines {

@@ -6,6 +6,7 @@ import java.util.logging.Logger;
 
 import com.jme3.math.Vector2f;
 import com.jme3.math.Vector3f;
+import com.jme3.renderer.queue.RenderQueue.Bucket;
 import com.jme3.scene.BatchNode;
 import com.jme3.scene.Spatial;
 import com.jme3.tmx.core.Tile;
@@ -98,6 +99,7 @@ public class HexagonalRenderer extends OrthogonalRenderer {
 		Point startTile = new Point(0, 0);
 		int tileZIndex = 0;
 	    BatchNode batchNode = new BatchNode(layer.getName());
+	    batchNode.setQueueBucket(Bucket.Gui);
 	    if (staggerX) {
 	        boolean staggeredRow = doStaggerX(0);
 
@@ -143,7 +145,6 @@ public class HexagonalRenderer extends OrthogonalRenderer {
 	            }
 	        }
 	    }
-	    
 	    batchNode.batch();
 	    if (tileZIndex > 0) {
 	    	batchNode.setLocalScale(1f, 1f / tileZIndex, 1f);
