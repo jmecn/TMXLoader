@@ -15,6 +15,7 @@ import com.jme3.tmx.core.ObjectNode;
 import com.jme3.tmx.core.Tile;
 import com.jme3.tmx.core.TileLayer;
 import com.jme3.tmx.core.TiledMap;
+import com.jme3.tmx.core.ObjectNode.ObjectType;
 import com.jme3.tmx.math2d.Point;
 
 /**
@@ -51,7 +52,11 @@ public class IsometricRenderer extends MapRenderer {
 
 					Spatial visual = tile.getVisual().clone();
 					
-					visual.setLocalTranslation(
+					flip(visual, tile, layer.isFlippedHorizontally(x, y),
+							layer.isFlippedVertically(x, y),
+							layer.isFlippedAntiDiagonally(x, y));
+					
+					visual.move(
 							(height + x - y) * 0.5f * tileWidth, 
 							tileZIndex++,
 							(x + y) * 0.5f * tileHeight);
@@ -83,9 +88,16 @@ public class IsometricRenderer extends MapRenderer {
 			}
 			
 			Spatial visual = obj.getVisual().clone();
+
+			if (obj.getObjectType() == ObjectType.Tile) {
+				flip(visual, obj.getTile(), obj.isFlippedHorizontally(),
+					obj.isFlippedVertically(),
+					obj.isFlippedAntiDiagonally());
+			}
+			
 			float x = (float) (obj.getX());
 			float y = (float) (obj.getY() + obj.getHeight());
-			visual.setLocalTranslation(tileLoc2ScreenLoc(x, y));
+			visual.move(tileLoc2ScreenLoc(x, y));
 			node.attachChild(visual);
 			
 		}

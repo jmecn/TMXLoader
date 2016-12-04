@@ -4,10 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.jme3.material.Material;
-import com.jme3.scene.Spatial;
+import com.jme3.scene.Geometry;
 import com.jme3.texture.Texture;
+import com.jme3.tmx.animation.Animation;
+import com.jme3.tmx.animation.Frame;
 
-public class Tile extends Base {
+public class Tile extends Base implements Cloneable {
 
 	private Tileset tileset;
 	private int id = -1;
@@ -27,32 +29,10 @@ public class Tile extends Base {
 
 	// setup in jme3
 	private Material material;
-	private Spatial visual = null;
-
-	/**
-	 * When you use the tile flipping feature added in Tiled Qt 0.7, the highest
-	 * two bits of the gid store the flipped state. Bit 32 is used for storing
-	 * whether the tile is horizontally flipped and bit 31 is used for the
-	 * vertically flipped tiles. And since Tiled Qt 0.8, bit 30 means whether
-	 * the tile is flipped (anti) diagonally, enabling tile rotation. These bits
-	 * have to be read and cleared before you can find out which tileset a tile
-	 * belongs to.
-	 * 
-	 * When rendering a tile, the order of operation matters. The diagonal flip
-	 * (x/y axis swap) is done first, followed by the horizontal and vertical
-	 * flips.
-	 */
-	// Bits on the far end of the 32-bit global tile ID are used for tile flags
-	public final static int FLIPPED_HORIZONTALLY_FLAG = 0x80000000;
-	public final static int FLIPPED_VERTICALLY_FLAG = 0x40000000;
-	public final static int FLIPPED_DIAGONALLY_FLAG = 0x20000000;
-
-	private boolean flippedHorizontally;
-	private boolean flippedVertically;
-	private boolean flippedAntiDiagonally;
+	private Geometry visual = null;
 
 	// animation
-	private List<AnimatedFrame> animatedFrames = new ArrayList<AnimatedFrame>();
+	private List<Animation> animations = new ArrayList<Animation>();
 
 	// Terrain
 	/**
@@ -84,11 +64,10 @@ public class Tile extends Base {
 		this.height = height;
 	}
 
-	/**
+	/*
 	 * getters && setters
-	 * 
-	 * @return
 	 */
+	
 	public Tileset getTileset() {
 		return tileset;
 	}
@@ -153,10 +132,23 @@ public class Tile extends Base {
 		this.imgSource = imgSource;
 	}
 
+	/*
+	 * This is the visual part of a tile.
+	 * 
+	 * Texture and Material are set by TMXLoader when loading a tileset.
+	 * 
+	 * Spatial is created by MapRenderer in <code>createVisual(Tileset)</code>.
+	 */
+
 	public Texture getTexture() {
 		return texture;
 	}
 
+	/**
+	 * setTexture
+	 * 
+	 * @param texture
+	 */
 	public void setTexture(Texture texture) {
 		this.texture = texture;
 	}
@@ -165,57 +157,101 @@ public class Tile extends Base {
 		return material;
 	}
 
+	/**
+	 * setMaterial
+	 * 
+	 * @param material
+	 */
 	public void setMaterial(Material material) {
 		this.material = material;
 	}
 
-	public Spatial getVisual() {
+	public Geometry getVisual() {
 		return visual;
 	}
-	
-	public void setVisual(Spatial visual) {
+
+	/**
+	 * Set the visual part of a tile. Basically it is a Geometry with Quad mesh.
+	 * This method is called by
+	 * {@link com.jme3.tmx.render.MapRenderer#createVisual(Tileset)}
+	 * 
+	 * @param visual
+	 */
+	public void setVisual(Geometry visual) {
 		this.visual = visual;
 	}
 
-	public boolean isFlippedHorizontally() {
-		return flippedHorizontally;
+	/*
+	 * This part is about the animation.
+	 * 
+	 * As of Tiled 0.10, each tile can have exactly one animation associated
+	 * with it. In the future, there could be support for multiple named
+	 * animations on a tile
+	 */
+
+	/**
+	 * Add an animation to the tile.
+	 * 
+	 * @param animation
+	 */
+	public void addAnimation(Animation animation) {
+		animation.setId(animations.size());
+		animations.add(animation);
 	}
 
-	public void setFlippedHorizontally(boolean flippedHorizontally) {
-		this.flippedHorizontally = flippedHorizontally;
+	/**
+	 * Add an animation to the tile.
+	 * 
+	 * @param name
+	 *            animation's name
+	 * @param frames
+	 *            the frames
+	 */
+	public void addAnimation(String name, List<Frame> frames) {
+		Animation animation = new Animation(name, frames);
+		animation.setId(animations.size());
+		animations.add(animation);
 	}
 
-	public boolean isFlippedVertically() {
-		return flippedVertically;
+	/**
+	 * Add an animation to the tile.
+	 * 
+	 * @param frames
+	 *            the frames
+	 */
+	public void addAnimation(List<Frame> frames) {
+		Animation animation = new Animation(null, frames);
+		animation.setId(animations.size());
+		animations.add(animation);
 	}
 
-	public void setFlippedVertically(boolean flippedVertically) {
-		this.flippedVertically = flippedVertically;
+	public Animation getAnimation(String name) {
+		int len = animations.size();
+		if (len == 0 || name == null) {
+			return null;
+		}
+
+		for (int i = 0; i < len; i++) {
+			Animation anim = animations.get(i);
+			if (anim.equalsIgnoreCase(name)) {
+				return anim;
+			}
+		}
+
+		return null;
 	}
 
-	public boolean isFlippedAntiDiagonally() {
-		return flippedAntiDiagonally;
-	}
-
-	public void setFlippedAntiDiagonally(boolean flippedAntiDiagonally) {
-		this.flippedAntiDiagonally = flippedAntiDiagonally;
-	}
-
-	public List<AnimatedFrame> getAnimatedFrames() {
-		return animatedFrames;
-	}
-
-	public void setAnimatedFrames(List<AnimatedFrame> animatedFrames) {
-		this.animatedFrames = animatedFrames;
-	}
-
-	public void addFrame(AnimatedFrame frame) {
-		this.animatedFrames.add(frame);
+	public List<Animation> getAnimations() {
+		return animations;
 	}
 
 	public boolean isAnimated() {
-		return animatedFrames.size() > 0;
+		return animations.size() > 0;
 	}
+
+	/*
+	 * This part is about he terrain. It's useless in jme3.
+	 */
 
 	public int getTerrain() {
 		return terrain;
@@ -232,4 +268,5 @@ public class Tile extends Base {
 	public void setProbability(float probability) {
 		this.probability = probability;
 	}
+	
 }

@@ -15,10 +15,11 @@ import com.jme3.scene.Geometry;
 import com.jme3.scene.Mesh;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
+import com.jme3.scene.Spatial.BatchHint;
 import com.jme3.scene.VertexBuffer.Type;
 import com.jme3.texture.Image;
 import com.jme3.texture.Texture;
-import com.jme3.tmx.core.AnimatedFrame;
+import com.jme3.tmx.animation.AnimatedTileControl;
 import com.jme3.tmx.core.ImageLayer;
 import com.jme3.tmx.core.Layer;
 import com.jme3.tmx.core.ObjectLayer;
@@ -89,13 +90,15 @@ public abstract class MapRenderer {
 		this.height = map.getHeight();
 		this.tileWidth = map.getTileWidth();
 		this.tileHeight = map.getTileHeight();
-		
+
 		this.mapSize = new Point();
 		this.mapSize.set(width * tileWidth, height * tileHeight);
 	}
 
 	public abstract Spatial render(TileLayer layer);
+
 	public abstract Spatial render(ObjectLayer layer);
+
 	public abstract Spatial render(ImageLayer layer);
 
 	/**
@@ -110,7 +113,7 @@ public abstract class MapRenderer {
 	/******************************
 	 * Coordinates System Convert *
 	 ******************************/
-	
+
 	public abstract Vector2f pixelToScreenCoords(float x, float y);
 
 	public abstract Point pixelToTileCoords(float x, float y);
@@ -122,7 +125,7 @@ public abstract class MapRenderer {
 	public abstract Vector2f screenToPixelCoords(float x, float y);
 
 	public abstract Point screenToTileCoords(float x, float y);
-	
+
 	/**
 	 * update the visual part of tileset
 	 */
@@ -159,7 +162,7 @@ public abstract class MapRenderer {
 	 *            the Tileset
 	 * @return
 	 */
-	protected void createVisual(Tileset tileset) {
+	public void createVisual(Tileset tileset) {
 
 		Texture texture = tileset.getTexture();
 		Material sharedMat = null;
@@ -238,18 +241,6 @@ public abstract class MapRenderer {
 			float u1 = (x + width) / imageWidth;
 			float v1 = (imageHeight - y) / imageHeight;
 
-			if (tile.isFlippedAntiDiagonally()) {
-				// TODO 
-				logger.info("flipped anti diagonally:" + tileset.getImageSource() + " " +  tile.getId());
-			}
-			if (tile.isFlippedHorizontally()) {
-				// TODO 
-				logger.info("flipped horizontally:" + tileset.getImageSource() + " " +  tile.getId());
-			}
-			if (tile.isFlippedVertically()) {
-				// TODO 
-				logger.info("flipped vertically:" + tileset.getImageSource() + " " +  tile.getId());
-			}
 			float[] texCoord = new float[] { u0, v0, u1, v0, u1, v1, u0, v1 };
 
 			/**
@@ -293,17 +284,13 @@ public abstract class MapRenderer {
 				geometry.setMaterial(tile.getMaterial());
 			}
 
-			// TODO handle the animated tile
 			if (tile.isAnimated()) {
-				logger.info("animated tile:" + tileset.getImageSource() + " " +  tile.getId());
+				geometry.setBatchHint(BatchHint.Never);
 
-				List<AnimatedFrame> frames = tile.getAnimatedFrames();
-				for(int k=0; k<frames.size(); k++) {
-					AnimatedFrame frame = frames.get(k);
-					logger.info("frame" + k + " : " + "id=" + frame.tileId + " duration=" + frame.duration);
-				}
-			} else {
-
+				AnimatedTileControl control = new AnimatedTileControl(tile);
+				// TODO currently just set it to the first animation
+				control.setAnim(0);
+				geometry.addControl(control);
 			}
 
 			tile.setVisual(geometry);
@@ -316,7 +303,7 @@ public abstract class MapRenderer {
 	 * 
 	 * @param layer
 	 */
-	protected void createVisual(ObjectLayer layer) {
+	public void createVisual(ObjectLayer layer) {
 		final ColorRGBA borderColor = layer.getColor();
 
 		Material mat = layer.getMaterial();
@@ -359,7 +346,7 @@ public abstract class MapRenderer {
 								obj.getHeight(), ELLIPSE_POINTS));
 				border.setMaterial(mat);
 				border.setQueueBucket(Bucket.Gui);
-				
+
 				Geometry back = new Geometry("ellipse", ObjectMesh.makeEllipse(
 						obj.getWidth(), obj.getHeight(), ELLIPSE_POINTS));
 				back.setMaterial(bgMat);
@@ -393,35 +380,11 @@ public abstract class MapRenderer {
 				break;
 			}
 			case Polyline: {
-				// move the background a little
-				List<Vector2f> points = obj.getPoints();
-				Vector2f min = new Vector2f();
-				Vector2f max = new Vector2f();
-				int size = points.size();
-				for(int k=0; k<size; k++) {
-					Vector2f p = points.get(k);
-					if(p.x > max.x) max.x = p.x;
-					if(p.y > max.y) max.y = p.y;
-					if(p.x < min.x) min.x = p.x;
-					if(p.y < min.y) min.y = p.y;
-				}
-				
-				Geometry border = new Geometry("polyline", 
+				Geometry visual = new Geometry("polyline",
 						ObjectMesh.makePolyline(obj.getPoints(), false));
-				border.setMaterial(mat);
-				border.setQueueBucket(Bucket.Gui);
-				
-				Geometry back = new Geometry("back",
-						ObjectMesh.makeRectangle(max.x - min.x, max.y - min.y));
-				back.setMaterial(bgMat);
-				back.move(min.x, 0, min.y);
-				back.setQueueBucket(Bucket.Gui);
-				
-				Node visual = new Node(obj.getName());
-				visual.attachChild(back);
-				visual.attachChild(border);
+				visual.setMaterial(mat);
 				visual.setQueueBucket(Bucket.Gui);
-				
+
 				obj.setVisual(visual);
 				break;
 			}
@@ -436,13 +399,14 @@ public abstract class MapRenderer {
 				break;
 			}
 			case Tile: {
-				Spatial visual = obj.getTile().getVisual().clone();
+				Tile tile = obj.getTile();
+				Spatial visual = tile.getVisual().clone();
 				visual.setQueueBucket(Bucket.Gui);
 				obj.setVisual(visual);
 				break;
 			}
 			}
-			
+
 			float deg = obj.getRotation();
 			if (deg != 0) {
 				float radian = FastMath.DEG_TO_RAD * deg;
@@ -451,7 +415,7 @@ public abstract class MapRenderer {
 				visual.rotate(0, -radian, 0);
 			}
 		}
-		
+
 		// sort draw order
 		switch (layer.getDraworder()) {
 		case TOPDOWN:
@@ -468,7 +432,7 @@ public abstract class MapRenderer {
 	 * 
 	 * @param layer
 	 */
-	protected void createVisual(ImageLayer layer) {
+	public void createVisual(ImageLayer layer) {
 		Mesh mesh = ObjectMesh.makeRectangle(mapSize.x, mapSize.y);
 		Geometry geom = new Geometry(layer.getName(), mesh);
 		geom.setMaterial(layer.getMaterial());
@@ -476,38 +440,60 @@ public abstract class MapRenderer {
 
 		layer.setVisual(geom);
 	}
-	
+
+	/**
+	 * Flip the tile
+	 * 
+	 * @param h
+	 * @param v
+	 * @param ad
+	 */
+	protected void flip(Spatial visual, Tile tile, boolean isHorizontally,
+			boolean isVertically, boolean isAntiDiagonally) {
+		// TODO
+		if (isHorizontally) {
+			visual.rotate(0, 0, FastMath.PI);
+			visual.move(tile.getWidth(), 0, 0);
+		}
+		
+		if (isVertically) {
+			visual.rotate(FastMath.PI, 0, 0);
+			visual.move(0, 0, tile.getHeight());
+		}
+		
+	}
+
 	private final class CompareTopdown implements Comparator<ObjectNode> {
 		@Override
 		public int compare(ObjectNode o1, ObjectNode o2) {
 			double a = o1.getY();
-            double b = o2.getY();
+			double b = o2.getY();
 
-            if (a > b)
-                return 1;
-            else if (a == b)
-                return 0;
-            else
-                return -1;
+			if (a > b)
+				return 1;
+			else if (a == b)
+				return 0;
+			else
+				return -1;
 		}
 	}
-	
-    private final class CompareIndex implements Comparator<ObjectNode> {
-        @Override
-        public int compare(ObjectNode o1, ObjectNode o2) {
-            int a = o1.getId();
-            int b = o2.getId();
 
-            if (a > b)
-                return 1;
-            else if (a == b)
-                return 0;
-            else
-                return -1;
-        }
-    }
+	private final class CompareIndex implements Comparator<ObjectNode> {
+		@Override
+		public int compare(ObjectNode o1, ObjectNode o2) {
+			int a = o1.getId();
+			int b = o2.getId();
 
-	public Point getSize() {
-		return mapSize;
+			if (a > b)
+				return 1;
+			else if (a == b)
+				return 0;
+			else
+				return -1;
+		}
+	}
+
+	public Vector2f getMapDimension() {
+		return new Vector2f(mapSize.x, mapSize.y);
 	}
 }

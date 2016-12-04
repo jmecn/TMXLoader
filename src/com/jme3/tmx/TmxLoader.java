@@ -35,7 +35,8 @@ import com.jme3.math.Vector2f;
 import com.jme3.texture.Texture.MagFilter;
 import com.jme3.texture.Texture.WrapMode;
 import com.jme3.texture.Texture2D;
-import com.jme3.tmx.core.AnimatedFrame;
+import com.jme3.tmx.animation.Animation;
+import com.jme3.tmx.animation.Frame;
 import com.jme3.tmx.core.ImageLayer;
 import com.jme3.tmx.core.Layer;
 import com.jme3.tmx.core.ObjectLayer;
@@ -48,6 +49,7 @@ import com.jme3.tmx.core.TiledMap;
 import com.jme3.tmx.core.TiledMap.Orientation;
 import com.jme3.tmx.core.TiledMap.RenderOrder;
 import com.jme3.tmx.core.Tileset;
+import com.jme3.tmx.core.Types;
 import com.jme3.tmx.util.Base64;
 import com.jme3.tmx.util.ColorUtil;
 import com.sun.istack.internal.logging.Logger;
@@ -500,17 +502,19 @@ public class TmxLoader implements AssetLoader {
 				tile.setTexture(image.texture);
 				tile.setMaterial(image.createMaterial());
 			} else if ("animation".equalsIgnoreCase(child.getNodeName())) {
+				Animation animation = new Animation(null);
 				NodeList frames = child.getChildNodes();
 				for (int k = 0; k < frames.getLength(); k++) {
 					Node frameNode = frames.item(k);
 					if (frameNode.getNodeName().equalsIgnoreCase("frame")) {
-						AnimatedFrame frame = new AnimatedFrame();
+						Frame frame = new Frame();
 						frame.tileId = getAttribute(frameNode, "tileid", 0);
 						frame.duration = getAttribute(frameNode, "duration", 0);
 
-						tile.addFrame(frame);
+						animation.addFrame(frame);
 					}
 				}
+				tile.addAnimation(animation);
 			}
 		}
 
@@ -855,7 +859,20 @@ public class TmxLoader implements AssetLoader {
 			obj.setObjectType(ObjectType.Tile);
 
 			int gidValue = (int) Long.parseLong(gid);
+			
+			// read out the flag
+			boolean flipped_horizontally = (gidValue & Types.FLIPPED_HORIZONTALLY_FLAG) != 0;
+			boolean flipped_vertically = (gidValue & Types.FLIPPED_VERTICALLY_FLAG) != 0;
+			boolean flipped_diagonally = (gidValue & Types.FLIPPED_DIAGONALLY_FLAG) != 0;
+
+			// clear the flag
+			gidValue = gidValue & 0x1FFFFFFF;
+			
 			Tile tile = getTileForTileGID(gidValue);
+			
+			obj.setFlippedHorizontally(flipped_horizontally);
+			obj.setFlippedVertically(flipped_vertically);
+			obj.setFlippedAntiDiagonally(flipped_diagonally);
 			obj.setTile(tile);
 		}
 
@@ -1011,40 +1028,37 @@ public class TmxLoader implements AssetLoader {
 	 *            global id of the tile as read from the file
 	 */
 	private void setTileAtFromTileId(TileLayer ml, int y, int x, int tileId) {
-		ml.setTileAt(x, y, getTileForTileGID(tileId));
+		
+		// clear the flag
+		int gid = tileId & ~Types.FLIPPED_MASK;
+		
+		Tile tile = getTileForTileGID(gid);
+		if (tile != null) {
+			ml.setTileAt(x, y, tile);
+			ml.setFlipMaskAt(x, y, tileId & Types.FLIPPED_MASK);
+		}
 	}
 
 	/**
 	 * Helper method to get the tile based on its global id
 	 * 
-	 * @param tileId
+	 * @param gid
 	 *            global id of the tile
 	 * @return <ul>
 	 *         <li>{@link Tile} object corresponding to the global id, if found</li>
 	 *         <li><code>null</code>, otherwise</li>
 	 *         </ul>
 	 */
-	private Tile getTileForTileGID(final int tileId) {
-
-		// read out the flag
-		boolean flipped_horizontally = (tileId & Tile.FLIPPED_HORIZONTALLY_FLAG) != 0;
-		boolean flipped_vertically = (tileId & Tile.FLIPPED_VERTICALLY_FLAG) != 0;
-		boolean flipped_diagonally = (tileId & Tile.FLIPPED_DIAGONALLY_FLAG) != 0;
-
-		// clear the flag
-		int gid = tileId & 0x1FFFFFFF;
+	private Tile getTileForTileGID(final int gid) {
 
 		Tile tile = null;
 		java.util.Map.Entry<Integer, Tileset> ts = findTileSetForTileGID(gid);
 		if (ts != null) {
 			tile = ts.getValue().getTile(gid - ts.getKey());
-
-			if (tile != null) {
-				// TODO what should I do to this mass?
-				tile.setFlippedHorizontally(flipped_horizontally);
-				tile.setFlippedVertically(flipped_vertically);
-				tile.setFlippedAntiDiagonally(flipped_diagonally);
-			}
+		}
+		
+		if (gid > 0 && tile == null) {
+			logger.warning("can find tile with gid:" + gid);
 		}
 		return tile;
 	}

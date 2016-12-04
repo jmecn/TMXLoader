@@ -15,6 +15,7 @@ import com.jme3.tmx.core.ObjectNode;
 import com.jme3.tmx.core.Tile;
 import com.jme3.tmx.core.TileLayer;
 import com.jme3.tmx.core.TiledMap;
+import com.jme3.tmx.core.ObjectNode.ObjectType;
 import com.jme3.tmx.core.TiledMap.RenderOrder;
 import com.jme3.tmx.math2d.Point;
 
@@ -90,7 +91,11 @@ public class OrthogonalRenderer extends MapRenderer {
 				}
 				
 				Spatial visual = tile.getVisual().clone();
-				visual.setLocalTranslation(x * tileWidth, tileZIndex++, y * tileHeight);
+				flip(visual, tile, layer.isFlippedHorizontally(x, y),
+					layer.isFlippedVertically(x, y),
+					layer.isFlippedAntiDiagonally(x, y));
+				
+				visual.move(x * tileWidth, tileZIndex++, y * tileHeight);
 				visual.setQueueBucket(Bucket.Gui);
 				batchNode.attachChild(visual);
 	        }
@@ -127,7 +132,14 @@ public class OrthogonalRenderer extends MapRenderer {
 			float x = (float) obj.getX();
 			float y = (float) obj.getY();
 			Spatial visual = obj.getVisual().clone();
-			visual.setLocalTranslation(x, visualCnt++, y);
+			
+			if (obj.getObjectType() == ObjectType.Tile) {
+				flip(visual, obj.getTile(), obj.isFlippedHorizontally(),
+					obj.isFlippedVertically(),
+					obj.isFlippedAntiDiagonally());
+			}
+			
+			visual.move(x, visualCnt++, y);
 			node.attachChild(visual);
 		}
 		if (visualCnt > 0) {

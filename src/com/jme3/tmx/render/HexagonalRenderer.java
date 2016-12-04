@@ -113,9 +113,14 @@ public class HexagonalRenderer extends OrthogonalRenderer {
 					}
 
 					Spatial visual = tile.getVisual().clone();
+					
+					flip(visual, tile, layer.isFlippedHorizontally(rowTile.x, rowTile.y),
+							layer.isFlippedVertically(rowTile.x, rowTile.y),
+							layer.isFlippedAntiDiagonally(rowTile.x, rowTile.y));
+						
 					// set its position with rowPos and tileZIndex
 					Vector2f pos = tileToScreenCoords(rowTile.x, rowTile.y);
-					visual.setLocalTranslation(pos.x, tileZIndex++, pos.y);
+					visual.move(pos.x, tileZIndex++, pos.y);
 					batchNode.attachChild(visual);
 	            }
 
@@ -138,9 +143,14 @@ public class HexagonalRenderer extends OrthogonalRenderer {
 						continue;
 					}
 					Spatial visual = tile.getVisual().clone();
+					
+					flip(visual, tile, layer.isFlippedHorizontally(rowTile.x, rowTile.y),
+							layer.isFlippedVertically(rowTile.x, rowTile.y),
+							layer.isFlippedAntiDiagonally(rowTile.x, rowTile.y));
+					
 					// set its position with rowPos and tileZIndex
 					Vector2f pos = tileToScreenCoords(rowTile.x, rowTile.y);
-					visual.setLocalTranslation(pos.x, tileZIndex++, pos.y);
+					visual.move(pos.x, tileZIndex++, pos.y);
 					batchNode.attachChild(visual);
 	            }
 	        }
