@@ -193,8 +193,6 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener,
 			isMapUpdated = false;
 		}
 
-		mapNode.setLocalTranslation(mapTranslation);
-		mapNode.setLocalScale(mapScale, 1f, mapScale);
 	}
 
 	/**
@@ -232,6 +230,7 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener,
 
 		// create visual part for the map;
 		mapRenderer.updateVisual();
+		mapNode.setLocalTranslation(mapTranslation);
 		isMapUpdated = true;
 	}
 
@@ -297,6 +296,8 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener,
 		mapTranslation.set(screenDimension.x * 0.5f, 0,
 				screenDimension.y * 0.5f);
 		mapScale = getMapScale();
+		mapNode.setLocalTranslation(mapTranslation);
+		mapNode.setLocalScale(mapScale, 1f, mapScale);
 	}
 
 	public TiledMap getMap() {
@@ -320,8 +321,9 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener,
 		if (map != null) {
 			float pixel = map.getTileWidth() * viewColumns;
 			mapScale = screenDimension.x / pixel;
+			mapNode.setLocalScale(mapScale, 1, mapScale);
 		}
-
+		
 		return mapScale;
 	}
 
@@ -408,9 +410,10 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener,
 	 * @param value
 	 * @param sideways
 	 */
+	Vector3f vel = new Vector3f();
+	Vector3f pos = new Vector3f();
 	public void move(float value, boolean sideways) {
-		Vector3f vel = new Vector3f();
-		Vector3f pos = mapTranslation.clone();
+		pos.set(mapTranslation.clone());
 
 		if (sideways) {
 			vel.set(1f, 0f, 0f);
@@ -422,6 +425,7 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener,
 		pos.addLocal(vel);
 
 		mapTranslation.set(pos);
+		mapNode.setLocalTranslation(mapTranslation);
 	}
 
 	boolean isPressed = false;
@@ -443,6 +447,7 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener,
 
 			// move camera
 			mapTranslation.set(startLoc.add(stopPos.x, 0, -stopPos.y));
+			mapNode.setLocalTranslation(mapTranslation);
 		}
 	}
 
