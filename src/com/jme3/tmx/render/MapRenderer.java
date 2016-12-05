@@ -135,6 +135,7 @@ public abstract class MapRenderer {
 				// this is a little magic to make let top layer block off the
 				// bottom layer
 				visual.setLocalTranslation(0, i, 0);
+				layer.setNeedUpdated(false);
 			}
 		}
 		return map.getVisual();
