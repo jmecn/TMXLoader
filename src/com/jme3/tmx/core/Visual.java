@@ -1,7 +1,5 @@
 package com.jme3.tmx.core;
 
-import com.jme3.math.Transform;
-import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 
 /**
@@ -15,7 +13,7 @@ import com.jme3.scene.Spatial;
 public class Visual {
 	
 	protected boolean isTransformUpdated = true;
-	protected boolean isSpatialUpdated = true;
+	protected boolean isNeedUpdate = true;
 	protected Spatial visual;
 
 	public boolean isTransformUpdated() {
@@ -26,12 +24,12 @@ public class Visual {
 		this.isTransformUpdated = isTransformUpdated;
 	}
 
-	public boolean isSpatialUpdated() {
-		return isSpatialUpdated;
+	public boolean isNeedUpdated() {
+		return isNeedUpdate;
 	}
 
-	public void setSpatialUpdated(boolean isSpatialUpdated) {
-		this.isSpatialUpdated = isSpatialUpdated;
+	public void setNeedUpdated(boolean isSpatialUpdated) {
+		this.isNeedUpdate = isSpatialUpdated;
 	}
 	
 	public Spatial getVisual() {
@@ -56,23 +54,12 @@ public class Visual {
 			return;
 		}
 		
-		Node parent = null;
-		Transform transform = null;
 		if (this.visual != null) {
-			transform = this.visual.getLocalTransform();
-			parent = visual.getParent();
-			if (parent != null) {
-				parent.detachChild(this.visual);
-			}
-		}
-		
-		if (visual != null) {
-			visual.setLocalTransform(transform);
-			parent.attachChild(visual);
+			this.visual.removeFromParent();
 		}
 		
 		this.visual = visual;
 		
-		isSpatialUpdated = true;
+		isNeedUpdate = false;
 	}
 }

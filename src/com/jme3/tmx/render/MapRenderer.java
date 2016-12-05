@@ -9,7 +9,6 @@ import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.FastMath;
 import com.jme3.math.Vector2f;
-import com.jme3.math.Vector3f;
 import com.jme3.renderer.queue.RenderQueue.Bucket;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Mesh;
@@ -98,24 +97,24 @@ public abstract class MapRenderer {
 	/**
 	 * Render the tiled map
 	 */
-	public void render() {
+	public Spatial render() {
 
 		if (map == null) {
-			return;
+			return null;
 		}
 
 		// TODO set background color
 
-		Node mapNode = map.getVisual();
-		mapNode.detachAllChildren();
-		
 		int len = map.getLayerCount();
-		int layerCnt = 0;
 		for (int i = 0; i < len; i++) {
 			Layer layer = map.getLayer(i);
 
 			// skip invisible layer
 			if (!layer.isVisible()) {
+				continue;
+			}
+			
+			if (!layer.isNeedUpdated()) {
 				continue;
 			}
 
@@ -133,36 +132,184 @@ public abstract class MapRenderer {
 			}
 
 			if (visual != null) {
-				visual.setQueueBucket(Bucket.Gui);
-				mapNode.attachChild(visual);
-
 				// this is a little magic to make let top layer block off the
 				// bottom layer
-				visual.setLocalTranslation(0, layerCnt++, 0);
+				visual.setLocalTranslation(0, i, 0);
 			}
 		}
-
-		// make the whole map thinner
-		if (layerCnt > 0) {
-			mapNode.setLocalScale(1, 1f / layerCnt, 1);
-		}
-
+		return map.getVisual();
 	}
 	
-	public abstract Spatial render(TileLayer layer);
-
-	public abstract Spatial render(ObjectLayer layer);
-
-	public abstract Spatial render(ImageLayer layer);
+	protected abstract Spatial render(TileLayer layer);
 
 	/**
-	 * convert tile location to screen location
+	 * Create the visual part for every ObjectNode in a ObjectLayer.
 	 * 
-	 * @param x
-	 * @param y
-	 * @return
+	 * @param layer
 	 */
-	public abstract Vector3f tileLoc2ScreenLoc(float x, float y);
+	protected Spatial render(ObjectLayer layer) {
+		List<ObjectNode> objects = layer.getObjects();
+		// instance the layer node
+		if (layer.getVisual() == null) {
+			Node layerNode = new Node("ObjectGroup#" + layer.getName());
+			layerNode.setQueueBucket(Bucket.Gui);
+			layer.setVisual(layerNode);
+			map.getVisual().attachChild(layerNode);
+		}
+		
+		final ColorRGBA borderColor = layer.getColor();
+		final ColorRGBA bgColor = borderColor.mult(0.3f);
+		Material mat = layer.getMaterial();
+		Material bgMat = mat.clone();
+		bgMat.setColor("Color", bgColor);
+		
+		int len = objects.size();
+		
+		if (len > 0) {
+			layer.getVisual().setLocalScale(1f, 1f / len, 1f);
+			
+			// sort draw order
+			switch (layer.getDraworder()) {
+			case TOPDOWN:
+				Collections.sort(objects, new CompareTopdown());
+				break;
+			case INDEX:
+				Collections.sort(objects, new CompareIndex());
+				break;
+			}
+		}
+		
+		for (int i = 0; i < len; i++) {
+			ObjectNode obj = objects.get(i);
+
+			if (!obj.isVisible()) {
+				continue;
+			}
+
+			if (obj.isNeedUpdated()) {
+				
+				switch (obj.getObjectType()) {
+				case Rectangle: {
+					Geometry border = new Geometry("border",
+							ObjectMesh.makeRectangleBorder(obj.getWidth(),
+									obj.getHeight()));
+					border.setMaterial(mat);
+					border.setQueueBucket(Bucket.Gui);
+
+					Geometry back = new Geometry("rectangle",
+							ObjectMesh.makeRectangle(obj.getWidth(),
+									obj.getHeight()));
+					back.setMaterial(bgMat);
+					back.setQueueBucket(Bucket.Gui);
+
+					Node visual = new Node(obj.getName());
+					visual.attachChild(back);
+					visual.attachChild(border);
+					visual.setQueueBucket(Bucket.Gui);
+
+					obj.setVisual(visual);
+					break;
+				}
+				case Ellipse: {
+					Geometry border = new Geometry("border",
+							ObjectMesh.makeEllipseBorder(obj.getWidth(),
+									obj.getHeight(), ELLIPSE_POINTS));
+					border.setMaterial(mat);
+					border.setQueueBucket(Bucket.Gui);
+
+					Geometry back = new Geometry("ellipse", ObjectMesh.makeEllipse(
+							obj.getWidth(), obj.getHeight(), ELLIPSE_POINTS));
+					back.setMaterial(bgMat);
+					back.setQueueBucket(Bucket.Gui);
+
+					Node visual = new Node(obj.getName());
+					visual.attachChild(back);
+					visual.attachChild(border);
+					visual.setQueueBucket(Bucket.Gui);
+
+					obj.setVisual(visual);
+					break;
+				}
+				case Polygon: {
+					Geometry border = new Geometry("border",
+							ObjectMesh.makePolyline(obj.getPoints(), true));
+					border.setMaterial(mat);
+					border.setQueueBucket(Bucket.Gui);
+
+					Geometry back = new Geometry("polygon",
+							ObjectMesh.makePolygon(obj.getPoints()));
+					back.setMaterial(bgMat);
+					back.setQueueBucket(Bucket.Gui);
+
+					Node visual = new Node(obj.getName());
+					visual.attachChild(back);
+					visual.attachChild(border);
+					visual.setQueueBucket(Bucket.Gui);
+
+					obj.setVisual(visual);
+					break;
+				}
+				case Polyline: {
+					Geometry visual = new Geometry("polyline",
+							ObjectMesh.makePolyline(obj.getPoints(), false));
+					visual.setMaterial(mat);
+					visual.setQueueBucket(Bucket.Gui);
+
+					obj.setVisual(visual);
+					break;
+				}
+				case Image: {
+					Geometry geom = new Geometry(obj.getName(),
+							ObjectMesh.makeRectangle(obj.getWidth(),
+									obj.getHeight()));
+					geom.setMaterial(obj.getMaterial());
+					geom.setQueueBucket(Bucket.Gui);
+
+					obj.setVisual(geom);
+					break;
+				}
+				case Tile: {
+					Tile tile = obj.getTile();
+					Spatial visual = tile.getVisual().clone();
+					visual.setQueueBucket(Bucket.Gui);
+					
+					flip(visual, obj.getTile(), obj.isFlippedHorizontally(), obj.isFlippedVertically(),
+							obj.isFlippedAntiDiagonally());
+					
+					obj.setVisual(visual);
+					break;
+				}
+				}
+
+				float deg = obj.getRotation();
+				if (deg != 0) {
+					float radian = FastMath.DEG_TO_RAD * deg;
+					Spatial visual = obj.getVisual();
+					// rotate the spatial clockwise
+					visual.rotate(0, -radian, 0);
+				}
+				
+				float x = (float) obj.getX();
+				float y = (float) obj.getY();
+				Vector2f screenCoord = pixelToScreenCoords(x, y);
+				obj.getVisual().move(screenCoord.x, i, screenCoord.y);
+				layer.getVisual().attachChild(obj.getVisual());
+			}
+		}
+		
+		return layer.getVisual();
+	}
+
+	protected Spatial render(ImageLayer layer) {
+		Mesh mesh = ObjectMesh.makeRectangle(mapSize.x, mapSize.y);
+		Geometry geom = new Geometry(layer.getName(), mesh);
+		geom.setMaterial(layer.getMaterial());
+		geom.setQueueBucket(Bucket.Gui);
+
+		layer.setVisual(geom);
+		
+		return layer.getVisual();
+	}
 
 	/******************************
 	 * Coordinates System Convert *
@@ -188,25 +335,6 @@ public abstract class MapRenderer {
 		for (int i = 0; i < sets.size(); i++) {
 			createVisual(sets.get(i));
 		}
-
-		int len = map.getLayerCount();
-		for (int i = 0; i < len; i++) {
-			Layer layer = map.getLayer(i);
-
-			// skip invisible layer
-			if (!layer.isVisible()) {
-				continue;
-			}
-
-			if (layer instanceof ObjectLayer) {
-				createVisual((ObjectLayer) layer);
-			}
-
-			if (layer instanceof ImageLayer) {
-				createVisual((ImageLayer) layer);
-			}
-		}
-
 	}
 
 	/**
@@ -479,20 +607,6 @@ public abstract class MapRenderer {
 			Collections.sort(objects, new CompareIndex());
 			break;
 		}
-	}
-
-	/**
-	 * ImageLayer only need to display an image.
-	 * 
-	 * @param layer
-	 */
-	public void createVisual(ImageLayer layer) {
-		Mesh mesh = ObjectMesh.makeRectangle(mapSize.x, mapSize.y);
-		Geometry geom = new Geometry(layer.getName(), mesh);
-		geom.setMaterial(layer.getMaterial());
-		geom.setQueueBucket(Bucket.Gui);
-
-		layer.setVisual(geom);
 	}
 
 	/**

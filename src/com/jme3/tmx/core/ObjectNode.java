@@ -5,7 +5,6 @@ import java.util.logging.Logger;
 
 import com.jme3.material.Material;
 import com.jme3.math.Vector2f;
-import com.jme3.scene.Spatial;
 import com.jme3.texture.Texture;
 
 /**
@@ -132,7 +131,6 @@ public class ObjectNode extends Base {
 
 	private Texture texture;
 	private Material material;
-	private Spatial spatial;
 
 	/**
 	 * Default constructor
@@ -313,14 +311,6 @@ public class ObjectNode extends Base {
 		this.material = material;
 	}
 
-	public Spatial getVisual() {
-		return spatial;
-	}
-
-	public void setVisual(Spatial spatial) {
-		this.spatial = spatial;
-	}
-	
 	@Override
 	public String toString() {
 		return "ObjectNode [id=" + id + ", name=" + name + ", type=" + type

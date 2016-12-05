@@ -222,7 +222,8 @@ public class TiledMap extends Base {
 	 * @return the layer that was removed from the list
 	 */
 	public Layer removeLayer(int index) {
-		return layers.remove(index);
+		Layer layer = layers.remove(index);
+		return layer;
 	}
 
 	/**

@@ -5,9 +5,8 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import com.jme3.math.Vector2f;
-import com.jme3.math.Vector3f;
 import com.jme3.renderer.queue.RenderQueue.Bucket;
-import com.jme3.scene.BatchNode;
+import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.tmx.core.Tile;
 import com.jme3.tmx.core.TileLayer;
@@ -67,16 +66,14 @@ public class HexagonalRenderer extends OrthogonalRenderer {
 
 		// The map size is the same regardless of which indexes are shifted.
 		if (staggerX) {
-			mapSize.set(width * columnWidth + sideOffsetX, height
-					* (tileHeight + sideLengthY));
+			mapSize.set(width * columnWidth + sideOffsetX, height * (tileHeight + sideLengthY));
 
 			if (width > 1) {
 				mapSize.y += rowHeight;
 			}
 
 		} else {
-			mapSize.set(width * (tileWidth + sideLengthX), height * rowHeight
-					+ sideOffsetY);
+			mapSize.set(width * (tileWidth + sideLengthX), height * rowHeight + sideOffsetY);
 
 			if (height > 1) {
 				mapSize.x += columnWidth;
@@ -98,8 +95,16 @@ public class HexagonalRenderer extends OrthogonalRenderer {
 	public Spatial render(TileLayer layer) {
 		Point startTile = new Point(0, 0);
 		int tileZIndex = 0;
-	    BatchNode batchNode = new BatchNode(layer.getName());
-	    batchNode.setQueueBucket(Bucket.Gui);
+
+		// instance the layer node
+		if (layer.getVisual() == null) {
+			Node layerNode = new Node("TileLayer#" + layer.getName());
+			layerNode.setQueueBucket(Bucket.Gui);
+			layer.setVisual(layerNode);
+			
+			map.getVisual().attachChild(layerNode);
+		}
+		
 	    if (staggerX) {
 	        boolean staggeredRow = doStaggerX(0);
 
@@ -112,16 +117,23 @@ public class HexagonalRenderer extends OrthogonalRenderer {
 						continue;
 					}
 
-					Spatial visual = tile.getVisual().clone();
-					
-					flip(visual, tile, layer.isFlippedHorizontally(rowTile.x, rowTile.y),
-							layer.isFlippedVertically(rowTile.x, rowTile.y),
-							layer.isFlippedAntiDiagonally(rowTile.x, rowTile.y));
+					if (layer.isNeedUpdateAt(rowTile.x, rowTile.y)) {
 						
-					// set its position with rowPos and tileZIndex
-					Vector2f pos = tileToScreenCoords(rowTile.x, rowTile.y);
-					visual.move(pos.x, tileZIndex++, pos.y);
-					batchNode.attachChild(visual);
+						Spatial visual = tile.getVisual().clone();
+						
+						flip(visual, tile, layer.isFlippedHorizontally(rowTile.x, rowTile.y),
+								layer.isFlippedVertically(rowTile.x, rowTile.y),
+								layer.isFlippedAntiDiagonally(rowTile.x, rowTile.y));
+							
+						// set its position with rowPos and tileZIndex
+						Vector2f pos = tileToScreenCoords(rowTile.x, rowTile.y);
+						visual.move(pos.x, tileZIndex, pos.y);
+						visual.setQueueBucket(Bucket.Gui);
+						layer.setSpatialAt(rowTile.x, rowTile.y, visual);
+						
+					}
+					
+					tileZIndex++;
 	            }
 
 	            if (staggeredRow) {
@@ -142,47 +154,31 @@ public class HexagonalRenderer extends OrthogonalRenderer {
 					if (tile == null || tile.getVisual() == null) {
 						continue;
 					}
-					Spatial visual = tile.getVisual().clone();
 					
-					flip(visual, tile, layer.isFlippedHorizontally(rowTile.x, rowTile.y),
-							layer.isFlippedVertically(rowTile.x, rowTile.y),
-							layer.isFlippedAntiDiagonally(rowTile.x, rowTile.y));
-					
-					// set its position with rowPos and tileZIndex
-					Vector2f pos = tileToScreenCoords(rowTile.x, rowTile.y);
-					visual.move(pos.x, tileZIndex++, pos.y);
-					batchNode.attachChild(visual);
+					if (layer.isNeedUpdateAt(rowTile.x, rowTile.y)) {
+						
+						Spatial visual = tile.getVisual().clone();
+						
+						flip(visual, tile, layer.isFlippedHorizontally(rowTile.x, rowTile.y),
+								layer.isFlippedVertically(rowTile.x, rowTile.y),
+								layer.isFlippedAntiDiagonally(rowTile.x, rowTile.y));
+							
+						// set its position with rowPos and tileZIndex
+						Vector2f pos = tileToScreenCoords(rowTile.x, rowTile.y);
+						visual.move(pos.x, tileZIndex, pos.y);
+						visual.setQueueBucket(Bucket.Gui);
+						layer.setSpatialAt(rowTile.x, rowTile.y, visual);
+					}
+					tileZIndex++;
 	            }
 	        }
 	    }
-	    batchNode.batch();
-	    if (tileZIndex > 0) {
-	    	batchNode.setLocalScale(1f, 1f / tileZIndex, 1f);
-	    }
-	    
-	    return batchNode;
-	}
+	    // make it thinner
+ 		if (tileZIndex > 0) {
+ 			layer.getVisual().setLocalScale(1, 1f / tileZIndex, 1);
+ 		}
 
-	@Override
-	public Vector3f tileLoc2ScreenLoc(float x, float y) {
-		int odd;
-		if (staggerX) {
-			odd = (int) x % 2;
-		} else {
-			odd = (int) y % 2;
-		}
-
-		if (staggerEven) {
-			odd = 1 - odd;
-		}
-
-		if (staggerX) {
-			return new Vector3f(x * 0.75f * tileWidth, 0, (y + odd * 0.5f)
-					* tileHeight);
-		} else {
-			return new Vector3f((x + odd * 0.5f) * tileWidth, 0, y * 0.75f
-					* tileHeight);
-		}
+ 		return layer.getVisual();
 	}
 
 	@Override

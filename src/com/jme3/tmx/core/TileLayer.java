@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Properties;
 
 import com.jme3.scene.Node;
+import com.jme3.scene.Spatial;
 import com.jme3.tmx.math2d.Point;
 
 /**
@@ -16,6 +17,9 @@ public class TileLayer extends Layer {
 
 	private Tile[][] map;
 	private int[][] flipMask;
+	
+	private boolean[][] needUpdateSpatial;
+	private Spatial[][] spatials;
 
 	protected HashMap<Object, Properties> tileInstanceProperties = new HashMap<>();
 	
@@ -32,9 +36,8 @@ public class TileLayer extends Layer {
 
 		map = new Tile[height][width];
 		flipMask = new int[height][width];
-		
-		// in a TileLayer I use Node as the spatial
-		visual = new Node();
+		spatials = new Spatial[height][width];
+		needUpdateSpatial = new boolean[height][width];
 	}
 
 	/**
@@ -89,6 +92,8 @@ public class TileLayer extends Layer {
 			for (int x = 0; x < this.width; x++) {
 				if (map[y][x] == tile) {
 					setTileAt(x + this.x, y + this.y, null);
+					setSpatialAt(x + this.x, y + this.y, null);
+					setFlipMaskAt(x + this.x, y + this.y, 0);
 				}
 			}
 		}
@@ -108,6 +113,10 @@ public class TileLayer extends Layer {
 	public void setTileAt(int tx, int ty, Tile ti) {
 		if (contains(tx, ty)) {
 			map[ty - y][tx - x] = ti;
+			needUpdateSpatial[ty - y][tx - x] = true;
+			
+			// tell map renderer to update it
+			isNeedUpdate = true;
 		}
 	}
 
@@ -192,6 +201,60 @@ public class TileLayer extends Layer {
 	}
 
 	/**
+	 * Sets the spatial at the specified position. Does nothing if (tx, ty) falls
+	 * outside of this layer.
+	 * 
+	 * @param tx
+	 *            x position of tile
+	 * @param ty
+	 *            y position of tile
+	 * @param spatial
+	 *            the spatial to place
+	 */
+	public void setSpatialAt(int tx, int ty, Spatial spatial) {
+		if (contains(tx, ty)) {
+			
+			Node parent = (Node) visual;
+			
+			Spatial old = spatials[ty-y][tx-x];
+			if (old != null) {
+				parent.detachChild(old);
+			}
+			
+			parent.attachChild(spatial);
+			spatials[ty - y][tx - x] = spatial;
+			
+			needUpdateSpatial[ty - y][tx - x] = false;
+		}
+	}
+
+	/**
+	 * Returns the spatial at the specified position.
+	 * 
+	 * @param tx
+	 *            Tile-space x coordinate
+	 * @param ty
+	 *            Tile-space y coordinate
+	 * @return spatial at position (tx, ty) or <code>null</code> when (tx, ty) is
+	 *         outside this layer
+	 */
+	public Spatial getSpatialAt(int tx, int ty) {
+		return (contains(tx, ty)) ? spatials[ty - y][tx - x] : null;
+	}
+	
+	/**
+	 * Tell if the spatial at position(tx, ty) should be updated.
+	 * 
+	 * @param tx
+	 *            Tile-space x coordinate
+	 * @param ty
+	 *            Tile-space y coordinate
+	 */
+	public boolean isNeedUpdateAt(int tx, int ty) {
+		return (contains(tx, ty)) ? needUpdateSpatial[ty - y][tx - x] : false;
+	}
+	
+	/**
 	 * <p>
 	 * getTileInstancePropertiesAt.
 	 * </p>
@@ -229,8 +292,4 @@ public class TileLayer extends Layer {
 		}
 	}
 	
-	@Override
-	public Node getVisual() {
-		return (Node)visual;
-	}
 }

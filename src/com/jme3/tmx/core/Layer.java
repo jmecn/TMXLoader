@@ -138,5 +138,4 @@ public class Layer extends Base {
 		this.offsetx = offsetx;
 		this.offsety = offsety;
 	}
-	
 }

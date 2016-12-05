@@ -9,6 +9,7 @@ import java.util.logging.Logger;
 
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
+import com.jme3.scene.Node;
 
 /**
  * The object group is in fact a map layer, and is hence called "object layer"
@@ -186,6 +187,11 @@ public class ObjectLayer extends Layer {
 		}
 
 		return null;
+	}
+	
+	@Override
+	public Node getVisual() {
+		return (Node)visual;
 	}
 	
 }

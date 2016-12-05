@@ -1,7 +1,6 @@
 package com.jme3.tmx.core;
 
 import com.jme3.material.Material;
-import com.jme3.scene.Spatial;
 import com.jme3.texture.Texture;
 
 /**
@@ -12,7 +11,6 @@ public class ImageLayer extends Layer {
 	private String source;
 	private Texture texture;
 	private Material material;
-	private Spatial visual;
 	
 	/**
 	 * Default constructor
@@ -47,11 +45,4 @@ public class ImageLayer extends Layer {
 		this.material = material;
 	}
 
-	public Spatial getVisual() {
-		return visual;
-	}
-
-	public void setVisual(Spatial visual) {
-		this.visual = visual;
-	}
 }

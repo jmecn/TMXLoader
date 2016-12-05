@@ -15,7 +15,6 @@ import com.jme3.input.controls.AnalogListener;
 import com.jme3.input.controls.KeyTrigger;
 import com.jme3.input.controls.MouseAxisTrigger;
 import com.jme3.input.controls.MouseButtonTrigger;
-import com.jme3.math.ColorRGBA;
 import com.jme3.math.FastMath;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Vector2f;
@@ -25,10 +24,6 @@ import com.jme3.renderer.ViewPort;
 import com.jme3.renderer.queue.RenderQueue.Bucket;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
-import com.jme3.tmx.core.ImageLayer;
-import com.jme3.tmx.core.Layer;
-import com.jme3.tmx.core.ObjectLayer;
-import com.jme3.tmx.core.TileLayer;
 import com.jme3.tmx.core.TiledMap;
 import com.jme3.tmx.render.HexagonalRenderer;
 import com.jme3.tmx.render.IsometricRenderer;
@@ -67,7 +62,6 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener,
 	private Quaternion localRotation;
 
 	// The mapNode
-	private Node mapNode;
 	private Vector3f mapTranslation;
 	private float mapScale;
 
@@ -109,8 +103,6 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener,
 		screenDimension = new Vector2f();
 		mapDimension = new Vector2f();
 
-		mapNode = new Node("TileMap");
-		mapNode.setQueueBucket(Bucket.Gui);
 		mapTranslation = new Vector3f();
 		mapScale = 1f;
 
@@ -121,8 +113,6 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener,
 		localRotation = new Quaternion();
 		localRotation.fromAngles(FastMath.HALF_PI, 0, 0);
 		rootNode.setLocalRotation(localRotation);
-
-		rootNode.attachChild(mapNode);
 
 		setMap(map);
 
@@ -188,10 +178,22 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener,
 
 	@Override
 	public void update(float tpf) {
-		if (isMapUpdated) {
-			render();
-			isMapUpdated = false;
+		Spatial spatial = null;
+		if (mapRenderer != null) {
+			spatial = mapRenderer.render();
+			
+			if (isMapUpdated) {
+				// move it to the left bottom of screen space
+				mapDimension.set(mapRenderer.getMapDimension());
+				mapTranslation.set(screenDimension.x * 0.5f, 0, screenDimension.y * 0.5f);
+				mapScale = getMapScale();
+				spatial.setLocalTranslation(mapTranslation);
+				spatial.setLocalScale(mapScale, 1f, mapScale);
+				
+				isMapUpdated = false;
+			}
 		}
+			
 
 	}
 
@@ -205,6 +207,13 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener,
 		if (map == null)
 			return;
 
+		rootNode.detachAllChildren();
+		rootNode.attachChild(map.getVisual());
+		
+		if (viewPort != null) {
+			viewPort.setBackgroundColor(map.getBackgroundColor());
+		}
+		
 		if (this.map != map) {
 			this.map = map;
 		}
@@ -230,74 +239,8 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener,
 
 		// create visual part for the map;
 		mapRenderer.updateVisual();
-		mapNode.setLocalTranslation(mapTranslation);
+		map.getVisual().setLocalTranslation(mapTranslation);
 		isMapUpdated = true;
-	}
-
-	/**
-	 * Render the tiled map
-	 */
-	public void render() {
-
-		if (map == null) {
-			return;
-		}
-
-		// set background color
-		if (viewPort != null) {
-			ColorRGBA bgColor = map.getBackgroundColor();
-			if (bgColor == null) {
-				bgColor = ColorRGBA.Black.clone();
-			}
-			viewPort.setBackgroundColor(bgColor);
-		}
-
-		mapNode.detachAllChildren();
-		int len = map.getLayerCount();
-		int layerCnt = 0;
-		for (int i = 0; i < len; i++) {
-			Layer layer = map.getLayer(i);
-
-			// skip invisible layer
-			if (!layer.isVisible()) {
-				continue;
-			}
-
-			Spatial visual = null;
-			if (layer instanceof TileLayer) {
-				visual = mapRenderer.render((TileLayer) layer);
-			}
-
-			if (layer instanceof ObjectLayer) {
-				visual = mapRenderer.render((ObjectLayer) layer);
-			}
-
-			if (layer instanceof ImageLayer) {
-				visual = mapRenderer.render((ImageLayer) layer);
-			}
-
-			if (visual != null) {
-				visual.setQueueBucket(Bucket.Gui);
-				mapNode.attachChild(visual);
-
-				// this is a little magic to make let top layer block off the
-				// bottom layer
-				visual.setLocalTranslation(0, layerCnt++, 0);
-			}
-		}
-
-		// make the whole map thinner
-		if (layerCnt > 0) {
-			mapNode.setLocalScale(1, 1f / layerCnt, 1);
-		}
-
-		// move it to the left bottom of screen space
-		mapDimension.set(mapRenderer.getMapDimension());
-		mapTranslation.set(screenDimension.x * 0.5f, 0,
-				screenDimension.y * 0.5f);
-		mapScale = getMapScale();
-		mapNode.setLocalTranslation(mapTranslation);
-		mapNode.setLocalScale(mapScale, 1f, mapScale);
 	}
 
 	public TiledMap getMap() {
@@ -321,7 +264,7 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener,
 		if (map != null) {
 			float pixel = map.getTileWidth() * viewColumns;
 			mapScale = screenDimension.x / pixel;
-			mapNode.setLocalScale(mapScale, 1, mapScale);
+			map.getVisual().setLocalScale(mapScale, 1, mapScale);
 		}
 		
 		return mapScale;
@@ -425,7 +368,7 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener,
 		pos.addLocal(vel);
 
 		mapTranslation.set(pos);
-		mapNode.setLocalTranslation(mapTranslation);
+		map.getVisual().setLocalTranslation(mapTranslation);
 	}
 
 	boolean isPressed = false;
@@ -447,7 +390,7 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener,
 
 			// move camera
 			mapTranslation.set(startLoc.add(stopPos.x, 0, -stopPos.y));
-			mapNode.setLocalTranslation(mapTranslation);
+			map.getVisual().setLocalTranslation(mapTranslation);
 		}
 	}
 
