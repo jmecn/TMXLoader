@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.StringTokenizer;
-import java.util.TreeMap;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.InflaterInputStream;
 
@@ -52,17 +51,24 @@ import com.jme3.tmx.core.Tileset;
 import com.jme3.tmx.core.Types;
 import com.jme3.tmx.util.Base64;
 import com.jme3.tmx.util.ColorUtil;
-import com.sun.istack.internal.logging.Logger;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+/**
+ * Tiled map loader.
+ * 
+ * @author yanmaoyuan
+ *
+ */
 public class TmxLoader implements AssetLoader {
 
-	static Logger logger = Logger.getLogger(TmxLoader.class);
+	static Logger logger = Logger.getLogger(TmxLoader.class.getName());
 
 	private AssetManager assetManager;
 	private AssetKey<?> key;
 
 	private TiledMap map;
-	private TreeMap<Integer, Tileset> tilesetPerFirstGid;
 
 	@Override
 	public Object load(AssetInfo assetInfo) throws IOException {
@@ -161,7 +167,7 @@ public class TmxLoader implements AssetLoader {
 				set.setSource(key.getName());
 			}
 		} catch (Exception e) {
-			logger.warning("Failed while loading " + key.getName(), e);
+			logger.log(Level.WARNING, "Failed while loading " + key.getName(), e);
 		}
 
 		return set;
@@ -181,7 +187,7 @@ public class TmxLoader implements AssetLoader {
 		try {
 			ext = (Tileset) assetManager.loadAsset(assetPath);
 		} catch (Exception e) {
-			logger.warning("Tileset " + source + " was not loaded correctly!", e);
+			logger.log(Level.WARNING, "Tileset " + source + " was not loaded correctly!", e);
 		}
 
 		return ext;
@@ -303,8 +309,6 @@ public class TmxLoader implements AssetLoader {
 		Properties props = readProperties(mapNode.getChildNodes());
 		map.setProperties(props);
 
-		// Load tilesets first, in case order is munged
-		tilesetPerFirstGid = new TreeMap<>();
 		NodeList l = doc.getElementsByTagName("tileset");
 		for (int i = 0; (item = l.item(i)) != null; i++) {
 			map.addTileset(readTileset(item));
@@ -330,7 +334,6 @@ public class TmxLoader implements AssetLoader {
 				}
 			}
 		}
-		tilesetPerFirstGid = null;
 	}
 
 	/**
@@ -350,7 +353,7 @@ public class TmxLoader implements AssetLoader {
 
 		if (source != null) {
 			Tileset set = loadTileSet(key.getFolder() + source);
-			setFirstGidForTileset(set, firstGid);
+			set.setFirstgid(firstGid);
 			return set;
 		}
 
@@ -361,9 +364,9 @@ public class TmxLoader implements AssetLoader {
 		final int tileSpacing = getAttribute(t, "spacing", 0);
 		final int tileMargin = getAttribute(t, "margin", 0);
 
-		Tileset set = new Tileset(tileWidth, tileHeight, tileSpacing,
-				tileMargin);
-
+		Tileset set = new Tileset(tileWidth, tileHeight, tileSpacing, tileMargin);
+		set.setFirstgid(firstGid);
+		
 		final String name = getAttributeValue(t, "name");
 		set.setName(name);
 
@@ -416,7 +419,7 @@ public class TmxLoader implements AssetLoader {
 		}
 
 		if (set != null) {
-			setFirstGidForTileset(set, firstGid);
+			
 		}
 
 		return set;
@@ -662,7 +665,7 @@ public class TmxLoader implements AssetLoader {
 								tileId |= is.read() << 16;
 								tileId |= is.read() << 24;
 
-								setTileAtFromTileId(layer, y, x, tileId);
+								map.setTileAtFromTileId(layer, y, x, tileId);
 							}
 						}
 					}
@@ -695,7 +698,7 @@ public class TmxLoader implements AssetLoader {
 									* layer.getWidth()];
 							int tileId = Integer.parseInt(sTileId);
 
-							setTileAtFromTileId(layer, y, x, tileId);
+							map.setTileAtFromTileId(layer, y, x, tileId);
 						}
 					}
 				} else {
@@ -704,7 +707,7 @@ public class TmxLoader implements AssetLoader {
 							.getNextSibling()) {
 						if ("tile".equalsIgnoreCase(dataChild.getNodeName())) {
 							int tileId = getAttribute(dataChild, "gid", -1);
-							setTileAtFromTileId(layer, y, x, tileId);
+							map.setTileAtFromTileId(layer, y, x, tileId);
 
 							x++;
 							if (x == layer.getWidth()) {
@@ -868,7 +871,7 @@ public class TmxLoader implements AssetLoader {
 			// clear the flag
 			gidValue = gidValue & 0x1FFFFFFF;
 			
-			Tile tile = getTileForTileGID(gidValue);
+			Tile tile = map.getTileForTileGID(gidValue);
 			
 			obj.setFlippedHorizontally(flipped_horizontally);
 			obj.setFlippedVertically(flipped_vertically);
@@ -1016,72 +1019,6 @@ public class TmxLoader implements AssetLoader {
 	}
 
 	/**
-	 * Helper method to set the tile based on its global id.
-	 * 
-	 * @param ml
-	 *            tile layer
-	 * @param y
-	 *            y-coordinate
-	 * @param x
-	 *            x-coordinate
-	 * @param tileId
-	 *            global id of the tile as read from the file
-	 */
-	private void setTileAtFromTileId(TileLayer ml, int y, int x, int tileId) {
-		
-		// clear the flag
-		int gid = tileId & ~Types.FLIPPED_MASK;
-		
-		Tile tile = getTileForTileGID(gid);
-		if (tile != null) {
-			ml.setTileAt(x, y, tile);
-			ml.setFlipMaskAt(x, y, tileId & Types.FLIPPED_MASK);
-		}
-	}
-
-	/**
-	 * Helper method to get the tile based on its global id
-	 * 
-	 * @param gid
-	 *            global id of the tile
-	 * @return <ul>
-	 *         <li>{@link Tile} object corresponding to the global id, if found</li>
-	 *         <li><code>null</code>, otherwise</li>
-	 *         </ul>
-	 */
-	private Tile getTileForTileGID(final int gid) {
-
-		Tile tile = null;
-		java.util.Map.Entry<Integer, Tileset> ts = findTileSetForTileGID(gid);
-		if (ts != null) {
-			tile = ts.getValue().getTile(gid - ts.getKey());
-		}
-		
-		if (gid > 0 && tile == null) {
-			logger.warning("can find tile with gid:" + gid);
-		}
-		return tile;
-	}
-
-	/**
-	 * Get the tile set and its corresponding firstgid that matches the given
-	 * global tile id.
-	 * 
-	 * 
-	 * @param gid
-	 *            a global tile id
-	 * @return the tileset containing the tile with the given global tile id, or
-	 *         <code>null</code> when no such tileset exists
-	 */
-	private java.util.Map.Entry<Integer, Tileset> findTileSetForTileGID(int gid) {
-		return tilesetPerFirstGid.floorEntry(gid);
-	}
-
-	private void setFirstGidForTileset(Tileset tileset, int firstGid) {
-		tilesetPerFirstGid.put(firstGid, tileset);
-	}
-
-	/**
 	 * Load a Texture from source
 	 * 
 	 * @param source
@@ -1096,7 +1033,7 @@ public class TmxLoader implements AssetLoader {
 			tex.setWrap(WrapMode.Repeat);
 			tex.setMagFilter(MagFilter.Nearest);
 		} catch (Exception e) {
-			logger.warning("Can't load texture " + source, e);
+			logger.log(Level.WARNING, "Can't load texture " + source, e);
 		}
 
 		return tex;
@@ -1138,7 +1075,7 @@ public class TmxLoader implements AssetLoader {
 				loaderInstance = LoaderClass.newInstance();
 				loadMethod = LoaderClass.getMethod("load", AssetInfo.class);
 			} catch (ReflectiveOperationException e) {
-				logger.warning("Can't find AWTLoader.", e);
+				logger.log(Level.WARNING, "Can't find AWTLoader.", e);
 			}
 		}
 
@@ -1161,7 +1098,7 @@ public class TmxLoader implements AssetLoader {
 			tex.setName(texKey.getName());
 			tex.setImage(img);
 		} catch (Exception e) {
-			logger.warning("Can't load texture from byte array", e);
+			logger.log(Level.WARNING, "Can't load texture from byte array", e);
 		}
 
 		return tex;

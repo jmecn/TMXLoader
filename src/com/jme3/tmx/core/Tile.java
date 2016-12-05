@@ -29,7 +29,6 @@ public class Tile extends Base implements Cloneable {
 
 	// setup in jme3
 	private Material material;
-	private Geometry visual = null;
 
 	// animation
 	private List<Animation> animations = new ArrayList<Animation>();
@@ -166,17 +165,6 @@ public class Tile extends Base implements Cloneable {
 		this.material = material;
 	}
 
-	public Geometry getVisual() {
-		return visual;
-	}
-
-	/**
-	 * Set the visual part of a tile. Basically it is a Geometry with Quad mesh.
-	 * This method is called by
-	 * {@link com.jme3.tmx.render.MapRenderer#createVisual(Tileset)}
-	 * 
-	 * @param visual
-	 */
 	public void setVisual(Geometry visual) {
 		this.visual = visual;
 	}

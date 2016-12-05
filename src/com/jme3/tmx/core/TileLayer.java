@@ -3,6 +3,7 @@ package com.jme3.tmx.core;
 import java.util.HashMap;
 import java.util.Properties;
 
+import com.jme3.scene.Node;
 import com.jme3.tmx.math2d.Point;
 
 /**
@@ -17,13 +18,7 @@ public class TileLayer extends Layer {
 	private int[][] flipMask;
 
 	protected HashMap<Object, Properties> tileInstanceProperties = new HashMap<>();
-
-	/**
-	 * Default constructor.
-	 */
-	public TileLayer() {
-	}
-
+	
 	/**
 	 * Construct a TileLayer from the given width and height.
 	 * 
@@ -37,6 +32,9 @@ public class TileLayer extends Layer {
 
 		map = new Tile[height][width];
 		flipMask = new int[height][width];
+		
+		// in a TileLayer I use Node as the spatial
+		visual = new Node();
 	}
 
 	/**
@@ -229,5 +227,10 @@ public class TileLayer extends Layer {
 			Object key = new Point(x, y);
 			tileInstanceProperties.put(key, tip);
 		}
+	}
+	
+	@Override
+	public Node getVisual() {
+		return (Node)visual;
 	}
 }

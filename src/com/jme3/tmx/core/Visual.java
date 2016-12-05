@@ -38,6 +38,18 @@ public class Visual {
 		return visual;
 	}
 	
+	/**
+	 * Set the visual part of a tile map object. 
+	 * 
+	 * For tiles, basically it is a Geometry with Quad mesh.
+	 * 
+	 * This method is called by
+	 * {@link com.jme3.tmx.render.MapRenderer#createVisual(Tileset)}
+	 * {@link com.jme3.tmx.render.MapRenderer#createVisual(ObjectLayer)}
+	 * {@link com.jme3.tmx.render.MapRenderer#createVisual(ImageLayer)}
+	 * 
+	 * @param visual
+	 */
 	public void setVisual(Spatial visual) {
 		
 		if (this.visual == visual) {

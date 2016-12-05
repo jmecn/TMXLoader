@@ -95,6 +95,60 @@ public abstract class MapRenderer {
 		this.mapSize.set(width * tileWidth, height * tileHeight);
 	}
 
+	/**
+	 * Render the tiled map
+	 */
+	public void render() {
+
+		if (map == null) {
+			return;
+		}
+
+		// TODO set background color
+
+		Node mapNode = map.getVisual();
+		mapNode.detachAllChildren();
+		
+		int len = map.getLayerCount();
+		int layerCnt = 0;
+		for (int i = 0; i < len; i++) {
+			Layer layer = map.getLayer(i);
+
+			// skip invisible layer
+			if (!layer.isVisible()) {
+				continue;
+			}
+
+			Spatial visual = null;
+			if (layer instanceof TileLayer) {
+				visual = render((TileLayer) layer);
+			}
+
+			if (layer instanceof ObjectLayer) {
+				visual = render((ObjectLayer) layer);
+			}
+
+			if (layer instanceof ImageLayer) {
+				visual = render((ImageLayer) layer);
+			}
+
+			if (visual != null) {
+				visual.setQueueBucket(Bucket.Gui);
+				mapNode.attachChild(visual);
+
+				// this is a little magic to make let top layer block off the
+				// bottom layer
+				visual.setLocalTranslation(0, layerCnt++, 0);
+			}
+		}
+
+		// make the whole map thinner
+		if (layerCnt > 0) {
+			mapNode.setLocalScale(1, 1f / layerCnt, 1);
+		}
+
+	}
+	
 	public abstract Spatial render(TileLayer layer);
 
 	public abstract Spatial render(ObjectLayer layer);
@@ -461,6 +515,17 @@ public abstract class MapRenderer {
 			visual.move(0, 0, tile.getHeight());
 		}
 		
+		/**
+		 * <pre>
+		 * [      *]
+		 * [    *  ]
+		 * [  *    ]
+		 * [*      ]
+		 * </pre>
+		 */
+		if (isAntiDiagonally) {
+
+		}
 	}
 
 	private final class CompareTopdown implements Comparator<ObjectNode> {

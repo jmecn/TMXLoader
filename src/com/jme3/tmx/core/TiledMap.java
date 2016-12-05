@@ -2,10 +2,13 @@ package com.jme3.tmx.core;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.jme3.math.ColorRGBA;
+import com.jme3.renderer.queue.RenderQueue.Bucket;
+import com.jme3.scene.Node;
 
 /**
  * A map contains three different kinds of layers. Tile layers were once
@@ -126,6 +129,7 @@ public class TiledMap extends Base {
 	 */
 	private int nextObjectId;
 
+	private TreeMap<Integer, Tileset> tilesetPerFirstGid;
 	private List<Tileset> tilesets;
 	private List<Layer> layers;
 
@@ -149,6 +153,14 @@ public class TiledMap extends Base {
 		this.backgroundColor = new ColorRGBA(0f, 0f, 0f, 0f);
 		this.tilesets = new ArrayList<Tileset>();
 		this.layers = new ArrayList<Layer>();
+		
+		// Load tilesets first, in case order is munged
+		this.tilesetPerFirstGid = new TreeMap<>();
+		
+		// in a TiledMap I use Node as the spatial
+		this.visual = new Node("TileMap");
+		this.visual.setQueueBucket(Bucket.Gui);
+		
 	}
 
 	/**
@@ -268,10 +280,13 @@ public class TiledMap extends Base {
 		if (tileset == null || tilesets.indexOf(tileset) > -1) {
 			return;
 		}
+		
 
 		Tile t = tileset.getTile(0);
 
 		if (t != null) {
+			setFirstGidForTileset(tileset, tileset.getFirstgid());
+			
 			int tw = t.getWidth();
 			int th = t.getHeight();
 			if (tw != tileWidth) {
@@ -318,6 +333,71 @@ public class TiledMap extends Base {
 	 */
 	public List<Tileset> getTileSets() {
 		return tilesets;
+	}
+	
+	/**
+	 * Get the tile set and its corresponding firstgid that matches the given
+	 * global tile id.
+	 * 
+	 * @param gid
+	 *            a global tile id
+	 * @return the tileset containing the tile with the given global tile id, or
+	 *         <code>null</code> when no such tileset exists
+	 */
+	private java.util.Map.Entry<Integer, Tileset> findTileSetForTileGID(int gid) {
+		return tilesetPerFirstGid.floorEntry(gid);
+	}
+
+	private void setFirstGidForTileset(Tileset tileset, int firstGid) {
+		tilesetPerFirstGid.put(firstGid, tileset);
+	}
+	
+	/**
+	 * Helper method to set the tile based on its global id.
+	 * 
+	 * @param ml
+	 *            tile layer
+	 * @param y
+	 *            y-coordinate
+	 * @param x
+	 *            x-coordinate
+	 * @param tileId
+	 *            global id of the tile as read from the file
+	 */
+	public void setTileAtFromTileId(TileLayer ml, int y, int x, int tileId) {
+		
+		// clear the flag
+		int gid = tileId & ~Types.FLIPPED_MASK;
+		
+		Tile tile = getTileForTileGID(gid);
+		if (tile != null) {
+			ml.setTileAt(x, y, tile);
+			ml.setFlipMaskAt(x, y, tileId & Types.FLIPPED_MASK);
+		}
+	}
+	
+	/**
+	 * Helper method to get the tile based on its global id
+	 * 
+	 * @param gid
+	 *            global id of the tile
+	 * @return <ul>
+	 *         <li>{@link Tile} object corresponding to the global id, if found</li>
+	 *         <li><code>null</code>, otherwise</li>
+	 *         </ul>
+	 */
+	public Tile getTileForTileGID(final int gid) {
+
+		Tile tile = null;
+		java.util.Map.Entry<Integer, Tileset> ts = findTileSetForTileGID(gid);
+		if (ts != null) {
+			tile = ts.getValue().getTile(gid - ts.getKey());
+		}
+		
+		if (gid > 0 && tile == null) {
+			logger.warning("can find tile with gid:" + gid);
+		}
+		return tile;
 	}
 
 	/**
@@ -461,5 +541,10 @@ public class TiledMap extends Base {
 
 	public void setNextObjectId(int nextObjectId) {
 		this.nextObjectId = nextObjectId;
+	}
+	
+	@Override
+	public Node getVisual() {
+		return (Node)visual;
 	}
 }

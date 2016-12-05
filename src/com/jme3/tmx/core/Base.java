@@ -19,7 +19,7 @@ import java.util.Properties;
  * @author yanmaoyuan
  * 
  */
-public class Base {
+public class Base extends Visual {
 	
 	protected Properties properties;
 
