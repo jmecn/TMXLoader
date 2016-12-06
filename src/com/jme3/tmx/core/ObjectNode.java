@@ -119,9 +119,6 @@ public class ObjectNode extends Base {
 	 */
 	private int gid;
 	private Tile tile;
-	private boolean flippedHorizontally;
-	private boolean flippedVertically;
-	private boolean flippedAntiDiagonally;
 
 	// ObjectGroupType == Polygon || ObjectGroupType == Polyline
 	private List<Vector2f> points;
@@ -249,31 +246,6 @@ public class ObjectNode extends Base {
 		this.tile = tile;
 	}
 
-
-	public boolean isFlippedHorizontally() {
-		return flippedHorizontally;
-	}
-
-	public void setFlippedHorizontally(boolean flippedHorizontally) {
-		this.flippedHorizontally = flippedHorizontally;
-	}
-
-	public boolean isFlippedVertically() {
-		return flippedVertically;
-	}
-
-	public void setFlippedVertically(boolean flippedVertically) {
-		this.flippedVertically = flippedVertically;
-	}
-
-	public boolean isFlippedAntiDiagonally() {
-		return flippedAntiDiagonally;
-	}
-
-	public void setFlippedAntiDiagonally(boolean flippedAntiDiagonally) {
-		this.flippedAntiDiagonally = flippedAntiDiagonally;
-	}
-	
 	public List<Vector2f> getPoints() {
 		return points;
 	}

@@ -368,12 +368,13 @@ public class TiledMap extends Base {
 	public void setTileAtFromTileId(TileLayer ml, int y, int x, int tileId) {
 		
 		// clear the flag
-		int gid = tileId & ~Types.FLIPPED_MASK;
+		int gid = tileId & ~Tile.FLIPPED_MASK;
 		
 		Tile tile = getTileForTileGID(gid);
 		if (tile != null) {
-			ml.setTileAt(x, y, tile);
-			ml.setFlipMaskAt(x, y, tileId & Types.FLIPPED_MASK);
+			Tile t = tile.clone();
+			t.setGid(tileId);
+			ml.setTileAt(x, y, t);
 		}
 	}
 	

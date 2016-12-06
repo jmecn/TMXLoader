@@ -237,9 +237,8 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener,
 			mapRenderer = new OrthogonalRenderer(map);
 		}
 
-		// create visual part for the map;
-		mapRenderer.updateVisual();
-		map.getVisual().setLocalTranslation(mapTranslation);
+		Vector2f pos = mapRenderer.tileToScreenCoords(0, 0);
+		mapTranslation.set(pos.x, 0, pos.y);
 		isMapUpdated = true;
 	}
 

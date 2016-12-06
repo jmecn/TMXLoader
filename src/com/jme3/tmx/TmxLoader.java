@@ -31,9 +31,17 @@ import com.jme3.asset.TextureKey;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector2f;
+import com.jme3.renderer.queue.RenderQueue.Bucket;
+import com.jme3.scene.Geometry;
+import com.jme3.scene.Mesh;
+import com.jme3.scene.Spatial.BatchHint;
+import com.jme3.scene.VertexBuffer.Type;
 import com.jme3.texture.Texture.MagFilter;
 import com.jme3.texture.Texture.WrapMode;
+import com.jme3.texture.Image;
+import com.jme3.texture.Texture;
 import com.jme3.texture.Texture2D;
+import com.jme3.tmx.animation.AnimatedTileControl;
 import com.jme3.tmx.animation.Animation;
 import com.jme3.tmx.animation.Frame;
 import com.jme3.tmx.core.ImageLayer;
@@ -48,7 +56,6 @@ import com.jme3.tmx.core.TiledMap;
 import com.jme3.tmx.core.TiledMap.Orientation;
 import com.jme3.tmx.core.TiledMap.RenderOrder;
 import com.jme3.tmx.core.Tileset;
-import com.jme3.tmx.core.Types;
 import com.jme3.tmx.util.Base64;
 import com.jme3.tmx.util.ColorUtil;
 
@@ -311,9 +318,14 @@ public class TmxLoader implements AssetLoader {
 
 		NodeList l = doc.getElementsByTagName("tileset");
 		for (int i = 0; (item = l.item(i)) != null; i++) {
-			map.addTileset(readTileset(item));
+			Tileset set = readTileset(item);
+			/**
+			 * update the visual part of tileset
+			 */
+			createVisual(set);
+			map.addTileset(set);
 		}
-
+		
 		// Load the layers and objectgroups
 		for (Node sibs = mapNode.getFirstChild(); sibs != null; sibs = sibs
 				.getNextSibling()) {
@@ -417,12 +429,152 @@ public class TmxLoader implements AssetLoader {
 				set.setTileOffset(tileOffsetX, tileOffsetY);
 			}
 		}
+		
+		return set;
+	}
+	
+	/**
+	 * Create the visual part for every tile of a given Tileset.
+	 * 
+	 * @param tileset
+	 *            the Tileset
+	 * @return
+	 */
+	private void createVisual(Tileset tileset) {
 
-		if (set != null) {
-			
+		Texture texture = tileset.getTexture();
+		Material sharedMat = null;
+		Image image = null;
+		/**
+		 * If this tileset has a texture, means that most of the tiles are share
+		 * the same TextureAltas, I just need to apply the shared material to
+		 * their visual part.
+		 * 
+		 * Some tiles like "Player" or "Monster" maybe use their own texture to
+		 * perform animation, should be handled differently. Such as create a
+		 * com.jme3.scene.Node instead of com.jme3.scene.Geometry for them, and
+		 * create a Control to make them animated.
+		 * 
+		 */
+		boolean hasSharedImage = texture != null;
+
+		if (hasSharedImage) {
+			image = texture.getImage();
+			sharedMat = tileset.getMaterial();
 		}
 
-		return set;
+		List<Tile> tiles = tileset.getTiles();
+		int len = tiles.size();
+		for (int i = 0; i < len; i++) {
+			Tile tile = tiles.get(i);
+
+			String name = "tile#" + tileset.getFirstgid() + "#" + tile.getId();
+
+			/**
+			 * If the tile has a texture, means that it don't use the shared
+			 * material.
+			 */
+			boolean useSharedImage = tile.getTexture() == null;
+			if (!useSharedImage) {
+				if (tile.getMaterial() == null) {
+					// this shouldn't happen, just in case someone uses Tiles
+					// created by code.
+					logger.warning("The tile mush has a material if it don't use sharedImage:"
+							+ name);
+					continue;
+				}
+			}
+
+			float x = tile.getX();
+			float y = tile.getY();
+			float width = tile.getWidth();
+			float height = tile.getHeight();
+
+			/**
+			 * Calculate the texCoord of this tile in an Image.
+			 * 
+			 * <pre>
+			 * (u0,v1)    (u1,v1)
+			 * *----------*
+			 * |        * |
+			 * |      *   |
+			 * |    *     |
+			 * |  *       |
+			 * *----------*
+			 * (u0,v0)    (u1,v0)
+			 * </pre>
+			 */
+			float imageWidth;
+			float imageHeight;
+			if (useSharedImage) {
+				imageWidth = image.getWidth();
+				imageHeight = image.getHeight();
+			} else {
+				imageWidth = tile.getTexture().getImage().getWidth();
+				imageHeight = tile.getTexture().getImage().getHeight();
+			}
+
+			float u0 = x / imageWidth;
+			float v0 = (imageHeight - y - height) / imageHeight;
+			float u1 = (x + width) / imageWidth;
+			float v1 = (imageHeight - y) / imageHeight;
+
+			float[] texCoord = new float[] { u0, v0, u1, v0, u1, v1, u0, v1 };
+
+			/**
+			 * Calculate the vertices' position of this tile.
+			 * 
+			 * <pre>
+			 * 3          2
+			 * *----------*
+			 * |        * |
+			 * |      *   |
+			 * |    *     |
+			 * |  *       |
+			 * *----------*
+			 * 0          1
+			 * </pre>
+			 */
+			float[] vertices = new float[] {
+					0, 0, height,
+					width, 0, height,
+					width, 0, 0,
+					0, 0, 0 };
+			
+			short[] indexes = new short[] { 0, 1, 2, 0, 2, 3 };
+
+			/**
+			 * Normals are all the same: to Vector3f.UNIT_Y
+			 */
+			float[] normals = new float[] { 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0 };
+
+			Mesh mesh = new Mesh();
+			mesh.setBuffer(Type.Position, 3, vertices);
+			mesh.setBuffer(Type.TexCoord, 2, texCoord);
+			mesh.setBuffer(Type.Normal, 3, normals);
+			mesh.setBuffer(Type.Index, 3, indexes);
+			mesh.updateBound();
+			mesh.setStatic();
+
+			Geometry geometry = new Geometry(name, mesh);
+			geometry.setQueueBucket(Bucket.Gui);
+
+			if (useSharedImage) {
+				geometry.setMaterial(sharedMat);
+			} else {
+				geometry.setMaterial(tile.getMaterial());
+			}
+
+			if (tile.isAnimated()) {
+				geometry.setBatchHint(BatchHint.Never);
+
+				AnimatedTileControl control = new AnimatedTileControl(tile);
+				geometry.addControl(control);
+			}
+			
+			tile.setVisual(geometry);
+		}
+
 	}
 
 	/**
@@ -863,20 +1015,14 @@ public class TmxLoader implements AssetLoader {
 
 			int gidValue = (int) Long.parseLong(gid);
 			
-			// read out the flag
-			boolean flipped_horizontally = (gidValue & Types.FLIPPED_HORIZONTALLY_FLAG) != 0;
-			boolean flipped_vertically = (gidValue & Types.FLIPPED_VERTICALLY_FLAG) != 0;
-			boolean flipped_diagonally = (gidValue & Types.FLIPPED_DIAGONALLY_FLAG) != 0;
-
 			// clear the flag
 			gidValue = gidValue & 0x1FFFFFFF;
 			
 			Tile tile = map.getTileForTileGID(gidValue);
 			
-			obj.setFlippedHorizontally(flipped_horizontally);
-			obj.setFlippedVertically(flipped_vertically);
-			obj.setFlippedAntiDiagonally(flipped_diagonally);
-			obj.setTile(tile);
+			Tile t = tile.clone();
+			t.setGid(gidValue);
+			obj.setTile(t);
 		}
 
 		NodeList children = node.getChildNodes();

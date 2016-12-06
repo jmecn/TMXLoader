@@ -94,8 +94,7 @@ public class OrthogonalRenderer extends MapRenderer {
 
 				if (layer.isNeedUpdateAt(x, y)) {
 					Spatial visual = tile.getVisual().clone();
-					flip(visual, tile, layer.isFlippedHorizontally(x, y), layer.isFlippedVertically(x, y),
-							layer.isFlippedAntiDiagonally(x, y));
+					flip(visual, tile);
 					
 					Vector2f pixelCoord = tileToScreenCoords(x, y);
 					visual.move(pixelCoord.x, tileZIndex, pixelCoord.y);

@@ -30,6 +30,9 @@ public class AnimatedTileControl extends AbstractControl {
 	public AnimatedTileControl(Tile tile) {
 		this.tile = tile;
 		resetAnimation();
+		
+		// TODO currently just set it to the first animation
+		setAnim(0);
 	}
 
 	public void setAnim(String name) {
@@ -87,4 +90,9 @@ public class AnimatedTileControl extends AbstractControl {
 	protected void controlRender(RenderManager rm, ViewPort vp) {
 	}
 
+	public Object clone() {
+		AnimatedTileControl control = new AnimatedTileControl(tile);
+		control.anim = anim;
+		return control;
+	}
 }

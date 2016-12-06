@@ -16,7 +16,6 @@ import com.jme3.tmx.math2d.Point;
 public class TileLayer extends Layer {
 
 	private Tile[][] map;
-	private int[][] flipMask;
 	
 	private boolean[][] needUpdateSpatial;
 	private Spatial[][] spatials;
@@ -35,7 +34,6 @@ public class TileLayer extends Layer {
 		super(w, h);
 
 		map = new Tile[height][width];
-		flipMask = new int[height][width];
 		spatials = new Spatial[height][width];
 		needUpdateSpatial = new boolean[height][width];
 	}
@@ -93,7 +91,6 @@ public class TileLayer extends Layer {
 				if (map[y][x] == tile) {
 					setTileAt(x + this.x, y + this.y, null);
 					setSpatialAt(x + this.x, y + this.y, null);
-					setFlipMaskAt(x + this.x, y + this.y, 0);
 				}
 			}
 		}
@@ -171,33 +168,6 @@ public class TileLayer extends Layer {
 				}
 			}
 		}
-	}
-
-	public void setFlipMaskAt(int tx, int ty, int mask) {
-		if (contains(tx, ty)) {
-			flipMask[ty - y][tx - x] = mask;
-		}
-	}
-
-	public boolean isFlippedHorizontally(int tx, int ty) {
-		if (contains(tx, ty)) {
-			return (flipMask[ty - y][tx - x] & Types.FLIPPED_HORIZONTALLY_FLAG) != 0;
-		}
-		return false;
-	}
-
-	public boolean isFlippedVertically(int tx, int ty) {
-		if (contains(tx, ty)) {
-			return (flipMask[ty - y][tx - x] & Types.FLIPPED_VERTICALLY_FLAG) != 0;
-		}
-		return false;
-	}
-
-	public boolean isFlippedAntiDiagonally(int tx, int ty) {
-		if (contains(tx, ty)) {
-			return (flipMask[ty - y][tx - x] & Types.FLIPPED_DIAGONALLY_FLAG) != 0;
-		}
-		return false;
 	}
 
 	/**

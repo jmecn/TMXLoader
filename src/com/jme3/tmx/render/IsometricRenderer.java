@@ -54,9 +54,7 @@ public class IsometricRenderer extends MapRenderer {
 						Spatial visual = tile.getVisual().clone();
 						visual.setQueueBucket(Bucket.Gui);
 						
-						flip(visual, tile, layer.isFlippedHorizontally(x, y),
-								layer.isFlippedVertically(x, y),
-								layer.isFlippedAntiDiagonally(x, y));
+						flip(visual, tile);
 						
 						Vector2f pixelCoord = tileToScreenCoords(x, y);
 						visual.move(pixelCoord.x, tileZIndex, pixelCoord.y);

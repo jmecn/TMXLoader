@@ -11,9 +11,29 @@ import com.jme3.tmx.animation.Frame;
 
 public class Tile extends Base implements Cloneable {
 
+	/**
+	 * When you use the tile flipping feature added in Tiled Qt 0.7, the highest
+	 * two bits of the gid store the flipped state. Bit 32 is used for storing
+	 * whether the tile is horizontally flipped and bit 31 is used for the
+	 * vertically flipped tiles. And since Tiled Qt 0.8, bit 30 means whether
+	 * the tile is flipped (anti) diagonally, enabling tile rotation. These bits
+	 * have to be read and cleared before you can find out which tileset a tile
+	 * belongs to.
+	 * 
+	 * When rendering a tile, the order of operation matters. The diagonal flip
+	 * (x/y axis swap) is done first, followed by the horizontal and vertical
+	 * flips.
+	 */
+	// Bits on the far end of the 32-bit global tile ID are used for tile flags
+	public final static int FLIPPED_HORIZONTALLY_FLAG = 0x80000000;
+	public final static int FLIPPED_VERTICALLY_FLAG = 0x40000000;
+	public final static int FLIPPED_DIAGONALLY_FLAG = 0x20000000;
+	public final static int FLIPPED_MASK = FLIPPED_HORIZONTALLY_FLAG | FLIPPED_VERTICALLY_FLAG
+			| FLIPPED_DIAGONALLY_FLAG;
+
 	private Tileset tileset;
 	private int id = -1;
-	private int gid;
+	private int gid = 0;
 
 	/**
 	 * position in the image
@@ -27,7 +47,6 @@ public class Tile extends Base implements Cloneable {
 
 	private Texture texture;
 
-	// setup in jme3
 	private Material material;
 
 	// animation
@@ -66,7 +85,7 @@ public class Tile extends Base implements Cloneable {
 	/*
 	 * getters && setters
 	 */
-	
+
 	public Tileset getTileset() {
 		return tileset;
 	}
@@ -89,6 +108,22 @@ public class Tile extends Base implements Cloneable {
 
 	public void setGid(int gid) {
 		this.gid = gid;
+	}
+
+	public int getGidNoMask() {
+		return (gid & ~FLIPPED_MASK);
+	}
+
+	public boolean isFlippedHorizontally() {
+		return (gid & FLIPPED_HORIZONTALLY_FLAG) != 0;
+	}
+
+	public boolean isFlippedVertically() {
+		return (gid & FLIPPED_VERTICALLY_FLAG) != 0;
+	}
+
+	public boolean isFlippedAntiDiagonally() {
+		return (gid & FLIPPED_DIAGONALLY_FLAG) != 0;
 	}
 
 	public int getX() {
@@ -256,5 +291,37 @@ public class Tile extends Base implements Cloneable {
 	public void setProbability(float probability) {
 		this.probability = probability;
 	}
-	
+
+	/**
+	 * Tile was cloned when TileLayer and ObjectGroup need a tile as a part of
+	 * them.
+	 */
+	@Override
+	public Tile clone() {
+
+		// tile base
+		Tile tile = new Tile(x, y, width, height);
+		tile.id = id;
+		tile.gid = gid;
+		tile.tileset = tileset;// share the tileset
+		tile.imgSource = imgSource;
+
+		// jme3 visual
+		tile.texture = texture;
+		tile.material = material;
+		tile.visual = visual;
+
+		// FIXME Don't clone it here. Keep the same visual as they will be cloned in
+		// MapRenderer.
+		// if (visual != null) tile.visual = visual.clone();
+
+		// animation
+		tile.animations.addAll(animations);// share the animation
+
+		// terrain
+		tile.terrain = terrain;
+		tile.probability = probability;
+
+		return tile;
+	}
 }
