@@ -382,6 +382,9 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener,
 	 */
 	private void drag(boolean isPressed) {
 
+		if (map == null || map.getVisual() == null) {
+			return;
+		}
 		if (isPressed) {
 			// recored the mouse position
 			stopPos.set(inputManager.getCursorPosition());
