@@ -464,6 +464,14 @@ public class TmxLoader implements AssetLoader {
 		}
 
 		List<Tile> tiles = tileset.getTiles();
+		int mapTileHeight = map.getTileHeight();
+		int tileHeight = tileset.getTileHeight();
+		int offset = tileHeight - mapTileHeight;
+		if (tileHeight > mapTileHeight) {
+			logger.info("map - tile = " + offset);
+		} else {
+			offset = 0;
+		}
 		int len = tiles.size();
 		for (int i = 0; i < len; i++) {
 			Tile tile = tiles.get(i);
@@ -536,10 +544,10 @@ public class TmxLoader implements AssetLoader {
 			 * </pre>
 			 */
 			float[] vertices = new float[] {
-					0, 0, height,
-					width, 0, height,
-					width, 0, 0,
-					0, 0, 0 };
+					0, 0, height-offset,
+					width, 0, height-offset,
+					width, 0, 0-offset,
+					0, 0, 0-offset };
 			
 			short[] indexes = new short[] { 0, 1, 2, 0, 2, 3 };
 
