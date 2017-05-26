@@ -1,0 +1,37 @@
+apply plugin: 'java'
+
+group = 'net.jmecn'
+version = '1.0'
+sourceCompatibility = 1.7
+targetCompatibility = 1.7
+
+repositories {
+    jcenter()
+    mavenCentral()  
+}
+
+def slf4jVersion = '1.7.21'
+// 定义jME3的组织与版本号。更新jME3依赖时，直接修改版本号即可。
+def jme3 = [g:'org.jmonkeyengine', v:'3.1.0-stable']
+
+dependencies {
+
+    // 将libs文件夹下所有jar文件添加到classpath
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+
+    // Logger组件
+    compile "org.slf4j:slf4j-api:${slf4jVersion}"
+    compile "org.slf4j:jcl-over-slf4j:${slf4jVersion}"
+    
+    /**
+     * jMonkeyEngine3
+     */
+    compile "$jme3.g:jme3-core:$jme3.v"
+    
+    /**
+     * JUnit单元测试
+     */
+    testCompile 'junit:junit:4.12'
+    testCompile "$jme3.g:jme3-desktop:$jme3.v"
+    testCompile "$jme3.g:jme3-lwjgl:$jme3.v"
+}
