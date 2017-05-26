@@ -26,13 +26,8 @@ dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
 }
 
-jar {
-    baseName 'jme3-tiled'
-}
-
 task sourcesJar(type: Jar) {
     from sourceSets.main.java.srcDirs
     
-    baseName 'jme3-tiled'
     classifier = 'sources'
 }
