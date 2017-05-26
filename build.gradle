@@ -29,12 +29,20 @@ dependencies {
 }
 
 task sourcesJar(type: Jar) {
-    from sourceSets.main.java.srcDirs
-    
     classifier = 'sources'
+    from sourceSets.main.java.srcDirs
 }
 
 task myJavadocs(type: Javadoc) {
     source = sourceSets.main.allJava
     classpath = project.sourceSets.main.compileClasspath;
+}
+
+task javadocJar(type: Jar, dependsOn: myJavadocs) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+artifacts {
+    archives sourcesJar
+    archives javadocJar
 }
