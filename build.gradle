@@ -1,11 +1,13 @@
 apply plugin: 'java'
+apply plugin: 'eclipse'
+
+version = 0.2
 
 sourceCompatibility = 1.7
 targetCompatibility = 1.7
 
 repositories {
     jcenter()
-    mavenCentral()  
 }
 
 def jme3 = [g:'org.jmonkeyengine', v:'3.1.0-stable']
@@ -22,4 +24,15 @@ dependencies {
     
     // Do I really need it?
     compile fileTree(dir: 'libs', include: ['*.jar'])
+}
+
+jar {
+    baseName 'jme3-tiled'
+}
+
+task sourcesJar(type: Jar) {
+    from sourceSets.main.java.srcDirs
+    
+    baseName 'jme3-tiled'
+    classifier = 'sources'
 }
