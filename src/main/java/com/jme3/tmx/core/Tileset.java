@@ -10,7 +10,7 @@ import com.jme3.texture.Texture;
 import com.jme3.tmx.util.TileCutter;
 
 /**
- * If there are multiple <tileset> elements, they are in ascending order of
+ * If there are multiple &lt;tileset&gt; elements, they are in ascending order of
  * their firstgid attribute. The first tileset always has a firstgid value of 1.
  * Since Tiled 0.15, image collection tilesets do not necessarily number their
  * tiles consecutively since gaps can occur when removing tiles.
@@ -111,9 +111,6 @@ public class Tileset extends Base implements Iterable<Tile> {
 		this.tileMargin = margin;
 	}
 
-	/**
-	 * getter and setters
-	 */
 	public int getFirstgid() {
 		return firstgid;
 	}
@@ -203,8 +200,6 @@ public class Tileset extends Base implements Iterable<Tile> {
 	 * 
 	 * @param texture
 	 *            the image to be used, must not be null
-	 * @param cutter
-	 *            the tile cutter, must not be null
 	 */
 	public void setTexture(Texture texture) {
 		assert texture != null;
@@ -286,7 +281,7 @@ public class Tileset extends Base implements Iterable<Tile> {
 	 * This method takes a new Tile object as argument, and in addition to the
 	 * functionality of <code>addTile()</code>, sets the id of the tile to -1.
 	 * 
-	 * @see TileSet#addTile(Tile)
+	 * @see Tileset#addTile(Tile)
 	 * @param t
 	 *            the new tile to add.
 	 */

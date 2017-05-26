@@ -33,6 +33,8 @@ public class Terrain extends Base {
 
 	/**
 	 * Default constructor
+	 * 
+	 * @param name The name of this terrain type.
 	 */
 	public Terrain(String name) {
 		this.name = name;

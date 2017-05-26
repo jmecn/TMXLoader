@@ -181,7 +181,7 @@ public class Tile extends Base implements Cloneable {
 	/**
 	 * setTexture
 	 * 
-	 * @param texture
+	 * @param texture The texture of this tile.
 	 */
 	public void setTexture(Texture texture) {
 		this.texture = texture;
@@ -194,7 +194,7 @@ public class Tile extends Base implements Cloneable {
 	/**
 	 * setMaterial
 	 * 
-	 * @param material
+	 * @param material The material for this tile.
 	 */
 	public void setMaterial(Material material) {
 		this.material = material;
@@ -215,7 +215,7 @@ public class Tile extends Base implements Cloneable {
 	/**
 	 * Add an animation to the tile.
 	 * 
-	 * @param animation
+	 * @param animation The animation of this tile.
 	 */
 	public void addAnimation(Animation animation) {
 		animation.setId(animations.size());

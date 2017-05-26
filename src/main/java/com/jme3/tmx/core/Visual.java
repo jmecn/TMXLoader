@@ -42,11 +42,11 @@ public class Visual {
 	 * For tiles, basically it is a Geometry with Quad mesh.
 	 * 
 	 * This method is called by
-	 * {@link com.jme3.tmx.render.MapRenderer#createVisual(Tileset)}
-	 * {@link com.jme3.tmx.render.MapRenderer#createVisual(ObjectLayer)}
-	 * {@link com.jme3.tmx.render.MapRenderer#createVisual(ImageLayer)}
+	 * {@link com.jme3.tmx.render.MapRenderer#render(TileLayer)}
+	 * {@link com.jme3.tmx.render.MapRenderer#render(ObjectLayer)}
+	 * {@link com.jme3.tmx.render.MapRenderer#render(ImageLayer)}
 	 * 
-	 * @param visual
+	 * @param visual The Spatial of this tile.
 	 */
 	public void setVisual(Spatial visual) {
 		

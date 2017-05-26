@@ -83,8 +83,6 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener,
 
 	/**
 	 * Default constructor
-	 * 
-	 * @param map
 	 */
 	public TiledMapAppState() {
 		this(null);

@@ -91,6 +91,8 @@ public abstract class MapRenderer {
 
 	/**
 	 * Render the tiled map
+	 * 
+	 * @return return a Spatial for the whole map.
 	 */
 	public Spatial render() {
 
@@ -139,7 +141,9 @@ public abstract class MapRenderer {
 	/**
 	 * Create the visual part for every ObjectNode in a ObjectLayer.
 	 * 
-	 * @param layer
+	 * @param layer A ObjectLayer object
+	 * 
+	 * @return a Spatial for this layer
 	 */
 	protected Spatial render(ObjectLayer layer) {
 		List<ObjectNode> objects = layer.getObjects();
@@ -338,9 +342,8 @@ public abstract class MapRenderer {
 	 * 
 	 * TODO how about change the uv coord?
 	 * 
-	 * @param h
-	 * @param v
-	 * @param ad
+	 * @param visual The spatial for this tile.
+	 * @param tile The image of this tile.
 	 */
 	protected void flip(Spatial visual, Tile tile) {
 		if (tile.isFlippedHorizontally()) {

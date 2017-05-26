@@ -302,7 +302,7 @@ public class TiledMap extends Base {
 	}
 
 	/**
-	 * Removes a {@link tiled.core.TileSet} from the map, and removes any tiles
+	 * Removes a {@link com.jme3.tmx.core.Tileset} from the map, and removes any tiles
 	 * in the set from the map layers.
 	 * 
 	 * @param tileset

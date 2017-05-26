@@ -219,6 +219,8 @@ public class TileLayer extends Layer {
 	 *            Tile-space x coordinate
 	 * @param ty
 	 *            Tile-space y coordinate
+	 * 
+	 * @return true if the spatial should be updated.
 	 */
 	public boolean isNeedUpdateAt(int tx, int ty) {
 		return (contains(tx, ty)) ? needUpdateSpatial[ty - y][tx - x] : false;

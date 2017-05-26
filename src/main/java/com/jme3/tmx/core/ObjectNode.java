@@ -44,7 +44,7 @@ public class ObjectNode extends Base {
 		 */
 		Ellipse,
 		/**
-		 * <points>: A list of x,y coordinates in pixels.
+		 * A list of x,y coordinates in pixels.
 		 * 
 		 * Each polygon object is made up of a space-delimited list of x,y
 		 * coordinates. The origin for these coordinates is the location of the
@@ -265,7 +265,7 @@ public class ObjectNode extends Base {
 	/**
 	 * Get texture of this object.
 	 * 
-	 * @return
+	 * @return the Texture
 	 */
 	public Texture getTexture() {
 		return texture;

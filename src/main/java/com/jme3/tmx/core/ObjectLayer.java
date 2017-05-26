@@ -162,7 +162,7 @@ public class ObjectLayer extends Layer {
 	 *            a int.
 	 * @param zoom
 	 *            a double.
-	 * @return a {@link tiled.core.MapObject} object.
+	 * @return a {@link com.jme3.tmx.core.ObjectNode} object.
 	 */
 	public ObjectNode getObjectNear(int x, int y, double zoom) {
 		Rectangle2D mouse = new Rectangle2D.Double(x - zoom - 1, y - zoom - 1,
