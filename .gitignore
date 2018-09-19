@@ -1,7 +1,10 @@
 /.gradle/
 /bin/
 /build/
+/target/
 /logs/
 /.settings/
 /*.dll
 /*.so
+.classpath
+.project
