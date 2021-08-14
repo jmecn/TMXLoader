@@ -286,7 +286,7 @@ public class TiledMap extends Base {
 		Tile t = tileset.getTile(0);
 
 		if (t != null) {
-			setFirstGidForTileset(tileset, tileset.getFirstgid());
+			setFirstGidForTileset(tileset, tileset.getFirstGid());
 			
 			int tw = t.getWidth();
 			int th = t.getHeight();

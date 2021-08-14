@@ -1,10 +1,9 @@
 apply plugin: 'java'
-apply plugin: 'eclipse'
 
 version = 0.2
 
-sourceCompatibility = 1.7
-targetCompatibility = 1.7
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
 
 [compileJava, compileTestJava, javadoc]*.options*.encoding = 'UTF-8'
 
@@ -12,7 +11,7 @@ repositories {
     jcenter()
 }
 
-def jme3 = [g:'org.jmonkeyengine', v:'3.1.0-stable']
+def jme3 = [g:'org.jmonkeyengine', v:'3.4.0-stable']
 
 dependencies {
 

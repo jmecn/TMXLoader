@@ -49,17 +49,13 @@ public class Visual {
 	 * @param visual The Spatial of this tile.
 	 */
 	public void setVisual(Spatial visual) {
-		
 		if (this.visual == visual) {
 			return;
 		}
-		
 		if (this.visual != null) {
 			this.visual.removeFromParent();
 		}
-		
 		this.visual = visual;
-		
 		isNeedUpdate = false;
 	}
 }

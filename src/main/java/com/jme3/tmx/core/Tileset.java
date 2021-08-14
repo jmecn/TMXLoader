@@ -29,7 +29,7 @@ public class Tileset extends Base implements Iterable<Tile> {
 	 * The first global tile ID of this tileset (this global ID maps to the
 	 * first tile in this tileset).
 	 */
-	private int firstgid;
+	private int firstGid;
 
 	/**
 	 * If this tileset is stored in an external TSX (Tile Set XML) file, this
@@ -90,9 +90,9 @@ public class Tileset extends Base implements Iterable<Tile> {
 	 * This element defines an array of terrain types, which can be referenced
 	 * from the terrain attribute of the tile element.
 	 */
-	private List<Terrain> terrains = new ArrayList<Terrain>();
+	private List<Terrain> terrains = new ArrayList<>();
 
-	private List<Tile> tiles = new ArrayList<Tile>();
+	private List<Tile> tiles = new ArrayList<>();
 
 	/**
 	 * Default constructor
@@ -111,12 +111,12 @@ public class Tileset extends Base implements Iterable<Tile> {
 		this.tileMargin = margin;
 	}
 
-	public int getFirstgid() {
-		return firstgid;
+	public int getFirstGid() {
+		return firstGid;
 	}
 
-	public void setFirstgid(int firstgid) {
-		this.firstgid = firstgid;
+	public void setFirstGid(int firstGid) {
+		this.firstGid = firstGid;
 	}
 
 	public String getSource() {
@@ -206,8 +206,7 @@ public class Tileset extends Base implements Iterable<Tile> {
 
 		this.texture = texture;
 
-		TileCutter cutter = new TileCutter(texture, tileWidth, tileHeight,
-				tileMargin, tileSpacing);
+		TileCutter cutter = new TileCutter(texture, tileWidth, tileHeight, tileMargin, tileSpacing);
 		cutter.setTileOffset(tileOffsetX, tileOffsetY);
 		
 		Tile tile = cutter.getNextTile();

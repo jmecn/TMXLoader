@@ -54,7 +54,6 @@ public class HexagonalRenderer extends OrthogonalRenderer {
 			}
 		}
 
-		// 将奇数-1变为偶数
 		tileWidth = super.tileWidth & ~1;
 		tileHeight = super.tileHeight & ~1;
 
@@ -81,12 +80,10 @@ public class HexagonalRenderer extends OrthogonalRenderer {
 		}
 	}
 
-	// 交错时景深在前的返回YES (StaggerOdd时，奇数返回YES。StaggerEven时，偶数返回YES)
 	private boolean doStaggerX(int x) {
 		return staggerX && ((x & 1) ^ staggerIndex) == 0;
 	}
 
-	// 交错时靠右的返回YES (StaggerOdd时，奇数返回YES。StaggerEven时，偶数返回YES)
 	private boolean doStaggerY(int y) {
 		return !staggerX && ((y & 1) ^ staggerIndex) == 0;
 	}
