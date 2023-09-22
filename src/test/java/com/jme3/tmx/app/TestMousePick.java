@@ -35,7 +35,7 @@ public class TestMousePick extends SimpleApplication {
             if (tileId >= TILE_MAX) {
                 tileId = 0;
             }
-            tiledMap.setTileAtFromTileId(tileLayer, point.y, point.x, tileId);
+            tiledMap.setTileAtFromTileId(tileLayer, point.x, point.y, tileId);
         }
     }
 

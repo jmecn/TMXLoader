@@ -794,7 +794,7 @@ public class TmxLoader implements AssetLoader {
                                 tileId |= is.read() << 16;
                                 tileId |= is.read() << 24;
 
-                                map.setTileAtFromTileId(layer, y, x, tileId);
+                                map.setTileAtFromTileId(layer, x, y, tileId);
                             }
                         }
                     }
@@ -827,7 +827,7 @@ public class TmxLoader implements AssetLoader {
                                     * layer.getWidth()];
                             int tileId = Integer.parseInt(sTileId);
 
-                            map.setTileAtFromTileId(layer, y, x, tileId);
+                            map.setTileAtFromTileId(layer, x, y, tileId);
                         }
                     }
                 } else {
@@ -836,7 +836,7 @@ public class TmxLoader implements AssetLoader {
                             .getNextSibling()) {
                         if ("tile".equalsIgnoreCase(dataChild.getNodeName())) {
                             int tileId = getAttribute(dataChild, "gid", -1);
-                            map.setTileAtFromTileId(layer, y, x, tileId);
+                            map.setTileAtFromTileId(layer, x, y, tileId);
 
                             x++;
                             if (x == layer.getWidth()) {

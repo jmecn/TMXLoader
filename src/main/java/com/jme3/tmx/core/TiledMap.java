@@ -408,15 +408,12 @@ public class TiledMap extends Base {
 	/**
 	 * Helper method to set the tile based on its global id.
 	 * 
-	 * @param ml tile layer
-	 * @param y
-	 *            y-coordinate
-	 * @param x
-	 *            x-coordinate
-	 * @param tileId
-	 *            global id of the tile as read from the file
+	 * @param tileLayer tile layer
+	 * @param x x-coordinate
+	 * @param y y-coordinate
+	 * @param tileId global id of the tile as read from the file
 	 */
-	public void setTileAtFromTileId(TileLayer ml, int y, int x, int tileId) {
+	public void setTileAtFromTileId(TileLayer tileLayer, int x, int y, int tileId) {
 		// clear the flag
 		int gid = tileId & ~Tile.FLIPPED_MASK;
 		
@@ -424,7 +421,7 @@ public class TiledMap extends Base {
 		if (tile != null) {
 			Tile t = tile.clone();
 			t.setGid(tileId);
-			ml.setTileAt(x, y, t);
+			tileLayer.setTileAt(x, y, t);
 		}
 	}
 	
