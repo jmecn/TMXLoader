@@ -25,6 +25,7 @@ import com.jme3.renderer.queue.RenderQueue.Bucket;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.tmx.core.TiledMap;
+import com.jme3.tmx.math2d.Point;
 import com.jme3.tmx.render.HexagonalRenderer;
 import com.jme3.tmx.render.IsometricRenderer;
 import com.jme3.tmx.render.MapRenderer;
@@ -132,8 +133,7 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener,
 		float far = 1000f;
 		float halfWidth = screenDimension.x * 0.5f;
 		float halfHeight = screenDimension.y * 0.5f;
-		cam.setFrustum(near, far, -halfWidth, halfWidth, halfHeight,
-				-halfHeight);
+		cam.setFrustum(near, far, -halfWidth, halfWidth, halfHeight, -halfHeight);
 
 		cam.setParallelProjection(true);
 		cam.lookAtDirection(new Vector3f(0f, 0f, -1f), Vector3f.UNIT_Y);
@@ -255,7 +255,7 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener,
 		mapRenderer.tileToScreenCoords(x, y);
 	}
 
-	private float getMapScale() {
+	public float getMapScale() {
 		if (map != null) {
 			float pixel = map.getTileWidth() * viewColumns;
 			mapScale = screenDimension.x / pixel;
@@ -340,6 +340,35 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener,
 		}
 
 		inputManager.removeListener(this);
+	}
+
+	/**
+	 * Get the cursor tile coordinate in the map
+	 *
+	 * @return The tile coordinate of the cursor
+	 */
+	public Point getCursorTileCoordinate() {
+		if (inputManager == null) {
+			throw new IllegalStateException(
+					"inputManager is null. Please initialize TiledMapAppState first.");
+		}
+		Vector2f cursor = getCursorPixelCoordinate();
+		return getMapRenderer().screenToTileCoords(cursor.x, cursor.y);
+	}
+
+	/**
+	 * Get the cursor pixel coordinate in the map
+	 *
+	 * @return The pixel coordinate of the cursor
+	 */
+	public Vector2f getCursorPixelCoordinate() {
+		if (inputManager == null) {
+			throw new IllegalStateException(
+					"inputManager is null. Please initialize TiledMapAppState first.");
+		}
+		Vector2f cursor = inputManager.getCursorPosition();
+		cursor = new Vector2f(cursor.x, screenDimension.y - cursor.y);
+		return cursor.subtractLocal(mapTranslation.x, mapTranslation.z).divideLocal(mapScale);
 	}
 
 	/**
