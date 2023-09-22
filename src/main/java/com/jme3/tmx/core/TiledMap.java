@@ -1,10 +1,10 @@
 package com.jme3.tmx.core;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.TreeMap;
+import java.util.*;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import com.jme3.math.ColorRGBA;
 import com.jme3.renderer.queue.RenderQueue.Bucket;
@@ -55,7 +55,7 @@ public class TiledMap extends Base {
 	 * only supported for orthogonal maps at the moment
 	 */
 	public enum RenderOrder {
-		RightDown, RightUp, LeftDown, LeftUp;
+		RIGHT_DOWN, RIGHT_UP, LEFT_DOWN, LEFT_UP;
 	}
 
 	/**
@@ -86,7 +86,7 @@ public class TiledMap extends Base {
 	 * the map is drawn row-by-row. (since 0.10, but only supported for
 	 * orthogonal maps at the moment)
 	 */
-	private RenderOrder renderOrder = RenderOrder.RightDown;
+	private RenderOrder renderOrder = RenderOrder.RIGHT_DOWN;
 
 	/**
 	 * The map width and height in tiles.
@@ -120,7 +120,7 @@ public class TiledMap extends Base {
 	 * The background color of the map. (since 0.9, optional, may include alpha
 	 * value since 0.15 in the form #AARRGGBB)
 	 */
-	private ColorRGBA backgroundColor;
+	private final ColorRGBA backgroundColor;
 
 	/**
 	 * Stores the next available ID for new objects. This number is stored to
@@ -131,7 +131,9 @@ public class TiledMap extends Base {
 
 	private TreeMap<Integer, Tileset> tilesetPerFirstGid;
 	private List<Tileset> tilesets;
+	private Map<String, Tileset> tilesetMap;
 	private List<Layer> layers;
+	private Map<String, Layer> layerMap;
 
 	/**
 	 * <p>
@@ -151,16 +153,17 @@ public class TiledMap extends Base {
 		this.hexSideLength = 0;
 		this.nextObjectId = 0;
 		this.backgroundColor = new ColorRGBA(0f, 0f, 0f, 0f);
-		this.tilesets = new ArrayList<Tileset>();
-		this.layers = new ArrayList<Layer>();
-		
+		this.tilesets = new ArrayList<>();
+		this.tilesetMap = new HashMap<>();
+		this.layers = new ArrayList<>();
+		this.layerMap = new HashMap<>();
+
 		// Load tilesets first, in case order is munged
 		this.tilesetPerFirstGid = new TreeMap<>();
-		
+
 		// in a TiledMap I use Node as the spatial
 		this.visual = new Node("TileMap");
 		this.visual.setQueueBucket(Bucket.Gui);
-		
 	}
 
 	/**
@@ -182,6 +185,7 @@ public class TiledMap extends Base {
 	public Layer addLayer(Layer layer) {
 		layer.setMap(this);
 		layers.add(layer);
+		layerMap.put(layer.getName(), layer);
 		return layer;
 	}
 
@@ -196,6 +200,7 @@ public class TiledMap extends Base {
 	public void setLayer(int index, Layer layer) {
 		layer.setMap(this);
 		layers.set(index, layer);
+		layerMap.put(layer.getName(), layer);
 	}
 
 	/**
@@ -211,6 +216,7 @@ public class TiledMap extends Base {
 	public void insertLayer(int index, Layer layer) {
 		layer.setMap(this);
 		layers.add(index, layer);
+		layerMap.put(layer.getName(), layer);
 	}
 
 	/**
@@ -223,6 +229,7 @@ public class TiledMap extends Base {
 	 */
 	public Layer removeLayer(int index) {
 		Layer layer = layers.remove(index);
+		layerMap.remove(layer.getName());
 		return layer;
 	}
 
@@ -231,6 +238,7 @@ public class TiledMap extends Base {
 	 */
 	public void removeAllLayers() {
 		layers.clear();
+		layerMap.clear();
 	}
 
 	/**
@@ -243,20 +251,32 @@ public class TiledMap extends Base {
 	}
 
 	/**
+	 * Returns the layer with the given name.
+	 *
+	 * @return Layer the layer with the given name
+	 */
+	public Map<String, Layer> getLayerMap() {
+		return layerMap;
+	}
+
+	/**
 	 * Sets the layer list to the given java.util.List.
 	 * 
-	 * @param layers
-	 *            the new set of layers
+	 * @param layers the new set of layers
 	 */
 	public void setLayers(List<Layer> layers) {
 		this.layers = layers;
+		if (layers == null || layers.isEmpty()) {
+			layerMap.clear();
+		} else {
+			this.layerMap = layers.stream().collect(Collectors.toMap(Layer::getName, layer -> layer));
+		}
 	}
 
 	/**
 	 * Returns the layer at the specified vector index.
 	 * 
-	 * @param i
-	 *            the index of the layer to return
+	 * @param i the index of the layer to return
 	 * @return the layer at the specified index, or null if the index is out of
 	 *         bounds
 	 */
@@ -271,6 +291,17 @@ public class TiledMap extends Base {
 	}
 
 	/**
+	 * Returns the layer with the given name.
+	 *
+	 * @param name the name of the layer to return
+	 * @return the layer with the given name, or null if no layer with that name
+	 *         exists
+	 */
+	public Layer getLayer(String name) {
+		return layerMap.get(name);
+	}
+
+	/**
 	 * Adds a Tileset to this Map. If the set is already attached to this map,
 	 * <code>addTileset</code> simply returns.
 	 * 
@@ -278,10 +309,9 @@ public class TiledMap extends Base {
 	 *            a tileset to add
 	 */
 	public void addTileset(Tileset tileset) {
-		if (tileset == null || tilesets.indexOf(tileset) > -1) {
+		if (tileset == null || tilesets.contains(tileset)) {
 			return;
 		}
-		
 
 		Tile t = tileset.getTile(0);
 
@@ -299,6 +329,7 @@ public class TiledMap extends Base {
 		}
 
 		tilesets.add(tileset);
+		tilesetMap.put(tileset.getName(), tileset);
 	}
 
 	/**
@@ -325,6 +356,7 @@ public class TiledMap extends Base {
 		}
 
 		tilesets.remove(tileset);
+		tilesetMap.remove(tileset.getName());
 	}
 
 	/**
@@ -335,7 +367,26 @@ public class TiledMap extends Base {
 	public List<Tileset> getTileSets() {
 		return tilesets;
 	}
-	
+
+	/**
+	 * Returns the tileset with the given name.
+	 *
+	 * @return Tileset the tileset with the given name
+	 */
+	public Map<String, Tileset> getTilesetMap() {
+		return tilesetMap;
+	}
+
+	/**
+	 * Sets the tileset list to the given java.util.List.
+	 *
+	 * @param name the name of the tileset to return
+	 * @return the tileset with the given name, or null if no tileset with that
+	 */
+	public Tileset getTileset(String name) {
+		return tilesetMap.get(name);
+	}
+
 	/**
 	 * Get the tile set and its corresponding firstgid that matches the given
 	 * global tile id.
@@ -345,19 +396,19 @@ public class TiledMap extends Base {
 	 * @return the tileset containing the tile with the given global tile id, or
 	 *         <code>null</code> when no such tileset exists
 	 */
-	private java.util.Map.Entry<Integer, Tileset> findTileSetForTileGID(int gid) {
+	private Entry<Integer, Tileset> findTileSetForTileGID(int gid) {
 		return tilesetPerFirstGid.floorEntry(gid);
 	}
 
 	private void setFirstGidForTileset(Tileset tileset, int firstGid) {
 		tilesetPerFirstGid.put(firstGid, tileset);
+		tilesetMap.put(tileset.getName(), tileset);
 	}
 	
 	/**
 	 * Helper method to set the tile based on its global id.
 	 * 
-	 * @param ml
-	 *            tile layer
+	 * @param ml tile layer
 	 * @param y
 	 *            y-coordinate
 	 * @param x
@@ -366,7 +417,6 @@ public class TiledMap extends Base {
 	 *            global id of the tile as read from the file
 	 */
 	public void setTileAtFromTileId(TileLayer ml, int y, int x, int tileId) {
-		
 		// clear the flag
 		int gid = tileId & ~Tile.FLIPPED_MASK;
 		
@@ -381,8 +431,7 @@ public class TiledMap extends Base {
 	/**
 	 * Helper method to get the tile based on its global id
 	 * 
-	 * @param gid
-	 *            global id of the tile
+	 * @param gid global id of the tile
 	 * @return <ul>
 	 *         <li>{@link Tile} object corresponding to the global id, if found</li>
 	 *         <li><code>null</code>, otherwise</li>
@@ -391,11 +440,11 @@ public class TiledMap extends Base {
 	public Tile getTileForTileGID(final int gid) {
 
 		Tile tile = null;
-		java.util.Map.Entry<Integer, Tileset> ts = findTileSetForTileGID(gid);
+		Entry<Integer, Tileset> ts = findTileSetForTileGID(gid);
 		if (ts != null) {
 			tile = ts.getValue().getTile(gid - ts.getKey());
 		}
-		
+
 		if (gid > 0 && tile == null) {
 			logger.warning("can find tile with gid:" + gid);
 		}
@@ -439,16 +488,16 @@ public class TiledMap extends Base {
 
 	public void setRenderOrder(String renderorder) {
 		if ("right-down".equals(renderorder)) {
-			renderOrder = RenderOrder.RightDown;
+			renderOrder = RenderOrder.RIGHT_DOWN;
 		} else if ("right-up".equals(renderorder)) {
-			renderOrder = RenderOrder.RightUp;
+			renderOrder = RenderOrder.RIGHT_UP;
 		} else if ("left-down".equals(renderorder)) {
-			renderOrder = RenderOrder.LeftDown;
+			renderOrder = RenderOrder.LEFT_DOWN;
 		} else if ("left-up".equals(renderorder)) {
-			renderOrder = RenderOrder.LeftUp;
+			renderOrder = RenderOrder.LEFT_UP;
 		} else {
 			// use default
-			renderOrder = RenderOrder.RightDown;
+			renderOrder = RenderOrder.RIGHT_DOWN;
 			logger.warning("Unknown render order '" + renderorder + "'");
 		}
 	}

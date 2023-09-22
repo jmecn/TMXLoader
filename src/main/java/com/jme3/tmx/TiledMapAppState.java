@@ -191,8 +191,6 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener,
 				isMapUpdated = false;
 			}
 		}
-			
-
 	}
 
 	/**

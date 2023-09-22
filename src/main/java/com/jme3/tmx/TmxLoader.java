@@ -262,7 +262,7 @@ public class TmxLoader implements AssetLoader {
         if (renderorder != null) {
             map.setRenderOrder(renderorder.toLowerCase());
         } else {
-            map.setRenderOrder(RenderOrder.RightDown);
+            map.setRenderOrder(RenderOrder.RIGHT_DOWN);
         }
 
         if (tileWidth > 0) {

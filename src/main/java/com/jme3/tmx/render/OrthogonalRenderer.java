@@ -37,7 +37,7 @@ public class OrthogonalRenderer extends MapRenderer {
 		int tmp;
 		RenderOrder renderOrder = map.getRenderOrder();
 		switch (renderOrder) {
-		case RightUp: {
+		case RIGHT_UP: {
 			// swap y
 			tmp = endY;
 			endY = startY;
@@ -45,7 +45,7 @@ public class OrthogonalRenderer extends MapRenderer {
 			incY = -1;
 			break;
 		}
-		case LeftDown: {
+		case LEFT_DOWN: {
 			// swap x
 			tmp = endX;
 			endX = startX;
@@ -53,7 +53,7 @@ public class OrthogonalRenderer extends MapRenderer {
 			incX = -1;
 			break;
 		}
-		case LeftUp: {
+		case LEFT_UP: {
 			// swap x
 			tmp = endX;
 			endX = startX;
@@ -67,7 +67,7 @@ public class OrthogonalRenderer extends MapRenderer {
 			incY = -1;
 			break;
 		}
-		case RightDown: {
+		case RIGHT_DOWN: {
 			break;
 		}
 		}
