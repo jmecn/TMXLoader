@@ -1,6 +1,7 @@
 package com.jme3.tmx.app;
 
 import com.jme3.app.SimpleApplication;
+import com.jme3.system.AppSettings;
 import com.jme3.tmx.TiledMapAppState;
 import com.jme3.tmx.TmxLoader;
 import com.jme3.tmx.core.TiledMap;
@@ -29,7 +30,13 @@ public class TmxLoaderExample extends SimpleApplication {
 	}
 
 	public static void main(String[] args) {
+		AppSettings settings = new AppSettings(true);
+		settings.setWidth(1280);
+		settings.setHeight(720);
+		settings.setSamples(4);
+
 		TmxLoaderExample app = new TmxLoaderExample();
+		app.setSettings(settings);
 		app.start();
 	}
 

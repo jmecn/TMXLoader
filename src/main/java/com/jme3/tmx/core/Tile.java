@@ -311,8 +311,7 @@ public class Tile extends Base implements Cloneable {
 		tile.material = material;
 		tile.visual = visual;
 
-		// FIXME Don't clone it here. Keep the same visual as they will be cloned in
-		// MapRenderer.
+		// FIXME Don't clone it here. Keep the same visual as they will be cloned in MapRenderer.
 		// if (visual != null) tile.visual = visual.clone();
 
 		// animation

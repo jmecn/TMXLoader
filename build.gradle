@@ -11,7 +11,7 @@ repositories {
     jcenter()
 }
 
-def jme3 = [g:'org.jmonkeyengine', v:'3.4.0-stable']
+def jme3 = [g:'org.jmonkeyengine', v:'3.6.1-stable']
 
 dependencies {
 

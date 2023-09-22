@@ -10,3 +10,5 @@
 .project
 /.idea/
 *.dylib
+/.run/
+*.log

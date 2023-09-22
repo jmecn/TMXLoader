@@ -30,6 +30,9 @@ import com.jme3.system.AppSettings;
 import com.jme3.system.awt.AwtPanel;
 import com.jme3.system.awt.AwtPanelsContext;
 import com.jme3.system.awt.PaintMode;
+import com.jme3.tmx.TiledMapAppState;
+import com.jme3.tmx.TmxLoader;
+import com.jme3.tmx.core.TiledMap;
 
 /**
  * 
@@ -38,7 +41,56 @@ import com.jme3.system.awt.PaintMode;
  */
 public class TestJFrame extends SimpleApplication {
 
-	final static private String[] names = { "forest", "cave", "tomb"};
+
+	final static private String[] assets = {
+			"Models/Examples/BeatBoss/forest.tmx",
+			"Models/Examples/BeatBoss/cave.tmx",
+			"Models/Examples/BeatBoss/tomb.tmx",
+
+			"Models/Examples/Orthogonal/01.tmx",
+			"Models/Examples/Orthogonal/02.tmx",
+			"Models/Examples/Orthogonal/03.tmx",
+			"Models/Examples/Orthogonal/04.tmx",
+			"Models/Examples/Orthogonal/05.tmx",
+			"Models/Examples/Orthogonal/06.tmx",
+			"Models/Examples/Orthogonal/07.tmx",
+			"Models/Examples/Orthogonal/orthogonal-outside.tmx",
+			"Models/Examples/Orthogonal/perspective_walls.tmx",
+			"Models/Examples/csvmap.tmx", "Models/Examples/sewers.tmx",
+			"Models/Examples/Desert/desert.tmx",
+
+			"Models/Examples/Isometric/01.tmx",
+			"Models/Examples/Isometric/02.tmx",
+			"Models/Examples/Isometric/03.tmx",
+			"Models/Examples/Isometric/isometric_grass_and_water.tmx",
+
+			"Models/Examples/Hexagonal/01.tmx",
+			"Models/Examples/Hexagonal/02.tmx",
+			"Models/Examples/Hexagonal/03.tmx",
+			"Models/Examples/Hexagonal/04.tmx",
+			"Models/Examples/Hexagonal/05.tmx",
+			"Models/Examples/Hexagonal/hexagonal-mini.tmx",
+
+			"Models/Examples/Staggered/01.tmx",
+			"Models/Examples/Staggered/02.tmx",
+			"Models/Examples/Staggered/03.tmx",
+			"Models/Examples/Staggered/04.tmx",
+			"Models/Examples/Staggered/05.tmx", };
+
+	final static private String[] names = {
+			"forest", "cave", "tomb",
+			"orthogonal_01", "orthogonal_02",
+			"orthogonal_03", "orthogonal_04", "orthogonal_05", "orthogonal_06",
+			"orthogonal_07", "orthogonal_outside", "orthogonal_perspective_walls", "orthogonal_csvmap",
+			"orthogonal_sewers", "orthogonal_desert",
+
+			"isometric_01", "isometric_02", "isometric_03", "isometric_grass_and_water",
+
+			"hexagonal_01", "hexagonal_02", "hexagonal_03", "hexagonal_04",
+			"hexagonal_05", "hexagonal_mini",
+
+			"staggered_01", "staggered_02", "staggered_03", "staggered_04",
+			"staggered_05", };
 
 	final private static CountDownLatch panelsAreReady = new CountDownLatch(1);
 	private static TestJFrame app;
@@ -108,16 +160,14 @@ public class TestJFrame extends SimpleApplication {
 
 				list.addMouseListener(new MouseAdapter() {
 					public void mouseClicked(MouseEvent e) {
-						String value = list.getSelectedValue();
-						app.load(value);
+						app.load(assets[list.getSelectedIndex()]);
 					}
 				});
 				list.addKeyListener(new KeyAdapter() {
 					@Override
 					public void keyTyped(KeyEvent e) {
 						if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-							String value = list.getSelectedValue();
-							app.load(value);
+							app.load(assets[list.getSelectedIndex()]);
 						} else if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
 							frame.dispose();
 						}
@@ -175,7 +225,8 @@ public class TestJFrame extends SimpleApplication {
 
 	@Override
 	public void simpleInitApp() {
-		
+		assetManager.registerLoader(TmxLoader.class, "tmx", "tsx");
+		stateManager.attachAll(new TiledMapAppState());
 		/*
 		 * Wait until both AWT panels are ready.
 		 */
@@ -195,6 +246,20 @@ public class TestJFrame extends SimpleApplication {
 			@Override
 			public Void call() throws Exception {
 				System.out.println(assetPath);
+				TiledMap map = null;
+				try {
+					map = (TiledMap) assetManager.loadAsset(assetPath);
+				} catch (Exception e) {
+					// i don't care
+				}
+
+				if (map != null) {
+					TiledMapAppState tiledMap = stateManager.getState(TiledMapAppState.class);
+					tiledMap.setMap(map);
+
+					// look at the center of this map
+					tiledMap.moveToTile(map.getWidth() * 0.5f, map.getHeight() * 0.5f);
+				}
 				return null;
 			}
 
