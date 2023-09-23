@@ -257,6 +257,7 @@ public class TestJFrame extends SimpleApplication {
 				if (map != null) {
 					TiledMapAppState tiledMap = stateManager.getState(TiledMapAppState.class);
 					tiledMap.setMap(map);
+					tiledMap.update(0);
 
 					// look at the center of this map
 					tiledMap.moveToTile(map.getWidth() * 0.5f, map.getHeight() * 0.5f);
