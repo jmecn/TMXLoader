@@ -252,7 +252,11 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener,
 	}
 
 	public void moveToTile(float x, float y) {
-		mapRenderer.tileToScreenCoords(x, y);
+		Vector2f tilePos = mapRenderer.tileToScreenCoords(x, y).multLocal(getMapScale());
+		Vector2f camPos = new Vector2f(cam.getLocation().x, screenDimension.y - cam.getLocation().y);
+		camPos.subtract(tilePos, tilePos);
+		mapTranslation.set(tilePos.x, 0, tilePos.y);
+		map.getVisual().setLocalTranslation(mapTranslation);
 	}
 
 	public float getMapScale() {
@@ -427,7 +431,7 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener,
 	 * @param value
 	 */
 	public void zoomCamera(float value) {
-		viewColumns += value;
+		viewColumns += zoomSpeed * value;
 
 		// at less see 1 tile on screen
 		if (viewColumns < 1f) {
