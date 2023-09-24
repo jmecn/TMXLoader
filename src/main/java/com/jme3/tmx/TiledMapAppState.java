@@ -82,6 +82,13 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener,
 	 */
 	private boolean isMapUpdated = true;
 
+	public enum ZoomMode {
+		MAP,
+		CAMERA
+	}
+
+	private ZoomMode zoomMode = ZoomMode.MAP;
+
 	/**
 	 * Default constructor
 	 */
@@ -259,6 +266,14 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener,
 		map.getVisual().setLocalTranslation(mapTranslation);
 	}
 
+	public void moveToPixel(float x, float y) {
+		Vector2f pixelPos = mapRenderer.pixelToScreenCoords(x, y).multLocal(getMapScale());
+		Vector2f camPos = new Vector2f(cam.getLocation().x, screenDimension.y - cam.getLocation().y);
+		camPos.subtract(pixelPos, pixelPos);
+		mapTranslation.set(pixelPos.x, 0, pixelPos.y);
+		map.getVisual().setLocalTranslation(mapTranslation);
+	}
+
 	public float getMapScale() {
 		if (map != null) {
 			float pixel = map.getTileWidth() * viewColumns;
@@ -267,6 +282,10 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener,
 		}
 		
 		return mapScale;
+	}
+
+	public Vector3f getMapTranslation() {
+		return mapTranslation;
 	}
 
 	/**
@@ -346,6 +365,34 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener,
 		inputManager.removeListener(this);
 	}
 
+	public Point getCameraTileCoordinate() {
+		if (inputManager == null) {
+			throw new IllegalStateException(
+					"inputManager is null. Please initialize TiledMapAppState first.");
+		}
+		Vector2f center = new Vector2f(screenDimension.x * 0.5f, screenDimension.y * 0.5f);
+		center = center.subtract(mapTranslation.x, mapTranslation.z).divideLocal(mapScale);
+		return getMapRenderer().screenToTileCoords(center.x, center.y);
+	}
+
+	public Vector2f getCameraPixelCoordinate() {
+		if (inputManager == null) {
+			throw new IllegalStateException(
+					"inputManager is null. Please initialize TiledMapAppState first.");
+		}
+		Vector2f center = new Vector2f(screenDimension.x * 0.5f, screenDimension.y * 0.5f);
+		center = center.subtract(mapTranslation.x, mapTranslation.z).divideLocal(mapScale);
+		return getMapRenderer().screenToPixelCoords(center.x, center.y);
+	}
+
+	public Vector2f getCameraScreenCoordinate() {
+		if (inputManager == null) {
+			throw new IllegalStateException(
+					"inputManager is null. Please initialize TiledMapAppState first.");
+		}
+		return new Vector2f(cam.getLocation().x, cam.getLocation().y);
+	}
+
 	/**
 	 * Get the cursor tile coordinate in the map
 	 *
@@ -373,6 +420,15 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener,
 		Vector2f cursor = inputManager.getCursorPosition();
 		cursor = new Vector2f(cursor.x, screenDimension.y - cursor.y);
 		return cursor.subtractLocal(mapTranslation.x, mapTranslation.z).divideLocal(mapScale);
+	}
+
+	public Vector2f getCursorScreenCoordinate() {
+		if (inputManager == null) {
+			throw new IllegalStateException(
+					"inputManager is null. Please initialize TiledMapAppState first.");
+		}
+		Vector2f cursor = inputManager.getCursorPosition();
+		return new Vector2f(cursor.x, cursor.y);
 	}
 
 	/**
@@ -425,12 +481,26 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener,
 		}
 	}
 
+	public void setZoomMode(ZoomMode zoomMode) {
+		this.zoomMode = zoomMode;
+	}
+	public ZoomMode getZoomMode() {
+		return zoomMode;
+	}
+
 	/**
 	 * zoom camera
 	 * 
 	 * @param value
 	 */
 	public void zoomCamera(float value) {
+		// store the current position
+		Vector2f pixel = null;
+		Vector2f v1 = null;
+		if (zoomMode == ZoomMode.CAMERA) {
+			pixel = getCameraPixelCoordinate();
+		}
+
 		viewColumns += zoomSpeed * value;
 
 		// at less see 1 tile on screen
@@ -439,6 +509,11 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener,
 		}
 
 		setViewColumn(viewColumns);
+
+		// restore the position
+		if (zoomMode == ZoomMode.CAMERA) {
+			moveToPixel(pixel.x, pixel.y);
+		}
 	}
 
 	public void onAnalog(String name, float value, float tpf) {
@@ -473,4 +548,5 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener,
 		}
 
 	}
+
 }

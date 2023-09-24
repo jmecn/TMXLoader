@@ -12,6 +12,7 @@ import com.jme3.tmx.TmxLoader;
 import com.jme3.tmx.core.TileLayer;
 import com.jme3.tmx.core.TiledMap;
 import com.jme3.tmx.math2d.Point;
+import org.lwjgl.Sys;
 
 /**
  * Test mouse pick
@@ -29,6 +30,7 @@ public class TestMousePick extends SimpleApplication {
     public void click() {
         TiledMapAppState state = stateManager.getState(TiledMapAppState.class);
         Point point = state.getCursorTileCoordinate();
+        System.out.println("Click:" + point);
         if (tiledMap.contains(point.x, point.y)) {
             // next tile
             tileId++;

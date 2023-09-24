@@ -73,4 +73,9 @@ public class Point {
 	public Point clone() {
 		return new Point(x, y);
 	}
+
+	@Override
+	public String toString() {
+		return "Point [x=" + x + ", y=" + y + "]";
+	}
 }
