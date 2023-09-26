@@ -10,6 +10,7 @@ import com.jme3.system.AppSettings;
 import com.jme3.tmx.TiledMapAppState;
 import com.jme3.tmx.TmxLoader;
 import com.jme3.tmx.core.TiledMap;
+import com.jme3.tmx.enums.ZoomMode;
 
 /**
  * Test zoom mode
@@ -43,12 +44,12 @@ public class TestZoom extends SimpleApplication {
 
         inputManager.addMapping("ZOOM_MODE_MAP", new KeyTrigger(KeyInput.KEY_1));
         inputManager.addListener((ActionListener) (name, isPressed, tpf) -> {
-            tiledMapState.setZoomMode(TiledMapAppState.ZoomMode.MAP);
+            tiledMapState.setZoomMode(ZoomMode.MAP);
         }, "ZOOM_MODE_MAP");
 
         inputManager.addMapping("ZOOM_MODE_CAMERA", new KeyTrigger(KeyInput.KEY_2));
         inputManager.addListener((ActionListener) (name, isPressed, tpf) -> {
-            tiledMapState.setZoomMode(TiledMapAppState.ZoomMode.CAMERA);
+            tiledMapState.setZoomMode(ZoomMode.CAMERA);
         }, "ZOOM_MODE_CAMERA");
 
     }

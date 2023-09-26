@@ -46,167 +46,167 @@ import com.jme3.math.Vector2f;
  * 
  */
 public class Triangulation {
-	static float EPSILON = 0.0000000001f;
+    static float EPSILON = 0.0000000001f;
 
-	public static float Area(final List<Vector2f> contour) {
+    public static float Area(final List<Vector2f> contour) {
 
-		int n = contour.size();
+        int n = contour.size();
 
-		float A = 0.0f;
+        float A = 0.0f;
 
-		for (int p = n - 1, q = 0; q < n; p = q++) {
-			Vector2f vp = contour.get(p);
-			Vector2f vq = contour.get(q);
-			A += vp.determinant(vq);
-		}
-		return A * 0.5f;
-	}
+        for (int p = n - 1, q = 0; q < n; p = q++) {
+            Vector2f vp = contour.get(p);
+            Vector2f vq = contour.get(q);
+            A += vp.determinant(vq);
+        }
+        return A * 0.5f;
+    }
 
-	/*
-	 * InsideTriangle decides if a point P is Inside of the triangle defined by
-	 * A, B, C.
-	 */
-	public static boolean InsideTriangle(Vector2f A, Vector2f B, Vector2f C, Vector2f P)
+    /*
+     * InsideTriangle decides if a point P is Inside of the triangle defined by
+     * A, B, C.
+     */
+    public static boolean InsideTriangle(Vector2f A, Vector2f B, Vector2f C, Vector2f P)
 
-	{
-		Vector2f a = C.subtract(B);
-		Vector2f b = A.subtract(C);
-		Vector2f c = B.subtract(A);
-		
-		Vector2f ap = P.subtract(A);
-		Vector2f bp = P.subtract(B);
-		Vector2f cp = P.subtract(C);
-		
-		return ((a.determinant(bp) >= 0.0f) && (b.determinant(cp) >= 0.0f) && (c.determinant(ap) >= 0.0f));
-	};
+    {
+        Vector2f a = C.subtract(B);
+        Vector2f b = A.subtract(C);
+        Vector2f c = B.subtract(A);
+        
+        Vector2f ap = P.subtract(A);
+        Vector2f bp = P.subtract(B);
+        Vector2f cp = P.subtract(C);
+        
+        return ((a.determinant(bp) >= 0.0f) && (b.determinant(cp) >= 0.0f) && (c.determinant(ap) >= 0.0f));
+    };
 
-	public static boolean Snip(final List<Vector2f> contour, int u, int v,
-			int w, int n, int[] V) {
-		Vector2f A = contour.get(V[u]);
-		Vector2f B = contour.get(V[v]);
-		Vector2f C = contour.get(V[w]);
-		
-		if (EPSILON > (((B.x - A.x) * (C.y - A.y)) - ((B.y - A.y) * (C.x - A.x))))
-			return false;
+    public static boolean Snip(final List<Vector2f> contour, int u, int v,
+            int w, int n, int[] V) {
+        Vector2f A = contour.get(V[u]);
+        Vector2f B = contour.get(V[v]);
+        Vector2f C = contour.get(V[w]);
+        
+        if (EPSILON > (((B.x - A.x) * (C.y - A.y)) - ((B.y - A.y) * (C.x - A.x))))
+            return false;
 
-		for (int p = 0; p < n; p++) {
-			if ((p == u) || (p == v) || (p == w))
-				continue;
-			Vector2f P = contour.get(V[p]);
-			if (InsideTriangle(A, B, C, P))
-				return false;
-		}
+        for (int p = 0; p < n; p++) {
+            if ((p == u) || (p == v) || (p == w))
+                continue;
+            Vector2f P = contour.get(V[p]);
+            if (InsideTriangle(A, B, C, P))
+                return false;
+        }
 
-		return true;
-	}
+        return true;
+    }
 
-	public static boolean Process(final List<Vector2f> contour,
-			List<Integer> index) {
-		/* allocate and initialize list of Vertices in polygon */
+    public static boolean Process(final List<Vector2f> contour,
+            List<Integer> index) {
+        /* allocate and initialize list of Vertices in polygon */
 
-		int n = contour.size();
-		if (n < 3)
-			return false;
+        int n = contour.size();
+        if (n < 3)
+            return false;
 
-		int[] V = new int[n];
+        int[] V = new int[n];
 
-		/* we want a counter-clockwise polygon in V */
+        /* we want a counter-clockwise polygon in V */
 
-		if (0.0f < Area(contour))
-			for (int v = 0; v < n; v++)
-				V[v] = v;
-		else
-			for (int v = 0; v < n; v++)
-				V[v] = (n - 1) - v;
+        if (0.0f < Area(contour))
+            for (int v = 0; v < n; v++)
+                V[v] = v;
+        else
+            for (int v = 0; v < n; v++)
+                V[v] = (n - 1) - v;
 
-		int nv = n;
+        int nv = n;
 
-		/* remove nv-2 Vertices, creating 1 triangle every time */
-		int count = 2 * nv; /* error detection */
+        /* remove nv-2 Vertices, creating 1 triangle every time */
+        int count = 2 * nv; /* error detection */
 
-		for (int v = nv - 1; nv > 2;) {
-			/* if we loop, it is probably a non-simple polygon */
-			if (0 >= (count--)) {
-				// ** Triangulate: ERROR - probable bad polygon!
-				return false;
-			}
+        for (int v = nv - 1; nv > 2;) {
+            /* if we loop, it is probably a non-simple polygon */
+            if (0 >= (count--)) {
+                // ** Triangulate: ERROR - probable bad polygon!
+                return false;
+            }
 
-			/* three consecutive vertices in current polygon, <u,v,w> */
-			int u = v;
-			if (nv <= u)
-				u = 0; /* previous */
-			v = u + 1;
-			if (nv <= v)
-				v = 0; /* new v */
-			int w = v + 1;
-			if (nv <= w)
-				w = 0; /* next */
+            /* three consecutive vertices in current polygon, <u,v,w> */
+            int u = v;
+            if (nv <= u)
+                u = 0; /* previous */
+            v = u + 1;
+            if (nv <= v)
+                v = 0; /* new v */
+            int w = v + 1;
+            if (nv <= w)
+                w = 0; /* next */
 
-			if (Snip(contour, u, v, w, nv, V)) {
-				int a, b, c, s, t;
+            if (Snip(contour, u, v, w, nv, V)) {
+                int a, b, c, s, t;
 
-				/* true names of the vertices */
-				a = V[u];
-				b = V[v];
-				c = V[w];
+                /* true names of the vertices */
+                a = V[u];
+                b = V[v];
+                c = V[w];
 
-				/* output Triangle */
-				index.add(a);
-				index.add(b);
-				index.add(c);
+                /* output Triangle */
+                index.add(a);
+                index.add(b);
+                index.add(c);
 
-				/* remove v from remaining polygon */
-				for (s = v, t = v + 1; t < nv; s++, t++)
-					V[s] = V[t];
-				nv--;
+                /* remove v from remaining polygon */
+                for (s = v, t = v + 1; t < nv; s++, t++)
+                    V[s] = V[t];
+                nv--;
 
-				/* resest error detection counter */
-				count = 2 * nv;
-			}
-		}
+                /* resest error detection counter */
+                count = 2 * nv;
+            }
+        }
 
-		return true;
-	}
+        return true;
+    }
 
-	public static void main(String[] args) {
-		// Small test application demonstrating the usage of the triangulate
-		// class.
+    public static void main(String[] args) {
+        // Small test application demonstrating the usage of the triangulate
+        // class.
 
-		// Create a pretty complicated little contour by pushing them onto
-		// an stl vector.
-		List<Vector2f> points = new ArrayList<Vector2f>();
-		points.add(new Vector2f(0, 0));
-		points.add(new Vector2f(55, -23));
-		points.add(new Vector2f(96, -117));
-		points.add(new Vector2f(110, -61));
-		points.add(new Vector2f(104, -42));
-		points.add(new Vector2f(119, -33));
-		points.add(new Vector2f(116, 6));
-		points.add(new Vector2f(104, 9));
-		points.add(new Vector2f(100, 36));
-		points.add(new Vector2f(60, 43));
-		points.add(new Vector2f(53, 58));
-		points.add(new Vector2f(43, 58));
-		points.add(new Vector2f(34, 74));
-		points.add(new Vector2f(21, 69));
-		points.add(new Vector2f(18, 90));
-		points.add(new Vector2f(0, 89));
+        // Create a pretty complicated little contour by pushing them onto
+        // an stl vector.
+        List<Vector2f> points = new ArrayList<Vector2f>();
+        points.add(new Vector2f(0, 0));
+        points.add(new Vector2f(55, -23));
+        points.add(new Vector2f(96, -117));
+        points.add(new Vector2f(110, -61));
+        points.add(new Vector2f(104, -42));
+        points.add(new Vector2f(119, -33));
+        points.add(new Vector2f(116, 6));
+        points.add(new Vector2f(104, 9));
+        points.add(new Vector2f(100, 36));
+        points.add(new Vector2f(60, 43));
+        points.add(new Vector2f(53, 58));
+        points.add(new Vector2f(43, 58));
+        points.add(new Vector2f(34, 74));
+        points.add(new Vector2f(21, 69));
+        points.add(new Vector2f(18, 90));
+        points.add(new Vector2f(0, 89));
 
-		// allocate an STL vector to hold the answer.
-		List<Integer> result = new ArrayList<Integer>();
+        // allocate an STL vector to hold the answer.
+        List<Integer> result = new ArrayList<Integer>();
 
-		// Invoke the triangulator to triangulate this polygon.
-		Triangulation.Process(points, result);
+        // Invoke the triangulator to triangulate this polygon.
+        Triangulation.Process(points, result);
 
-		// print out the results.
-		int tcount = result.size() / 3;
+        // print out the results.
+        int tcount = result.size() / 3;
 
-		for (int i = 0; i < tcount; i++) {
-			final int p1 = result.get(i * 3 + 0);
-			final int p2 = result.get(i * 3 + 1);
-			final int p3 = result.get(i * 3 + 2);
-			
-			System.out.printf("Triangle %d => (%d, %d, %d)\n", i + 1, p1, p2, p3);
-		}
-	}
+        for (int i = 0; i < tcount; i++) {
+            final int p1 = result.get(i * 3 + 0);
+            final int p2 = result.get(i * 3 + 1);
+            final int p3 = result.get(i * 3 + 2);
+            
+            System.out.printf("Triangle %d => (%d, %d, %d)\n", i + 1, p1, p2, p3);
+        }
+    }
 }

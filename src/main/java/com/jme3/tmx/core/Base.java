@@ -20,41 +20,41 @@ import java.util.Properties;
  * 
  */
 public class Base extends Visual {
-	
-	protected Properties properties;
+    
+    protected Properties properties;
 
-	public boolean hasProperties() {
-		return properties != null;
-	}
+    public boolean hasProperties() {
+        return properties != null;
+    }
 
-	/**
-	 * <p>
-	 * Getter for the field <code>properties</code>.
-	 * </p>
-	 * 
-	 * @return the map properties
-	 */
-	public Properties getProperties() {
-		return properties;
-	}
+    /**
+     * <p>
+     * Getter for the field <code>properties</code>.
+     * </p>
+     * 
+     * @return the map properties
+     */
+    public Properties getProperties() {
+        return properties;
+    }
 
-	/**
-	 * <p>
-	 * Setter for the field <code>properties</code>.
-	 * </p>
-	 * 
-	 * @param properties
-	 *            a {@link java.util.Properties} object.
-	 */
-	public void setProperties(Properties properties) {
-		this.properties = properties;
-	}
+    /**
+     * <p>
+     * Setter for the field <code>properties</code>.
+     * </p>
+     * 
+     * @param properties
+     *            a {@link java.util.Properties} object.
+     */
+    public void setProperties(Properties properties) {
+        this.properties = properties;
+    }
 
-	@Override
-	public Base clone() {
-		Base clone = new Base();
-		clone.properties = this.properties;
-		return clone;
-	}
-	
+    @Override
+    public Base clone() {
+        Base clone = new Base();
+        clone.properties = this.properties;
+        return clone;
+    }
+    
 }

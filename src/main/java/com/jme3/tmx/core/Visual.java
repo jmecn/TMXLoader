@@ -11,51 +11,51 @@ import com.jme3.scene.Spatial;
  *
  */
 public class Visual {
-	
-	protected boolean isTransformUpdated = true;
-	protected boolean isNeedUpdate = true;
-	protected Spatial visual;
+    
+    protected boolean isTransformUpdated = true;
+    protected boolean isNeedUpdate = true;
+    protected Spatial visual;
 
-	public boolean isTransformUpdated() {
-		return isTransformUpdated;
-	}
+    public boolean isTransformUpdated() {
+        return isTransformUpdated;
+    }
 
-	public void setTransformUpdated(boolean isTransformUpdated) {
-		this.isTransformUpdated = isTransformUpdated;
-	}
+    public void setTransformUpdated(boolean isTransformUpdated) {
+        this.isTransformUpdated = isTransformUpdated;
+    }
 
-	public boolean isNeedUpdated() {
-		return isNeedUpdate;
-	}
+    public boolean isNeedUpdated() {
+        return isNeedUpdate;
+    }
 
-	public void setNeedUpdated(boolean isSpatialUpdated) {
-		this.isNeedUpdate = isSpatialUpdated;
-	}
-	
-	public Spatial getVisual() {
-		return visual;
-	}
-	
-	/**
-	 * Set the visual part of a tile map object. 
-	 * 
-	 * For tiles, basically it is a Geometry with Quad mesh.
-	 * 
-	 * This method is called by
-	 * {@link com.jme3.tmx.render.MapRenderer#render(TileLayer)}
-	 * {@link com.jme3.tmx.render.MapRenderer#render(ObjectLayer)}
-	 * {@link com.jme3.tmx.render.MapRenderer#render(ImageLayer)}
-	 * 
-	 * @param visual The Spatial of this tile.
-	 */
-	public void setVisual(Spatial visual) {
-		if (this.visual == visual) {
-			return;
-		}
-		if (this.visual != null) {
-			this.visual.removeFromParent();
-		}
-		this.visual = visual;
-		isNeedUpdate = false;
-	}
+    public void setNeedUpdated(boolean isSpatialUpdated) {
+        this.isNeedUpdate = isSpatialUpdated;
+    }
+    
+    public Spatial getVisual() {
+        return visual;
+    }
+    
+    /**
+     * Set the visual part of a tile map object. 
+     * 
+     * For tiles, basically it is a Geometry with Quad mesh.
+     * 
+     * This method is called by
+     * {@link com.jme3.tmx.render.MapRenderer#render(TileLayer)}
+     * {@link com.jme3.tmx.render.MapRenderer#render(ObjectLayer)}
+     * {@link com.jme3.tmx.render.MapRenderer#render(ImageLayer)}
+     * 
+     * @param visual The Spatial of this tile.
+     */
+    public void setVisual(Spatial visual) {
+        if (this.visual == visual) {
+            return;
+        }
+        if (this.visual != null) {
+            this.visual.removeFromParent();
+        }
+        this.visual = visual;
+        isNeedUpdate = false;
+    }
 }
