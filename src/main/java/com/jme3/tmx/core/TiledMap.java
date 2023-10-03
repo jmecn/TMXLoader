@@ -175,8 +175,8 @@ public class TiledMap extends Base {
      * addLayer.
      *
      * @param layer
-     *            a {@link com.jme3.tmx.core.Layer} object.
-     * @return a {@link com.jme3.tmx.core.Layer} object.
+     *            a {@link Layer} object.
+     * @return a {@link Layer} object.
      */
     public Layer addLayer(Layer layer) {
         layer.setMap(this);
@@ -191,7 +191,7 @@ public class TiledMap extends Base {
      * @param index
      *            a int
      * @param layer
-     *            a {@link com.jme3.tmx.core.Layer} object
+     *            a {@link Layer} object
      */
     public void setLayer(int index, Layer layer) {
         layer.setMap(this);
@@ -207,7 +207,7 @@ public class TiledMap extends Base {
      * @param index
      *            a int.
      * @param layer
-     *            a {@link com.jme3.tmx.core.Layer} object.
+     *            a {@link Layer} object.
      */
     public void insertLayer(int index, Layer layer) {
         layer.setMap(this);

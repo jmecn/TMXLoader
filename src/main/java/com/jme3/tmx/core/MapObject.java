@@ -9,7 +9,7 @@ import com.jme3.texture.Texture;
 import com.jme3.tmx.enums.ObjectType;
 
 /**
- * An object occupying an {@link com.jme3.tmx.core.ObjectLayer}.
+ * An object occupying an {@link ObjectGroup}.
  * 
  * While tile layers are very suitable for anything repetitive aligned to the
  * tile grid, sometimes you want to annotate your map with other information,
@@ -30,11 +30,11 @@ import com.jme3.tmx.enums.ObjectType;
  * @author yanmaoyuan
  * 
  */
-public class ObjectNode extends Base {
+public class MapObject extends Base {
 
-    static Logger logger = Logger.getLogger(ObjectNode.class.getName());
+    static Logger logger = Logger.getLogger(MapObject.class.getName());
 
-    private ObjectLayer objectGroup;
+    private ObjectGroup objectGroup;
 
     /**
      * Unique ID of the object. Each object that is placed on a map gets a
@@ -52,7 +52,7 @@ public class ObjectNode extends Base {
      * The type of the object. An arbitrary string.
      */
     private String type;
-    private ObjectType objectType = ObjectType.RECTANGLE;
+    private ObjectType shape = ObjectType.RECTANGLE;
 
     /**
      * The (x, y) coordinate of the object in pixels.
@@ -98,26 +98,26 @@ public class ObjectNode extends Base {
     private Texture texture;
     private Material material;
 
-    private TextElement text;
+    private ObjectText textData;
 
     /**
      * Default constructor
      */
-    public ObjectNode() {
+    public MapObject() {
     }
 
-    public ObjectNode(double x, double y, double width, double height) {
+    public MapObject(double x, double y, double width, double height) {
         this.x = x;
         this.y = y;
         this.width = width;
         this.height = height;
     }
 
-    public ObjectLayer getObjectGroup() {
+    public ObjectGroup getObjectGroup() {
         return objectGroup;
     }
 
-    public void setObjectGroup(ObjectLayer objectGroup) {
+    public void setObjectGroup(ObjectGroup objectGroup) {
         this.objectGroup = objectGroup;
     }
 
@@ -145,12 +145,12 @@ public class ObjectNode extends Base {
         this.type = type;
     }
 
-    public ObjectType getObjectType() {
-        return objectType;
+    public ObjectType getShape() {
+        return shape;
     }
 
-    public void setObjectType(ObjectType objectType) {
-        this.objectType = objectType;
+    public void setShape(ObjectType shape) {
+        this.shape = shape;
     }
 
     public double getX() {
@@ -262,18 +262,18 @@ public class ObjectNode extends Base {
         this.material = material;
     }
 
-    public TextElement getText() {
-        return text;
+    public ObjectText getTextData() {
+        return textData;
     }
 
-    public void setText(TextElement text) {
-        this.text = text;
+    public void setTextData(ObjectText textData) {
+        this.textData = textData;
     }
 
     @Override
     public String toString() {
-        return "ObjectNode [id=" + id + ", name=" + name + ", type=" + type
-                + ", objectType=" + objectType + ", x=" + x + ", y=" + y
+        return "MapObject [id=" + id + ", name=" + name + ", type=" + type
+                + ", shape=" + shape + ", x=" + x + ", y=" + y
                 + ", width=" + width + ", height=" + height + "]";
     }
 

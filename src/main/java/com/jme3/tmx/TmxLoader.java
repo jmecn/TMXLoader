@@ -868,18 +868,22 @@ public class TmxLoader implements AssetLoader {
      * @param layer
      */
     private void readLayerBase(Node node, Layer layer) {
-        int id = getAttribute(node, "id", 0);
+        String id = getAttributeValue(node, "id");
+        if (id != null) {
+            layer.setId(Integer.parseInt(id));
+        }
+
         final String name = getAttributeValue(node, "name");
         String clazz = getAttribute(node, "class", "");
-        float opacity = (float) getDoubleAttribute(node, "opacity", 1.0);
-        int visible = getAttribute(node, "visible", 1);
+        double opacity = getDoubleAttribute(node, "opacity", 1.0);
+        boolean visible = getAttribute(node, "visible", 1) == 1;
+        boolean locked = getAttribute(node, "locked", 0) == 1;
         String tintColor = getAttributeValue(node, "tintcolor");
         int offsetX = getAttribute(node, "offsetx", 0);
         int offsetY = getAttribute(node, "offsety", 0);
         float parallaxX = (float) getDoubleAttribute(node, "parallaxx", 1.0);
         float parallaxY = (float) getDoubleAttribute(node, "parallaxy", 1.0);
 
-        layer.setId(id);
         layer.setName(name);
         layer.setClazz(clazz);
         layer.setOpacity(opacity);
@@ -894,12 +898,14 @@ public class TmxLoader implements AssetLoader {
 
         // The parallax scrolling factor determines the amount by which the layer
         // moves in relation to the camera.
-        layer.setParallax(parallaxX, parallaxY);
+        layer.setParallaxFactor(parallaxX, parallaxY);
 
         // Invisible layers are automatically locked, so it is important to
         // set the layer to potentially invisible _after_ the layer data is
         // loaded.
-        layer.setVisible(visible == 1);
+        layer.setVisible(visible);
+
+        layer.setLocked(locked);
 
         // read properties
         Properties props = readProperties(node.getChildNodes());
@@ -1167,7 +1173,7 @@ public class TmxLoader implements AssetLoader {
         final int width = getAttribute(node, "width", map.getWidth());
         final int height = getAttribute(node, "height", map.getHeight());
 
-        ObjectLayer layer = new ObjectLayer(width, height);
+        ObjectGroup layer = new ObjectGroup(width, height);
         readLayerBase(node, layer);
 
         final String color = getAttributeValue(node, "color");
@@ -1197,7 +1203,7 @@ public class TmxLoader implements AssetLoader {
         for (int i = 0; i < children.getLength(); i++) {
             Node child = children.item(i);
             if ("object".equalsIgnoreCase(child.getNodeName())) {
-                ObjectNode obj = readObjectNode(child);
+                MapObject obj = readObjectNode(child);
                 layer.add(obj);
             }
         }
@@ -1212,7 +1218,7 @@ public class TmxLoader implements AssetLoader {
      * @return
      * @throws Exception
      */
-    private ObjectNode readObjectNode(Node node) throws Exception {
+    private MapObject readObjectNode(Node node) throws Exception {
         int id = getAttribute(node, "id", 0);
         String name = getAttributeValue(node, "name");
         String type = getAttributeValue(node, "type");
@@ -1226,7 +1232,7 @@ public class TmxLoader implements AssetLoader {
         String template = getAttributeValue(node, "template");
         // TODO need some samples to figure out how template works.
 
-        ObjectNode obj = new ObjectNode(x, y, width, height);
+        MapObject obj = new MapObject(x, y, width, height);
         obj.setId(id);
         obj.setRotation(rotation);
         obj.setTemplate(template);
@@ -1245,7 +1251,7 @@ public class TmxLoader implements AssetLoader {
          * if an object have "gid" attribute means it references to a tile.
          */
         if (gid != null) {
-            obj.setObjectType(ObjectType.TILE);
+            obj.setShape(ObjectType.TILE);
 
             int gidValue = (int) Long.parseLong(gid);
 
@@ -1264,7 +1270,7 @@ public class TmxLoader implements AssetLoader {
             Node child = children.item(i);
             String nodeName = child.getNodeName();
             if ("image".equalsIgnoreCase(nodeName)) {
-                obj.setObjectType(ObjectType.IMAGE);
+                obj.setShape(ObjectType.IMAGE);
 
                 AnImage image = readImage(child);
                 obj.setImageSource(image.source);
@@ -1273,22 +1279,22 @@ public class TmxLoader implements AssetLoader {
 
                 break;
             } else if ("ellipse".equalsIgnoreCase(nodeName)) {
-                obj.setObjectType(ObjectType.ELLIPSE);
+                obj.setShape(ObjectType.ELLIPSE);
                 break;
             } else if ("point".equalsIgnoreCase(nodeName)) {
-                obj.setObjectType(ObjectType.POINT);
+                obj.setShape(ObjectType.POINT);
                 break;
             } else if ("polygon".equalsIgnoreCase(nodeName)) {
-                obj.setObjectType(ObjectType.POLYGON);
+                obj.setShape(ObjectType.POLYGON);
                 obj.setPoints(readPoints(child));
                 break;
             } else if ("polyline".equalsIgnoreCase(nodeName)) {
-                obj.setObjectType(ObjectType.POLYLINE);
+                obj.setShape(ObjectType.POLYLINE);
                 obj.setPoints(readPoints(child));
                 break;
             } else if ("text".equalsIgnoreCase(nodeName)) {
-                obj.setObjectType(ObjectType.TEXT);
-                obj.setText(readTextObject(child));
+                obj.setShape(ObjectType.TEXT);
+                obj.setTextData(readTextObject(child));
                 break;
             }
         }
@@ -1317,7 +1323,7 @@ public class TmxLoader implements AssetLoader {
         return points;
     }
 
-    private TextElement readTextObject(Node node) {
+    private ObjectText readTextObject(Node node) {
         String fontFamily = getAttributeValue(node, "fontfamily");
         int pixelSize = getAttribute(node, "pixelsize", 16);
         boolean wrap = getAttribute(node, "wrap", 0) == 1;
@@ -1340,58 +1346,58 @@ public class TmxLoader implements AssetLoader {
             child = child.getNextSibling();
         }
 
-        TextElement textElement = new TextElement(text);
-        textElement.setFontFamily(fontFamily);
-        textElement.setPixelSize(pixelSize);
-        textElement.setWrap(wrap);
+        ObjectText objectText = new ObjectText(text);
+        objectText.setFontFamily(fontFamily);
+        objectText.setPixelSize(pixelSize);
+        objectText.setWrap(wrap);
         if (color != null) {
-            textElement.setColor(ColorUtil.toColorRGBA(color));
+            objectText.setColor(ColorUtil.toColorRGBA(color));
         }
-        textElement.setBold(bold);
-        textElement.setItalic(italic);
-        textElement.setUnderline(underline);
-        textElement.setStrikeout(strikeout);
-        textElement.setKerning(kerning);
-        textElement.setHorizontalAlignment(horizontalAlignment);
-        textElement.setVerticalAlignment(verticalAlignment);
+        objectText.setBold(bold);
+        objectText.setItalic(italic);
+        objectText.setUnderline(underline);
+        objectText.setStrikeout(strikeout);
+        objectText.setKerning(kerning);
+        objectText.setHorizontalAlignment(horizontalAlignment);
+        objectText.setVerticalAlignment(verticalAlignment);
 
-        return textElement;
+        return objectText;
     }
 
-    private Group readGroupLayer(Node node) throws Exception {
-        Group group = new Group();
-        readLayerBase(node, group);
-        group.setMap(map);
+    private GroupLayer readGroupLayer(Node node) throws Exception {
+        GroupLayer groupLayer = new GroupLayer();
+        readLayerBase(node, groupLayer);
+        groupLayer.setMap(map);
 
         Node child = node.getFirstChild();
         while (child != null) {
             switch (child.getNodeName()) {
                 case "layer": {
                     Layer layer = readTileLayer(child);
-                    group.addLayer(layer);
+                    groupLayer.addLayer(layer);
                     break;
                 }
                 case "objectgroup": {
                     Layer layer = readObjectLayer(child);
-                    group.addLayer(layer);
+                    groupLayer.addLayer(layer);
                     break;
                 }
                 case "imagelayer": {
                     Layer layer = readImageLayer(child);
                     if (layer != null) {
-                        group.addLayer(layer);
+                        groupLayer.addLayer(layer);
                     }
                     break;
                 }
                 case "group": {
                     Layer layer = readGroupLayer(child);
-                    group.addLayer(layer);
+                    groupLayer.addLayer(layer);
                     break;
                 }
             }
             child = child.getNextSibling();
         }
-        return group;
+        return groupLayer;
     }
 
     /**

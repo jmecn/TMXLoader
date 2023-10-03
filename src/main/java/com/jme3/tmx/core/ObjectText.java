@@ -16,7 +16,7 @@ import com.jme3.math.ColorRGBA;
  * @author yanmaoyuan
  * @date 2023/9/26
  */
-public class TextElement {
+public class ObjectText {
     /**
      * Whether to use a bold font (default: false)
      */
@@ -66,7 +66,7 @@ public class TextElement {
      */
     private boolean wrap;
 
-    public TextElement(String text) {
+    public ObjectText(String text) {
         this.text = text;
         bold = false;
         italic = false;

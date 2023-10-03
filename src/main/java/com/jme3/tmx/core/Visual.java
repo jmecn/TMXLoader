@@ -43,7 +43,7 @@ public class Visual {
      * 
      * This method is called by
      * {@link com.jme3.tmx.render.MapRenderer#render(TileLayer)}
-     * {@link com.jme3.tmx.render.MapRenderer#render(ObjectLayer)}
+     * {@link com.jme3.tmx.render.MapRenderer#render(ObjectGroup)}
      * {@link com.jme3.tmx.render.MapRenderer#render(ImageLayer)}
      * 
      * @param visual The Spatial of this tile.

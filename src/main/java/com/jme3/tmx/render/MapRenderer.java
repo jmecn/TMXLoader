@@ -16,8 +16,8 @@ import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.tmx.core.ImageLayer;
 import com.jme3.tmx.core.Layer;
-import com.jme3.tmx.core.ObjectLayer;
-import com.jme3.tmx.core.ObjectNode;
+import com.jme3.tmx.core.ObjectGroup;
+import com.jme3.tmx.core.MapObject;
 import com.jme3.tmx.core.Tile;
 import com.jme3.tmx.core.TileLayer;
 import com.jme3.tmx.core.TiledMap;
@@ -118,8 +118,8 @@ public abstract class MapRenderer {
                 visual = render((TileLayer) layer);
             }
 
-            if (layer instanceof ObjectLayer) {
-                visual = render((ObjectLayer) layer);
+            if (layer instanceof ObjectGroup) {
+                visual = render((ObjectGroup) layer);
             }
 
             if (layer instanceof ImageLayer) {
@@ -145,8 +145,8 @@ public abstract class MapRenderer {
      * 
      * @return a Spatial for this layer
      */
-    protected Spatial render(ObjectLayer layer) {
-        List<ObjectNode> objects = layer.getObjects();
+    protected Spatial render(ObjectGroup layer) {
+        List<MapObject> objects = layer.getObjects();
         // instance the layer node
         if (layer.getVisual() == null) {
             Node layerNode = new Node("ObjectGroup#" + layer.getName());
@@ -169,16 +169,16 @@ public abstract class MapRenderer {
             // sort draw order
             switch (layer.getDrawOrder()) {
             case TOPDOWN:
-                Collections.sort(objects, new CompareTopdown());
+                objects.sort(new CompareTopdown());
                 break;
             case INDEX:
-                Collections.sort(objects, new CompareIndex());
+                objects.sort(new CompareIndex());
                 break;
             }
         }
 
         for (int i = 0; i < len; i++) {
-            ObjectNode obj = objects.get(i);
+            MapObject obj = objects.get(i);
 
             if (!obj.isVisible()) {
                 continue;
@@ -186,7 +186,7 @@ public abstract class MapRenderer {
 
             if (obj.isNeedUpdated()) {
 
-                switch (obj.getObjectType()) {
+                switch (obj.getShape()) {
                 case RECTANGLE: {
                     Geometry border = new Geometry("border",
                             ObjectMesh.makeRectangleBorder(obj.getWidth(), obj.getHeight()));
@@ -297,8 +297,7 @@ public abstract class MapRenderer {
                 float x = (float) obj.getX();
                 float y = (float) obj.getY();
 
-                // TODO if tileset .getTileHeight > map.getTileHeight, the
-                // object need to move down a little.
+                // TODO if tileset .getTileHeight > map.getTileHeight, the object need to move down a little.
                 
                 
                 Vector2f screenCoord = pixelToScreenCoords(x, y);
@@ -356,7 +355,7 @@ public abstract class MapRenderer {
             visual.move(0, 0, tile.getHeight());
         }
 
-        /**
+        /*
          * TODO flip diagonally
          * <pre>
          * [      *]
@@ -370,33 +369,23 @@ public abstract class MapRenderer {
         }
     }
 
-    private final class CompareTopdown implements Comparator<ObjectNode> {
+    private static final class CompareTopdown implements Comparator<MapObject> {
         @Override
-        public int compare(ObjectNode o1, ObjectNode o2) {
+        public int compare(MapObject o1, MapObject o2) {
             double a = o1.getY();
             double b = o2.getY();
 
-            if (a > b)
-                return 1;
-            else if (a == b)
-                return 0;
-            else
-                return -1;
+            return Double.compare(a, b);
         }
     }
 
-    private final class CompareIndex implements Comparator<ObjectNode> {
+    private static final class CompareIndex implements Comparator<MapObject> {
         @Override
-        public int compare(ObjectNode o1, ObjectNode o2) {
+        public int compare(MapObject o1, MapObject o2) {
             int a = o1.getId();
             int b = o2.getId();
 
-            if (a > b)
-                return 1;
-            else if (a == b)
-                return 0;
-            else
-                return -1;
+            return Integer.compare(a, b);
         }
     }
 

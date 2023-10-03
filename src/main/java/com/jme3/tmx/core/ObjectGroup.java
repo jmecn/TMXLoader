@@ -19,9 +19,9 @@ import com.jme3.tmx.enums.DrawOrder;
  * @author yanmaoyuan
  * 
  */
-public class ObjectLayer extends Layer {
+public class ObjectGroup extends Layer {
 
-    static Logger logger = Logger.getLogger(ObjectLayer.class.getName());
+    static Logger logger = Logger.getLogger(ObjectGroup.class.getName());
 
     /**
      * The color used to display the objects in this group.
@@ -41,12 +41,12 @@ public class ObjectLayer extends Layer {
      */
     private DrawOrder drawOrder = DrawOrder.TOPDOWN;
 
-    private List<ObjectNode> objects = new LinkedList<ObjectNode>();
+    private List<MapObject> objects = new LinkedList<MapObject>();
 
-    public ObjectLayer() {
+    public ObjectGroup() {
     }
 
-    public ObjectLayer(int width, int height) {
+    public ObjectGroup(int width, int height) {
         super(width, height);
     }
 
@@ -78,14 +78,14 @@ public class ObjectLayer extends Layer {
         this.drawOrder = drawOrder;
     }
 
-    public List<ObjectNode> getObjects() {
+    public List<MapObject> getObjects() {
         return objects;
     }
 
-    public ObjectNode get(int id) {
+    public MapObject get(int id) {
         int len = objects.size();
         for(int i=0; i<len; i++) {
-            ObjectNode obj = objects.get(i);
+            MapObject obj = objects.get(i);
             if (obj.getId() == id) {
                 return obj;
             }
@@ -93,12 +93,12 @@ public class ObjectLayer extends Layer {
         return null;
     }
     
-    public void add(ObjectNode obj) {
+    public void add(MapObject obj) {
         obj.setObjectGroup(this);
         objects.add(obj);
     }
 
-    public void remove(ObjectNode o) {
+    public void remove(MapObject o) {
         objects.remove(o);
         o.setObjectGroup(null);
     }
@@ -112,10 +112,10 @@ public class ObjectLayer extends Layer {
      *            a double.
      * @param y
      *            a double.
-     * @return a {@link com.jme3.tmx.core.ObjectNode} object.
+     * @return a {@link MapObject} object.
      */
-    public ObjectNode getObjectAt(double x, double y) {
-        for (ObjectNode obj : objects) {
+    public MapObject getObjectAt(double x, double y) {
+        for (MapObject obj : objects) {
             // Attempt to get an object bordering the point that has no width
             if (obj.getWidth() == 0 && obj.getX() + this.x == x) {
                 return obj;
@@ -144,20 +144,17 @@ public class ObjectLayer extends Layer {
      * getObjectNear.
      * </p>
      * 
-     * @param x
-     *            a int.
-     * @param y
-     *            a int.
-     * @param zoom
-     *            a double.
-     * @return a {@link com.jme3.tmx.core.ObjectNode} object.
+     * @param x a int.
+     * @param y a int.
+     * @param zoom a double.
+     * @return a {@link MapObject} object.
      */
-    public ObjectNode getObjectNear(int x, int y, double zoom) {
+    public MapObject getObjectNear(int x, int y, double zoom) {
         Rectangle2D mouse = new Rectangle2D.Double(x - zoom - 1, y - zoom - 1,
                 2 * zoom + 1, 2 * zoom + 1);
         Shape shape;
 
-        for (ObjectNode obj : objects) {
+        for (MapObject obj : objects) {
             if (obj.getWidth() == 0 && obj.getHeight() == 0) {
                 shape = new Ellipse2D.Double(obj.getX() * zoom, obj.getY()
                         * zoom, 10 * zoom, 10 * zoom);

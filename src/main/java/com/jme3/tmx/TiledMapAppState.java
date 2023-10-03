@@ -141,6 +141,10 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener,
         cam.setParallelProjection(true);
         cam.lookAtDirection(new Vector3f(0f, 0f, -1f), Vector3f.UNIT_Y);
         cam.setLocation(new Vector3f(halfWidth, halfHeight, 0));
+
+        if (this.map != null) {
+            viewPort.setBackgroundColor(map.getBackgroundColor());
+        }
     }
 
     @Override

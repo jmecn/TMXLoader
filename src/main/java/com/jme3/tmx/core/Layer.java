@@ -11,7 +11,7 @@ public class Layer extends Base {
     
     protected TiledMap map;
 
-    protected Group parent;
+    protected GroupLayer parent;
 
     /**
      * Unique ID of the layer (defaults to 0, with valid IDs being at least 1).
@@ -47,12 +47,14 @@ public class Layer extends Base {
     /**
      * The opacity of the layer as a value from 0 to 1. Defaults to 1.
      */
-    protected float opacity = 1.0f;
+    protected double opacity = 1.0;
 
     /**
      * Whether the layer is shown (1) or hidden (0). Defaults to 1.
      */
     protected boolean visible = true;
+
+    protected boolean locked = false;
 
     /**
      * A tint color that is multiplied with any tiles drawn by this layer
@@ -107,11 +109,11 @@ public class Layer extends Base {
         this.map = map;
     }
 
-    public Group getParent() {
+    public GroupLayer getParent() {
         return parent;
     }
 
-    public void setParent(Group parent) {
+    public void setParent(GroupLayer parent) {
         this.parent = parent;
     }
 
@@ -171,11 +173,11 @@ public class Layer extends Base {
         this.height = height;
     }
 
-    public float getOpacity() {
+    public double getOpacity() {
         return opacity;
     }
 
-    public void setOpacity(float opacity) {
+    public void setOpacity(double opacity) {
         this.opacity = opacity;
     }
 
@@ -185,6 +187,14 @@ public class Layer extends Base {
 
     public void setVisible(boolean visible) {
         this.visible = visible;
+    }
+
+    public boolean isLocked() {
+        return locked;
+    }
+
+    public void setLocked(boolean locked) {
+        this.locked = locked;
     }
 
     public ColorRGBA getTintColor() {
@@ -216,7 +226,7 @@ public class Layer extends Base {
         return parallaxY;
     }
 
-    public void setParallax(float parallaxX, float parallaxY) {
+    public void setParallaxFactor(float parallaxX, float parallaxY) {
         this.parallaxX = parallaxX;
         this.parallaxY = parallaxY;
     }

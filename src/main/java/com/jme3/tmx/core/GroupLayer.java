@@ -11,11 +11,11 @@ import java.util.Map;
  * @author yanmaoyuan
  * @date 2023/9/26
  */
-public class Group extends Layer {
+public class GroupLayer extends Layer {
 
     private final List<Layer> layers;
     private final Map<String, Layer> layerMap;
-    public Group( ) {
+    public GroupLayer( ) {
         layers = new ArrayList<>();
         layerMap = new HashMap<>();
     }
