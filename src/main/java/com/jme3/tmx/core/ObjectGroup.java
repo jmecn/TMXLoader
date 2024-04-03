@@ -41,7 +41,7 @@ public class ObjectGroup extends Layer {
      */
     private DrawOrder drawOrder = DrawOrder.TOPDOWN;
 
-    private List<MapObject> objects = new LinkedList<MapObject>();
+    private final List<MapObject> objects = new LinkedList<>();
 
     public ObjectGroup() {
     }
@@ -84,8 +84,7 @@ public class ObjectGroup extends Layer {
 
     public MapObject get(int id) {
         int len = objects.size();
-        for(int i=0; i<len; i++) {
-            MapObject obj = objects.get(i);
+        for (MapObject obj : objects) {
             if (obj.getId() == id) {
                 return obj;
             }

@@ -22,6 +22,7 @@ public class StaggeredRenderer extends HexagonalRenderer {
      * This override exists because the method used by the HexagonalRenderer
      * does not produce nice results for isometric shapes in the tile corners.
      */
+    @Override
     public Point screenToTileCoords(float x, float y) {
 
         if (staggerX)
@@ -46,17 +47,17 @@ public class StaggeredRenderer extends HexagonalRenderer {
                 referencePoint.y++;
         }
 
-        float y_pos = rel.x * ((float) tileHeight / tileWidth);
+        float yPos = rel.x * ((float) tileHeight / tileWidth);
 
         // Check whether the cursor is in any of the corners (neighboring tiles)
-        if (sideOffsetY - y_pos > rel.y)
+        if (sideOffsetY - yPos > rel.y)
             return topLeft(referencePoint.x, referencePoint.y);
-        if (-sideOffsetY + y_pos > rel.y)
+        if (-sideOffsetY + yPos > rel.y)
             return topRight(referencePoint.x, referencePoint.y);
 
-        if (sideOffsetY + y_pos < rel.y)
+        if (sideOffsetY + yPos < rel.y)
             return bottomLeft(referencePoint.x, referencePoint.y);
-        if (sideOffsetY * 3 - y_pos < rel.y)
+        if (sideOffsetY * 3 - yPos < rel.y)
             return bottomRight(referencePoint.x, referencePoint.y);
 
         return referencePoint;

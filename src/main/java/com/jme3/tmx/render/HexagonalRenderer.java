@@ -98,8 +98,7 @@ public class HexagonalRenderer extends OrthogonalRenderer {
             Node layerNode = new Node("TileLayer#" + layer.getName());
             layerNode.setQueueBucket(Bucket.Gui);
             layer.setVisual(layerNode);
-            
-            map.getVisual().attachChild(layerNode);
+            layer.getParentVisual().attachChild(layerNode);
         }
         
         if (staggerX) {
@@ -167,11 +166,11 @@ public class HexagonalRenderer extends OrthogonalRenderer {
             }
         }
         // make it thinner
-         if (tileZIndex > 0) {
+        if (tileZIndex > 0) {
              layer.getVisual().setLocalScale(1, 1f / tileZIndex, 1);
-         }
+        }
 
-         return layer.getVisual();
+        return layer.getVisual();
     }
 
     @Override

@@ -1,6 +1,5 @@
 package com.jme3.tmx.render;
 
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.logging.Logger;
@@ -14,13 +13,7 @@ import com.jme3.scene.Geometry;
 import com.jme3.scene.Mesh;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
-import com.jme3.tmx.core.ImageLayer;
-import com.jme3.tmx.core.Layer;
-import com.jme3.tmx.core.ObjectGroup;
-import com.jme3.tmx.core.MapObject;
-import com.jme3.tmx.core.Tile;
-import com.jme3.tmx.core.TileLayer;
-import com.jme3.tmx.core.TiledMap;
+import com.jme3.tmx.core.*;
 import com.jme3.tmx.enums.Orientation;
 import com.jme3.tmx.math2d.Point;
 import com.jme3.tmx.util.ObjectMesh;
@@ -122,6 +115,10 @@ public abstract class MapRenderer {
                 visual = render((ImageLayer) layer);
             }
 
+            if (layer instanceof GroupLayer) {
+                visual = render((GroupLayer) layer);
+            }
+
             if (visual != null) {
                 // this is a little magic to make let top layer block off the
                 // bottom layer
@@ -130,6 +127,52 @@ public abstract class MapRenderer {
             }
         }
         return map.getVisual();
+    }
+
+    private void setTintColor(Material material, Layer layer) {
+        ColorRGBA tintColor = layer.getTintColor();
+        if (tintColor != null) {
+            material.setColor("TintColor", tintColor);
+        }
+    }
+
+    protected Spatial render(GroupLayer group) {
+        // instance the layer node
+        if (group.getVisual() == null) {
+            Node layerNode = new Node("GroupLayer#" + group.getName());
+            layerNode.setQueueBucket(Bucket.Gui);
+            group.setVisual(layerNode);
+            group.getParentVisual().attachChild(layerNode);
+        }
+
+        for (Layer layer : group.getLayers()) {
+            if (!layer.isVisible() || !layer.isNeedUpdated()) {
+                continue;
+            }
+
+            Spatial visual = null;
+            if (layer instanceof TileLayer) {
+                visual = render((TileLayer) layer);
+            }
+
+            if (layer instanceof ObjectGroup) {
+                visual = render((ObjectGroup) layer);
+            }
+
+            if (layer instanceof ImageLayer) {
+                visual = render((ImageLayer) layer);
+            }
+
+            if (layer instanceof GroupLayer) {
+                visual = render((GroupLayer) layer);
+            }
+
+            if (visual != null) {
+                group.getVisual().attachChild(visual);
+            }
+        }
+
+        return group.getVisual();
     }
 
     protected abstract Spatial render(TileLayer layer);
@@ -148,7 +191,7 @@ public abstract class MapRenderer {
             Node layerNode = new Node("ObjectGroup#" + layer.getName());
             layerNode.setQueueBucket(Bucket.Gui);
             layer.setVisual(layerNode);
-            map.getVisual().attachChild(layerNode);
+            layer.getParentVisual().attachChild(layerNode);
         }
 
         final ColorRGBA borderColor = layer.getColor();
@@ -156,6 +199,9 @@ public abstract class MapRenderer {
         Material mat = layer.getMaterial();
         Material bgMat = mat.clone();
         bgMat.setColor("Color", bgColor);
+        // set tint color
+        setTintColor(mat, layer);
+        setTintColor(bgMat, layer);
 
         int len = objects.size();
 
@@ -311,12 +357,15 @@ public abstract class MapRenderer {
             Node layerNode = new Node("ImageLayer#" + layer.getName());
             layerNode.setQueueBucket(Bucket.Gui);
             layer.setVisual(layerNode);
-            map.getVisual().attachChild(layerNode);
+            layer.getParentVisual().attachChild(layerNode);
         }
+
+        Material mat = layer.getMaterial();
+        setTintColor(mat, layer);
 
         Mesh mesh = ObjectMesh.makeRectangle(mapSize.x, mapSize.y);
         Geometry geom = new Geometry(layer.getName(), mesh);
-        geom.setMaterial(layer.getMaterial());
+        geom.setMaterial(mat);
         geom.setQueueBucket(Bucket.Gui);
 
         layer.getVisual().attachChild(geom);

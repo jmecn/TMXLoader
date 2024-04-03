@@ -25,10 +25,10 @@ public class Tile extends Base implements Cloneable {
      * flips.
      */
     // Bits on the far end of the 32-bit global tile ID are used for tile flags
-    public final static int FLIPPED_HORIZONTALLY_FLAG = 0x80000000;
-    public final static int FLIPPED_VERTICALLY_FLAG = 0x40000000;
-    public final static int FLIPPED_DIAGONALLY_FLAG = 0x20000000;
-    public final static int FLIPPED_MASK = FLIPPED_HORIZONTALLY_FLAG | FLIPPED_VERTICALLY_FLAG
+    public static final int FLIPPED_HORIZONTALLY_FLAG = 0x80000000;
+    public static final int FLIPPED_VERTICALLY_FLAG = 0x40000000;
+    public static final int FLIPPED_DIAGONALLY_FLAG = 0x20000000;
+    public static final int FLIPPED_MASK = FLIPPED_HORIZONTALLY_FLAG | FLIPPED_VERTICALLY_FLAG
             | FLIPPED_DIAGONALLY_FLAG;
 
     private Tileset tileset;
@@ -322,5 +322,10 @@ public class Tile extends Base implements Cloneable {
         tile.probability = probability;
 
         return tile;
+    }
+
+    @Override
+    public Geometry getVisual() {
+        return (Geometry) visual;
     }
 }

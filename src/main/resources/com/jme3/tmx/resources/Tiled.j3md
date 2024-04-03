@@ -4,6 +4,7 @@ MaterialDef Tiled {
         Texture2D ColorMap
         Color Color (Color)
         Color TransColor
+        Color TintColor
     }
     
     Technique {
@@ -24,7 +25,8 @@ MaterialDef Tiled {
         Defines {
             HAS_COLORMAP : ColorMap
             HAS_COLOR : Color
-            TRANS_COLOR: TransColor
+            HAS_TRANS_COLOR: TransColor
+            HAS_TINT_COLOR: TintColor
         }
     }
 

@@ -350,9 +350,7 @@ public class TmxLoader implements AssetLoader {
                 }
                 case "imagelayer": {
                     Layer layer = readImageLayer(child);
-                    if (layer != null) {
-                        map.addLayer(layer);
-                    }
+                    map.addLayer(layer);
                     break;
                 }
                 case "group": {

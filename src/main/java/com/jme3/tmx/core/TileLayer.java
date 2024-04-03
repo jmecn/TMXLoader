@@ -5,6 +5,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 
+import com.jme3.material.Material;
+import com.jme3.math.ColorRGBA;
+import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.tmx.math2d.Point;
@@ -200,6 +203,15 @@ public class TileLayer extends Layer {
             spatials[ty - y][tx - x] = spatial;
             
             needUpdateSpatial[ty - y][tx - x] = false;
+
+            // set tint color
+            ColorRGBA tintColor = getTintColor();
+            if (tintColor != null) {
+                if (spatial instanceof Geometry) {
+                    Geometry geom = (Geometry) spatial;
+                    geom.getMaterial().setColor("TintColor", tintColor);
+                }
+            }
         }
     }
 

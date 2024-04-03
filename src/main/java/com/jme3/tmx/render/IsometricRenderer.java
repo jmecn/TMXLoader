@@ -35,8 +35,7 @@ public class IsometricRenderer extends MapRenderer {
             Node layerNode = new Node("TileLayer#" + layer.getName());
             layerNode.setQueueBucket(Bucket.Gui);
             layer.setVisual(layerNode);
-            
-            map.getVisual().attachChild(layerNode);
+            layer.getParentVisual().attachChild(layerNode);
         }
         
         int tileZIndex = 0;

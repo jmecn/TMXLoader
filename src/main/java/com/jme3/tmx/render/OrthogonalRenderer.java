@@ -33,7 +33,8 @@ public class OrthogonalRenderer extends MapRenderer {
         int endX = width - 1;
         int endY = height - 1;
 
-        int incX = 1, incY = 1;
+        int incX = 1;
+        int incY = 1;
         int tmp;
         RenderOrder renderOrder = map.getRenderOrder();
         switch (renderOrder) {
@@ -81,8 +82,7 @@ public class OrthogonalRenderer extends MapRenderer {
             Node layerNode = new Node("TileLayer#" + layer.getName());
             layerNode.setQueueBucket(Bucket.Gui);
             layer.setVisual(layerNode);
-            
-            map.getVisual().attachChild(layerNode);
+            layer.getParentVisual().attachChild(layerNode);
         }
         
         for (int y = startY; y != endY; y += incY) {

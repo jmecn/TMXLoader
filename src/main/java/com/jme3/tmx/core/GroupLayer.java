@@ -1,5 +1,7 @@
 package com.jme3.tmx.core;
 
+import com.jme3.scene.Node;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -29,5 +31,10 @@ public class GroupLayer extends Layer {
         layer.setParent(this);
         layers.add(layer);
         layerMap.put(layer.getName(), layer);
+    }
+
+    @Override
+    public Node getVisual() {
+        return (Node) visual;
     }
 }

@@ -1,6 +1,7 @@
 package com.jme3.tmx.core;
 
 import com.jme3.math.ColorRGBA;
+import com.jme3.scene.Node;
 
 /**
  * A layer of a map.
@@ -183,7 +184,11 @@ public class Layer extends Base {
     }
 
     public boolean isVisible() {
-        return visible;
+        if (parent != null) {
+            return parent.visible;
+        } else {
+            return visible;
+        }
     }
 
     public void setVisible(boolean visible) {
@@ -191,7 +196,11 @@ public class Layer extends Base {
     }
 
     public boolean isLocked() {
-        return locked;
+        if (parent != null) {
+            return parent.isLocked();
+        } else {
+            return locked;
+        }
     }
 
     public void setLocked(boolean locked) {
@@ -199,7 +208,11 @@ public class Layer extends Base {
     }
 
     public ColorRGBA getTintColor() {
-        return tintColor;
+        if (parent != null) {
+            return parent.getTintColor();
+        } else {
+            return tintColor;
+        }
     }
 
     public void setTintColor(ColorRGBA tintColor) {
@@ -207,11 +220,19 @@ public class Layer extends Base {
     }
 
     public int getOffsetX() {
-        return offsetX;
+        if (parent != null) {
+            return parent.getOffsetX();
+        } else {
+            return offsetX;
+        }
     }
 
     public int getOffsetY() {
-        return offsetY;
+        if (parent != null) {
+            return parent.getOffsetY();
+        } else {
+            return offsetY;
+        }
     }
     
     public void setOffset(int offsetX, int offsetY) {
@@ -219,16 +240,37 @@ public class Layer extends Base {
         this.offsetY = offsetY;
     }
 
+    // When the parallax scrolling factor is set on a group layer, it applies to all its child layers.
+    // The effective parallax scrolling factor of a layer is determined by multiplying the parallax
+    // scrolling factor by the scrolling factors of all parent layers.
     public float getParallaxX() {
-        return parallaxX;
+        if (parent != null) {
+            return parallaxX * parent.getParallaxX();
+        } else {
+            return parallaxX;
+        }
     }
 
     public float getParallaxY() {
-        return parallaxY;
+        if (parent != null) {
+            return parallaxY * parent.getParallaxY();
+        } else {
+            return parallaxY;
+        }
     }
 
     public void setParallaxFactor(float parallaxX, float parallaxY) {
         this.parallaxX = parallaxX;
         this.parallaxY = parallaxY;
+    }
+
+    public Node getParentVisual() {
+        if (parent != null) {
+            return parent.getVisual();
+        }
+        if (map != null) {
+            return map.getVisual();
+        }
+        return null;
     }
 }
