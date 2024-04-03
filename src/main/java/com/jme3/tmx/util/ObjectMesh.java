@@ -25,10 +25,10 @@ public class ObjectMesh {
      * Make an ellipse mesh.
      * 
      * 
-     * @param width
-     * @param height
+     * @param width the ellipse width
+     * @param height the ellipse height
      * @param count how many points you need?
-     * @return
+     * @return the ellipse meth
      */
     public static Mesh makeEllipse(double width, double height, int count) {
         // the uv center
@@ -85,10 +85,10 @@ public class ObjectMesh {
      * Make a border for Ellipse.
      * 
      * 
-     * @param width
-     * @param height
+     * @param width the ellipse width
+     * @param height the ellipse height
      * @param count How many points you need?
-     * @return
+     * @return the ellipse border mesh
      */
     public static Mesh makeEllipseBorder(double width, double height, int count) {
         float xc = (float) (width * 0.5);

@@ -4,7 +4,6 @@ package com.jme3.tmx.core;
  * Defines a Wang tile, by referring to a tile in the tileset and associating it with a certain Wang ID.
  *
  * @author yanmaoyuan
- * @date 2023/9/26
  */
 public class WangTile {
     private int tileId;

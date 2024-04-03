@@ -14,7 +14,6 @@ import com.jme3.math.ColorRGBA;
  * If the text is larger than the object’s bounds, it is clipped to the bounds of the object.
  *
  * @author yanmaoyuan
- * @date 2023/9/26
  */
 public class ObjectText {
     /**

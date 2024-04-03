@@ -1,4 +1,6 @@
-apply plugin: 'java'
+plugins {
+    id 'java-library'
+}
 
 version = 0.3
 
@@ -8,7 +10,7 @@ targetCompatibility = 1.8
 [compileJava, compileTestJava, javadoc]*.options*.encoding = 'UTF-8'
 
 repositories {
-    jcenter()
+    mavenCentral()
 }
 
 def jme3 = [g:'org.jmonkeyengine', v:'3.6.1-stable']
@@ -16,32 +18,17 @@ def jme3 = [g:'org.jmonkeyengine', v:'3.6.1-stable']
 dependencies {
 
     // Core
-    compile "$jme3.g:jme3-core:$jme3.v"
+    implementation "$jme3.g:jme3-core:$jme3.v"
 
     // Test    
-    testCompile 'junit:junit:4.13.2'
-    testCompile "$jme3.g:jme3-desktop:$jme3.v"
-    testCompile "$jme3.g:jme3-lwjgl:$jme3.v"
-    
-    // Do I really need it?
-    compile fileTree(dir: 'libs', include: ['*.jar'])
+    testImplementation 'junit:junit:4.13.2'
+    testImplementation "$jme3.g:jme3-desktop:$jme3.v"
+    testImplementation "$jme3.g:jme3-lwjgl:$jme3.v"
 }
 
 task sourcesJar(type: Jar) {
-    classifier = 'sources'
     from sourceSets.main.java.srcDirs
-}
-
-task myJavadocs(type: Javadoc) {
-    source = sourceSets.main.allJava
-    classpath = project.sourceSets.main.compileClasspath
-}
-
-task javadocJar(type: Jar, dependsOn: myJavadocs) {
-    classifier = 'javadoc'
-    from javadoc.destinationDir
 }
 artifacts {
     archives sourcesJar
-    archives javadocJar
 }

@@ -12,7 +12,6 @@ import javax.xml.crypto.Data;
  * specified in the attributes.
  *
  * @author yanmaoyuan
- * @date 2023/9/26
  */
 public class Chunk extends Visual {
     /**

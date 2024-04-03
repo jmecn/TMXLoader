@@ -6,7 +6,7 @@ package com.jme3.tmx.core;
  * 
  * @author yanmaoyuan
  * @deprecated This element has been deprecated since Tiled 1.5, in favour of
- * the &lt;wangsets> element, which is more flexible. Tilesets containing terrain
+ * the &lt;wangsets&gt; element, which is more flexible. Tilesets containing terrain
  * types are automatically saved with a Wang set instead.
  */
 public class Terrain extends Base {

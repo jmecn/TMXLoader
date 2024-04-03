@@ -7,7 +7,6 @@ import java.util.List;
  * Defines a list of colors and any number of Wang tiles using these colors. (since 1.1)
  *
  * @author yanmaoyuan
- * @date 2023/9/26
  */
 public class WangSet extends Base {
 

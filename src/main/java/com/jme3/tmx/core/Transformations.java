@@ -5,7 +5,6 @@ package com.jme3.tmx.core;
  * (e.g. to extend a Wang set by transforming existing tiles). (since 1.5)
  *
  * @author yanmaoyuan
- * @date 2023/9/26
  */
 public class Transformations {
     /**

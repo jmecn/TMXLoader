@@ -8,10 +8,9 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * desc:
+ * desc: GroupLayer
  *
  * @author yanmaoyuan
- * @date 2023/9/26
  */
 public class GroupLayer extends Layer {
 

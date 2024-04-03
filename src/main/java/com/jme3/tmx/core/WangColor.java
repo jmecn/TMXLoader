@@ -6,7 +6,6 @@ import com.jme3.math.ColorRGBA;
  * A color that can be used to define the corner and/or edge of a Wang tile.
  *
  * @author yanmaoyuan
- * @date 2023/9/26
  */
 public class WangColor extends Base {
     /**
