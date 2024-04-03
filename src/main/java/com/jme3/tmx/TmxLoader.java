@@ -219,7 +219,7 @@ public class TmxLoader implements AssetLoader {
         mapNode = doc.getDocumentElement();
 
         if (!"map".equals(mapNode.getNodeName())) {
-            throw new Exception("Not a valid tmx map file.");
+            throw new IllegalArgumentException("Not a valid tmx map file.");
         }
 
         // Get the map dimensions and create the map
@@ -616,8 +616,8 @@ public class TmxLoader implements AssetLoader {
             float[] vertices = new float[]{
                     0, 0, height - offset,
                     width, 0, height - offset,
-                    width, 0, 0 - offset,
-                    0, 0, 0 - offset};
+                    width, 0, -offset,
+                    0, 0, -offset};
 
             short[] indexes = new short[]{0, 1, 2, 0, 2, 3};
 
@@ -1036,7 +1036,8 @@ public class TmxLoader implements AssetLoader {
     }
 
     private void decodeTileData(TileLayer layer, Node node) {
-        int x = 0, y = 0;
+        int x = 0;
+        int y = 0;
         Node child = node.getFirstChild();
         while (child != null) {
             if ("tile".equalsIgnoreCase(child.getNodeName())) {
@@ -1073,7 +1074,8 @@ public class TmxLoader implements AssetLoader {
         Chunk chunk = new Chunk(x, y, width, height);
 
         if (node.hasChildNodes()) {
-            int ix = 0, iy = 0;
+            int ix = 0;
+            int iy = 0;
             Node child = node.getFirstChild();
             while (child != null) {
                 if ("tile".equalsIgnoreCase(child.getNodeName())) {
@@ -1394,6 +1396,9 @@ public class TmxLoader implements AssetLoader {
                     groupLayer.addLayer(layer);
                     break;
                 }
+                default: {
+                    break;
+                }
             }
             child = child.getNextSibling();
         }
@@ -1534,26 +1539,26 @@ public class TmxLoader implements AssetLoader {
     }
 
     private Texture2D loadTexture2D(final byte[] data) {
-        Class<?> LoaderClass = null;
+        Class<?> loaderClass = null;
         Object loaderInstance = null;
         Method loadMethod = null;
 
         try {
             // try Desktop first
-            LoaderClass = Class.forName("com.jme3.texture.plugins.AWTLoader");
+            loaderClass = Class.forName("com.jme3.texture.plugins.AWTLoader");
         } catch (ClassNotFoundException e) {
             logger.warning("Can't find AWTLoader.");
 
             try {
                 // then try Android Native Image Loader
-                LoaderClass = Class
+                loaderClass = Class
                         .forName("com.jme3.texture.plugins.AndroidNativeImageLoader");
             } catch (ClassNotFoundException e1) {
                 logger.warning("Can't find AndroidNativeImageLoader.");
 
                 try {
                     // then try Android BufferImage Loader
-                    LoaderClass = Class
+                    loaderClass = Class
                             .forName("com.jme3.texture.plugins.AndroidBufferImageLoader");
                 } catch (ClassNotFoundException e2) {
                     logger.warning("Can't find AndroidNativeImageLoader.");
@@ -1561,13 +1566,13 @@ public class TmxLoader implements AssetLoader {
             }
         }
 
-        if (LoaderClass == null) {
+        if (loaderClass == null) {
             return null;
         } else {
             // try Desktop first
             try {
-                loaderInstance = LoaderClass.newInstance();
-                loadMethod = LoaderClass.getMethod("load", AssetInfo.class);
+                loaderInstance = loaderClass.getConstructor().newInstance();
+                loadMethod = loaderClass.getMethod("load", AssetInfo.class);
             } catch (ReflectiveOperationException e) {
                 logger.log(Level.WARNING, "Can't find AWTLoader.", e);
             }
@@ -1582,8 +1587,7 @@ public class TmxLoader implements AssetLoader {
 
         Texture2D tex = null;
         try {
-            com.jme3.texture.Image img = (com.jme3.texture.Image) loadMethod
-                    .invoke(loaderInstance, info);
+            com.jme3.texture.Image img = (com.jme3.texture.Image) loadMethod.invoke(loaderInstance, info);
 
             tex = new Texture2D();
             tex.setWrap(WrapMode.Repeat);

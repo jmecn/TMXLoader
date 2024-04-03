@@ -1,6 +1,7 @@
 package com.jme3.tmx.core;
 
 import com.jme3.material.Material;
+import com.jme3.scene.Node;
 import com.jme3.texture.Texture;
 
 /**
@@ -70,4 +71,8 @@ public class ImageLayer extends Layer {
         this.material = material;
     }
 
+    @Override
+    public Node getVisual() {
+        return (Node) visual;
+    }
 }

@@ -57,12 +57,14 @@ public class MapObject extends Base {
     /**
      * The (x, y) coordinate of the object in pixels.
      */
-    private double x, y;
+    private double x;
+    private double y;
 
     /**
      * The width and height of the object in pixels (defaults to 0).
      */
-    private double width = 0, height = 0;
+    private double width = 0;
+    private double height = 0;
 
     /**
      * The rotation of the object in degrees clockwise (defaults to 0). (since 0.10)

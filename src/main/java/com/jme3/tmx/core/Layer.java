@@ -42,7 +42,8 @@ public class Layer extends Base {
      * The width and height of the layer in tiles. Traditionally required, but
      * as of Tiled always the same as the map width and height for fixed-size maps.
      */
-    protected int width, height;
+    protected int width;
+    protected int height;
 
     /**
      * The opacity of the layer as a value from 0 to 1. Defaults to 1.

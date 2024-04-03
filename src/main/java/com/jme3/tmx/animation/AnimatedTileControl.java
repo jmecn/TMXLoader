@@ -21,7 +21,7 @@ public class AnimatedTileControl extends AbstractControl {
 
     static Logger logger = Logger.getLogger(AnimatedTileControl.class.getName());
 
-    private Tile tile;
+    private final Tile tile;
     private Animation anim;
     private int currentFrameIndex;
     private float unusedTime;

@@ -65,7 +65,7 @@ public abstract class MapRenderer {
     /**
      * This value used to generate ellipse mesh.
      */
-    private final static int ELLIPSE_POINTS = 36;
+    private static final int ELLIPSE_POINTS = 36;
 
     protected TiledMap map;
     protected int width;
@@ -78,7 +78,7 @@ public abstract class MapRenderer {
      */
     protected Point mapSize;
 
-    public MapRenderer(TiledMap map) {
+    protected MapRenderer(TiledMap map) {
         this.map = map;
         this.width = map.getWidth();
         this.height = map.getHeight();
@@ -105,11 +105,7 @@ public abstract class MapRenderer {
             Layer layer = map.getLayer(i);
 
             // skip invisible layer
-            if (!layer.isVisible()) {
-                continue;
-            }
-
-            if (!layer.isNeedUpdated()) {
+            if (!layer.isVisible() || !layer.isNeedUpdated()) {
                 continue;
             }
 
@@ -310,12 +306,20 @@ public abstract class MapRenderer {
     }
 
     protected Spatial render(ImageLayer layer) {
+        // instance the layer node
+        if (layer.getVisual() == null) {
+            Node layerNode = new Node("ImageLayer#" + layer.getName());
+            layerNode.setQueueBucket(Bucket.Gui);
+            layer.setVisual(layerNode);
+            map.getVisual().attachChild(layerNode);
+        }
+
         Mesh mesh = ObjectMesh.makeRectangle(mapSize.x, mapSize.y);
         Geometry geom = new Geometry(layer.getName(), mesh);
         geom.setMaterial(layer.getMaterial());
         geom.setQueueBucket(Bucket.Gui);
 
-        layer.setVisual(geom);
+        layer.getVisual().attachChild(geom);
 
         return layer.getVisual();
     }

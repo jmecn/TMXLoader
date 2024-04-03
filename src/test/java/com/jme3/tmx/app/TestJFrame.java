@@ -42,6 +42,7 @@ public class TestJFrame extends SimpleApplication {
 
 
     final static private String[] assets = {
+            "Models/Examples/image.tmx",
             "Models/Examples/BeatBoss/forest.tmx",
             "Models/Examples/BeatBoss/cave.tmx",
             "Models/Examples/BeatBoss/tomb.tmx",
@@ -77,6 +78,7 @@ public class TestJFrame extends SimpleApplication {
             "Models/Examples/Staggered/05.tmx", };
 
     final static private String[] names = {
+            "image",
             "forest", "cave", "tomb",
             "orthogonal_01", "orthogonal_02",
             "orthogonal_03", "orthogonal_04", "orthogonal_05", "orthogonal_06",

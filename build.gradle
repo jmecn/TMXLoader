@@ -1,6 +1,6 @@
 apply plugin: 'java'
 
-version = 0.2
+version = 0.3
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
@@ -19,7 +19,7 @@ dependencies {
     compile "$jme3.g:jme3-core:$jme3.v"
 
     // Test    
-    testCompile 'junit:junit:4.12'
+    testCompile 'junit:junit:4.13.2'
     testCompile "$jme3.g:jme3-desktop:$jme3.v"
     testCompile "$jme3.g:jme3-lwjgl:$jme3.v"
     
@@ -34,7 +34,7 @@ task sourcesJar(type: Jar) {
 
 task myJavadocs(type: Javadoc) {
     source = sourceSets.main.allJava
-    classpath = project.sourceSets.main.compileClasspath;
+    classpath = project.sourceSets.main.compileClasspath
 }
 
 task javadocJar(type: Jar, dependsOn: myJavadocs) {

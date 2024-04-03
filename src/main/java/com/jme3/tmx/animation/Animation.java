@@ -28,15 +28,15 @@ public class Animation {
 
     private String name = null;
     private int id = -1;
-    private int flags = KEY_LOOP;
+    private int flags;
     private float frameRate = 1.0f; // one fps
     
     // animation
-    private List<Frame> frames;
+    private final List<Frame> frames;
 
     public Animation() {
         flags = KEY_LOOP;
-        frames = new ArrayList<Frame>();
+        frames = new ArrayList<>();
     }
 
     public Animation(String name) {
