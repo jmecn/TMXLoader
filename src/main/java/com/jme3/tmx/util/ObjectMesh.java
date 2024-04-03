@@ -19,8 +19,10 @@ import com.jme3.util.BufferUtils;
  * @author yanmaoyuan
  *
  */
-public class ObjectMesh {
-    
+public final class ObjectMesh {
+
+    private ObjectMesh() {}
+
     /**
      * Make an ellipse mesh.
      * 
@@ -94,7 +96,7 @@ public class ObjectMesh {
         float xc = (float) (width * 0.5);
         float yc = (float) (height * 0.5);
         
-        List<Vector2f> points = new ArrayList<Vector2f>(count);
+        List<Vector2f> points = new ArrayList<>(count);
         float radian = FastMath.TWO_PI / count;
         float r = 0;
         for(int i=0; i<count; i++) {
@@ -142,7 +144,7 @@ public class ObjectMesh {
     }
     
     public static Mesh makeRectangleBorder(double width, double height) {
-        List<Vector2f> points = new ArrayList<Vector2f>();
+        List<Vector2f> points = new ArrayList<>();
         points.add(new Vector2f(0,0));
         points.add(new Vector2f((float) width,0));
         points.add(new Vector2f((float)width, (float)height));
@@ -154,13 +156,8 @@ public class ObjectMesh {
     public static Mesh makePolygon(List<Vector2f> points) {
 
         int len = points.size();
-        List<Vector2f> vec2 = new ArrayList<Vector2f>(len);
-        List<Integer> result = new ArrayList<Integer>();
-        for(int i=0; i<len; i++) {
-            Vector2f p = points.get(i);
-            vec2.add(new Vector2f(p.x, -p.y));
-        }
-        
+        List<Integer> result = new ArrayList<>(len);
+
         Triangulation.Process(points, result);
         
         Vector3f[] vertex = new Vector3f[len];
@@ -206,11 +203,8 @@ public class ObjectMesh {
         Vector2f point = new Vector2f();
         for(int i=0; i<len; i++) {
             point.set(points.get(i));
-            
             vertex[i] = new Vector3f(point.x, 0, point.y);
-            
             normal[i] = new Vector3f(0f, 1f, 0f);
-            
             index[i] = (short) i;
         }
         
@@ -228,5 +222,53 @@ public class ObjectMesh {
         mesh.updateCounts();
         
         return mesh;
+    }
+
+    /**
+     * Make a border for map marker. It's a half circle on the top and a triangle on the bottom, point to (0,0).
+     * @return
+     */
+    public static Mesh makeMarkerBorder(float radius, int count) {
+        List<Vector2f> points = new ArrayList<>(count + 1);
+        points.add(new Vector2f(0, 0));
+
+        float baseHeight = radius * -2f;
+        float baseRadian = FastMath.PI / 3f;
+        float radian = (FastMath.PI + baseRadian) / count;
+        float r = 0;
+        for(int i=0; i<count; i++) {
+            float x = FastMath.sin(r + baseRadian) * radius;
+            float y = FastMath.cos(r + baseRadian) * radius + baseHeight;
+            points.add(new Vector2f(x, y));
+
+            r += radian;
+        }
+
+        return makePolyline(points, true);
+    }
+
+
+    /**
+     * Make a border for map marker. It's a half circle on the top and a triangle on the bottom, point to (0,0).
+     * @return
+     */
+    public static Mesh makeMarker(float radius, int count) {
+        float baseHeight = radius * -2f;
+        float baseRadian = FastMath.PI / 3f;
+
+        List<Vector2f> points = new ArrayList<>(count + 2);
+        points.add(new Vector2f(0, 0));
+
+        float radian = (FastMath.PI + baseRadian) / count;
+        float r = 0;
+        for(int i=0; i<count; i++) {
+            float x = FastMath.sin(r + baseRadian) * radius;
+            float y = FastMath.cos(r + baseRadian) * radius + baseHeight;
+            points.add(new Vector2f(x, y));
+
+            r += radian;
+        }
+
+        return makePolygon(points);
     }
 }

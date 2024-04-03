@@ -229,109 +229,133 @@ public abstract class MapRenderer {
             if (obj.isNeedUpdated()) {
 
                 switch (obj.getShape()) {
-                case RECTANGLE: {
-                    Geometry border = new Geometry("border",
-                            ObjectMesh.makeRectangleBorder(obj.getWidth(), obj.getHeight()));
-                    border.setMaterial(mat);
-                    border.setQueueBucket(Bucket.Gui);
+                    case RECTANGLE: {
+                        Geometry border = new Geometry("border",
+                                ObjectMesh.makeRectangleBorder(obj.getWidth(), obj.getHeight()));
+                        border.setMaterial(mat);
+                        border.setQueueBucket(Bucket.Gui);
 
-                    Geometry back = new Geometry("rectangle",
-                            ObjectMesh.makeRectangle(obj.getWidth(), obj.getHeight()));
-                    back.setMaterial(bgMat);
-                    back.setQueueBucket(Bucket.Gui);
+                        Geometry back = new Geometry("rectangle",
+                                ObjectMesh.makeRectangle(obj.getWidth(), obj.getHeight()));
+                        back.setMaterial(bgMat);
+                        back.setQueueBucket(Bucket.Gui);
 
-                    Node visual = new Node(obj.getName());
-                    visual.attachChild(back);
-                    visual.attachChild(border);
-                    visual.setQueueBucket(Bucket.Gui);
+                        Node visual = new Node(obj.getName());
+                        visual.attachChild(back);
+                        visual.attachChild(border);
+                        visual.setQueueBucket(Bucket.Gui);
 
-                    obj.setVisual(visual);
-                    break;
-                }
-                case ELLIPSE: {
-                    Geometry border = new Geometry("border",
-                            ObjectMesh.makeEllipseBorder(obj.getWidth(), obj.getHeight(), ELLIPSE_POINTS));
-                    border.setMaterial(mat);
-                    border.setQueueBucket(Bucket.Gui);
+                        obj.setVisual(visual);
+                        break;
+                    }
+                    case ELLIPSE: {
+                        Geometry border = new Geometry("border",
+                                ObjectMesh.makeEllipseBorder(obj.getWidth(), obj.getHeight(), ELLIPSE_POINTS));
+                        border.setMaterial(mat);
+                        border.setQueueBucket(Bucket.Gui);
 
-                    Geometry back = new Geometry("ellipse",
-                            ObjectMesh.makeEllipse(obj.getWidth(), obj.getHeight(), ELLIPSE_POINTS));
-                    back.setMaterial(bgMat);
-                    back.setQueueBucket(Bucket.Gui);
+                        Geometry back = new Geometry("ellipse",
+                                ObjectMesh.makeEllipse(obj.getWidth(), obj.getHeight(), ELLIPSE_POINTS));
+                        back.setMaterial(bgMat);
+                        back.setQueueBucket(Bucket.Gui);
 
-                    Node visual = new Node(obj.getName());
-                    visual.attachChild(back);
-                    visual.attachChild(border);
-                    visual.setQueueBucket(Bucket.Gui);
+                        Node visual = new Node(obj.getName());
+                        visual.attachChild(back);
+                        visual.attachChild(border);
+                        visual.setQueueBucket(Bucket.Gui);
 
-                    obj.setVisual(visual);
-                    break;
-                }
-                case POLYGON: {
-                    Geometry border = new Geometry("border", ObjectMesh.makePolyline(obj.getPoints(), true));
-                    border.setMaterial(mat);
-                    border.setQueueBucket(Bucket.Gui);
+                        obj.setVisual(visual);
+                        break;
+                    }
+                    case POLYGON: {
+                        Geometry border = new Geometry("border", ObjectMesh.makePolyline(obj.getPoints(), true));
+                        border.setMaterial(mat);
+                        border.setQueueBucket(Bucket.Gui);
 
-                    Geometry back = new Geometry("polygon", ObjectMesh.makePolygon(obj.getPoints()));
-                    back.setMaterial(bgMat);
-                    back.setQueueBucket(Bucket.Gui);
+                        Geometry back = new Geometry("polygon", ObjectMesh.makePolygon(obj.getPoints()));
+                        back.setMaterial(bgMat);
+                        back.setQueueBucket(Bucket.Gui);
 
-                    Node visual = new Node(obj.getName());
-                    visual.attachChild(back);
-                    visual.attachChild(border);
-                    visual.setQueueBucket(Bucket.Gui);
+                        Node visual = new Node(obj.getName());
+                        visual.attachChild(back);
+                        visual.attachChild(border);
+                        visual.setQueueBucket(Bucket.Gui);
 
-                    obj.setVisual(visual);
-                    break;
-                }
-                case POLYLINE: {
-                    Geometry visual = new Geometry("polyline", ObjectMesh.makePolyline(obj.getPoints(), false));
-                    visual.setMaterial(mat);
-                    visual.setQueueBucket(Bucket.Gui);
+                        obj.setVisual(visual);
+                        break;
+                    }
+                    case POLYLINE: {
+                        Geometry visual = new Geometry("polyline", ObjectMesh.makePolyline(obj.getPoints(), false));
+                        visual.setMaterial(mat);
+                        visual.setQueueBucket(Bucket.Gui);
 
-                    obj.setVisual(visual);
-                    break;
-                }
-                case IMAGE: {
-                    Geometry geom = new Geometry(obj.getName(),
-                            ObjectMesh.makeRectangle(obj.getWidth(), obj.getHeight()));
-                    geom.setMaterial(obj.getMaterial());
-                    geom.setQueueBucket(Bucket.Gui);
+                        obj.setVisual(visual);
+                        break;
+                    }
+                    case POINT: {
+                        Geometry border = new Geometry("border", ObjectMesh.makeMarkerBorder(map.getTileHeight() * 0.5f, ELLIPSE_POINTS));
+                        border.setMaterial(mat);
+                        border.setQueueBucket(Bucket.Gui);
 
-                    obj.setVisual(geom);
-                    break;
-                }
-                case TILE: {
-                    Tile tile = obj.getTile();
+                        Geometry back = new Geometry("marker", ObjectMesh.makeMarker(map.getTileHeight() * 0.5f, ELLIPSE_POINTS));
+                        back.setMaterial(bgMat);
+                        back.setQueueBucket(Bucket.Gui);
 
-                    Spatial visual = tile.getVisual().clone();
-                    visual.setQueueBucket(Bucket.Gui);
+                        Node visual = new Node(obj.getName());
+                        visual.attachChild(back);
+                        visual.attachChild(border);
+                        visual.setQueueBucket(Bucket.Gui);
 
-                    flip(visual, obj.getTile());
+                        obj.setVisual(visual);
+                        break;
+                    }
+                    case IMAGE: {
+                        Geometry geom = new Geometry(obj.getName(),
+                                ObjectMesh.makeRectangle(obj.getWidth(), obj.getHeight()));
+                        geom.setMaterial(obj.getMaterial());
+                        geom.setQueueBucket(Bucket.Gui);
 
-                    // When the object has a gid set, then it is represented by
-                    // the image of the tile with that global ID. The image
-                    // alignment currently depends on the map orientation.
-                    float height = tile.getHeight();
-                    if (map.getOrientation() == Orientation.ISOMETRIC) {
-                        // in isometric it's aligned to the bottom-center.
-                        float width = tile.getWidth();
-                        visual.move(0, -width * 0.5f, -height);
-                    } else {
-                        // In orthogonal orientation it's aligned to the
-                        // bottom-left
-                        visual.move(0, 0, -height);
+                        obj.setVisual(geom);
+                        break;
+                    }
+                    case TILE: {
+                        Tile tile = obj.getTile();
+
+                        Spatial visual = tile.getVisual().clone();
+                        visual.setQueueBucket(Bucket.Gui);
+
+                        flip(visual, obj.getTile());
+
+                        // When the object has a gid set, then it is represented by
+                        // the image of the tile with that global ID. The image
+                        // alignment currently depends on the map orientation.
+                        float height = tile.getHeight();
+                        if (map.getOrientation() == Orientation.ISOMETRIC) {
+                            // in isometric it's aligned to the bottom-center.
+                            float width = tile.getWidth();
+                            visual.move(0, -width * 0.5f, -height);
+                        } else {
+                            // In orthogonal orientation it's aligned to the
+                            // bottom-left
+                            visual.move(0, 0, -height);
+                        }
+
+                        obj.setVisual(visual);
+                        break;
+                    }
+                    default: {
+                        break;
                     }
 
-                    obj.setVisual(visual);
-                    break;
-                }
                 }
 
+                Spatial visual = obj.getVisual();
+                if (visual == null) {
+                    continue;
+                }
                 double deg = obj.getRotation();
                 if (deg != 0) {
                     float radian = (float) (FastMath.DEG_TO_RAD * deg);
-                    Spatial visual = obj.getVisual();
                     // rotate the spatial clockwise
                     visual.rotate(0, -radian, 0);
                 }
@@ -340,8 +364,6 @@ public abstract class MapRenderer {
                 float y = (float) obj.getY();
 
                 // TODO if tileset .getTileHeight > map.getTileHeight, the object need to move down a little.
-                
-                
                 Vector2f screenCoord = pixelToScreenCoords(x, y);
                 obj.getVisual().move(screenCoord.x, i, screenCoord.y);
                 layer.getVisual().attachChild(obj.getVisual());

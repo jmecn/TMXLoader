@@ -1,22 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.0" orientation="isometric" renderorder="right-down" width="10" height="10" tilewidth="130" tileheight="66" backgroundcolor="#634930" nextobjectid="20">
- <tileset firstgid="1" name="01_130x66_130x230" tilewidth="130" tileheight="230">
+<map version="1.10" tiledversion="1.10.2" orientation="isometric" renderorder="right-down" width="10" height="10" tilewidth="130" tileheight="66" infinite="0" backgroundcolor="#634930" nextlayerid="4" nextobjectid="26">
+ <tileset firstgid="1" name="01_130x66_130x230" tilewidth="130" tileheight="230" tilecount="72" columns="12">
   <image source="01_130x66_130x230.png" width="1560" height="1380"/>
  </tileset>
- <layer name="Ground" width="10" height="10">
+ <layer id="1" name="Ground" width="10" height="10">
   <data encoding="base64" compression="zlib">
    eJxtz8sKwjAQheGkutG1ilUQN7qwXkC8BOIl9P0fyn/gBIbi4uPQ5rSZySGEKzo5o0eDG+6IYr0LlhhhjxmS69SevWtRsMNU31RHdU/q2X1vjPFRFtezmdZYyQIHzLFVN2qHRs9P/Scps5u17mYeOv8qX27OqGyVk0H27u6iXh7s0ek8uR02f+azzg+Xswuy
   </data>
  </layer>
- <layer name="Decoration" width="10" height="10">
+ <layer id="2" name="Decoration" width="10" height="10">
   <data encoding="base64" compression="zlib">
    eJxjYBh44D7QDiATOFPBDHS/AwBmUADS
   </data>
  </layer>
- <objectgroup color="#ff0000" name="对象层 1" opacity="0.5">
+ <objectgroup color="#ff0000" id="3" name="对象层 1" opacity="0.5">
   <properties>
    <property name="showObject" value="0"/>
   </properties>
   <object id="19" x="0" y="0" width="66" height="66"/>
+  <object id="20" x="103.898" y="100.398">
+   <polygon points="0,0 125.074,73.2139 39.3571,98.8433"/>
+  </object>
+  <object id="21" x="0" y="185" width="118" height="80"/>
+  <object id="22" x="26.9406" y="-129.089"/>
+  <object id="23" x="270.016" y="348.881"/>
+  <object id="25" x="306.877" y="378.116"/>
  </objectgroup>
 </map>

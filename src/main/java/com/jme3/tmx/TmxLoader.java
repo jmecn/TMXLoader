@@ -1226,7 +1226,7 @@ public class TmxLoader implements AssetLoader {
         double y = getDoubleAttribute(node, "y", 0);
         double width = getDoubleAttribute(node, "width", 0);
         double height = getDoubleAttribute(node, "height", 0);
-        double rotation = getAttribute(node, "rotation", 0);
+        double rotation = getDoubleAttribute(node, "rotation", 0);
         String gid = getAttributeValue(node, "gid");
         int visible = getAttribute(node, "visible", 1);
         String template = getAttributeValue(node, "template");
@@ -1296,6 +1296,8 @@ public class TmxLoader implements AssetLoader {
                 obj.setShape(ObjectType.TEXT);
                 obj.setTextData(readTextObject(child));
                 break;
+            } else {
+                logger.log(Level.WARNING, "unknown object type:{0}", nodeName);
             }
         }
 
@@ -1395,6 +1397,7 @@ public class TmxLoader implements AssetLoader {
                     break;
                 }
                 default: {
+                    logger.log(Level.WARNING, "unknown layer type:{0}", child.getNodeName());
                     break;
                 }
             }

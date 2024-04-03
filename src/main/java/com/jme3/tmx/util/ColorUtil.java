@@ -2,7 +2,9 @@ package com.jme3.tmx.util;
 
 import com.jme3.math.ColorRGBA;
 
-public class ColorUtil {
+public final class ColorUtil {
+
+    private ColorUtil() {}
 
     public static ColorRGBA toColorRGBA(String str) {
         float scalor = 1f / 255f;
