@@ -1,8 +1,8 @@
 # Introduction
 
-TMXLoader is used for loading .tmx assets created by [Tiled Map Editor](http://www.mapeditor.org/). It's a plugin for [jMonkeyEngine 3.1](http://jmonkeyengine.org/).
+TMXLoader is used for loading .tmx assets created by [Tiled Map Editor](http://www.mapeditor.org/). It's a plugin for [jMonkeyEngine 3.6](http://jmonkeyengine.org/).
 
-You can download it here: [TmxLoader v0.2](https://github.com/jmecn/TMXLoader/releases/tag/v0.2).
+You can download it here: [TmxLoader v0.3](https://github.com/jmecn/TMXLoader/releases/tag/v0.3).
 Or use the [source](https://github.com/jmecn/TMXLoader).
 
 # How to use
@@ -157,6 +157,12 @@ Here it an example I wrote earlier.
 The [com.jme3.tmx.TiledMapAppState](https://github.com/jmecn/TMXLoader/blob/master/src/main/java/com/jme3/tmx/TiledMapAppState.java) will help you to do all the mess.
 
 # Changelog
+
+v0.3
+
+* Add Image Layer support
+* Add Group Layer support
+* Add Tinting Color support
 
 v0.2
 * Use Bucket.GUI instead of Bucket.Transparent, change whole scene from XOZ plane to XOY plane now.
