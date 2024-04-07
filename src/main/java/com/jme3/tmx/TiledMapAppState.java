@@ -266,7 +266,7 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener,
         Vector2f camPos = new Vector2f(cam.getLocation().x, screenDimension.y - cam.getLocation().y);
         camPos.subtract(tilePos, tilePos);
         mapTranslation.set(tilePos.x, 0, tilePos.y);
-        map.getVisual().setLocalTranslation(mapTranslation);
+        moveMapVisual();
     }
 
     public void moveToPixel(float x, float y) {
@@ -274,7 +274,11 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener,
         Vector2f camPos = new Vector2f(cam.getLocation().x, screenDimension.y - cam.getLocation().y);
         camPos.subtract(pixelPos, pixelPos);
         mapTranslation.set(pixelPos.x, 0, pixelPos.y);
-        map.getVisual().setLocalTranslation(mapTranslation);
+        moveMapVisual();
+    }
+
+    private void moveMapVisual() {
+        map.getVisual().setLocalTranslation((float) Math.floor(mapTranslation.x), (float) Math.floor(mapTranslation.y), (float)Math.floor(mapTranslation.z));
     }
 
     public float getMapScale() {
@@ -451,7 +455,7 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener,
         pos.addLocal(vel);
 
         mapTranslation.set(pos);
-        map.getVisual().setLocalTranslation(mapTranslation);
+        moveMapVisual();
     }
 
     /**

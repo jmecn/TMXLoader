@@ -172,8 +172,6 @@ public class TiledMap extends Base {
         this.gridVisual = new Node("TileMap Grid");
         this.gridVisual.setQueueBucket(Bucket.Gui);
         this.gridVisual.setLocalTranslation(0f, 999f, 0f);
-
-        getVisual().attachChild(gridVisual);
     }
 
     /**

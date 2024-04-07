@@ -3,7 +3,6 @@ package com.jme3.tmx.render;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector2f;
 import com.jme3.renderer.queue.RenderQueue.Bucket;
 import com.jme3.scene.Geometry;
@@ -13,7 +12,6 @@ import com.jme3.scene.Spatial;
 import com.jme3.tmx.core.Tile;
 import com.jme3.tmx.core.TileLayer;
 import com.jme3.tmx.core.TiledMap;
-import com.jme3.tmx.enums.Orientation;
 import com.jme3.tmx.enums.StaggerAxis;
 import com.jme3.tmx.enums.StaggerIndex;
 import com.jme3.tmx.math2d.Point;
@@ -169,12 +167,14 @@ public class HexagonalRenderer extends OrthogonalRenderer {
 
     @Override
     protected void renderGrid() {
+        Node gridVisual = map.getGridVisual();
+        gridVisual.getChildren().clear();
+
         Point startTile = screenToTileCoords(0, 0);
 
         Mesh border = ObjectMesh.makeRectangleBorder(mapSize.x, mapSize.y);
         Geometry rect = new Geometry("GridBorder", border);
         rect.setMaterial(map.getGridMaterial());
-        map.getGridVisual().attachChild(rect);
 
         if (staggerX) {
             boolean staggeredRow = doStaggerX(startTile.x);
@@ -190,7 +190,7 @@ public class HexagonalRenderer extends OrthogonalRenderer {
                     Mesh mesh = ObjectMesh.makePolyline(points, true);
                     Geometry geom = new Geometry("Grid#" + rowTile.x + "," + rowTile.y, mesh);
                     geom.setMaterial(map.getGridMaterial());
-                    map.getGridVisual().attachChild(geom);
+                    gridVisual.attachChild(geom);
                 }
 
                 if (staggeredRow) {
@@ -214,7 +214,7 @@ public class HexagonalRenderer extends OrthogonalRenderer {
                     Mesh mesh = ObjectMesh.makePolyline(points, true);
                     Geometry geom = new Geometry("Grid#" + rowTile.x + "," + rowTile.y, mesh);
                     geom.setMaterial(map.getGridMaterial());
-                    map.getGridVisual().attachChild(geom);
+                    gridVisual.attachChild(geom);
                 }
             }
         }
