@@ -45,16 +45,11 @@ public class HexagonalRenderer extends OrthogonalRenderer {
         staggerIndex = staggerEven ? 0 : 1;
 
         sideLengthX = sideLengthY = 0;
-        if (map.getOrientation() == Orientation.HEXAGONAL) {
-            if (staggerX) {
-                sideLengthX = map.getHexSideLength();
-            } else {
-                sideLengthY = map.getHexSideLength();
-            }
+        if (staggerX) {
+            sideLengthX = map.getHexSideLength();
+        } else {
+            sideLengthY = map.getHexSideLength();
         }
-
-        tileWidth = super.tileWidth & ~1;
-        tileHeight = super.tileHeight & ~1;
 
         sideOffsetX = (tileWidth - sideLengthX) / 2;
         sideOffsetY = (tileHeight - sideLengthY) / 2;
@@ -89,7 +84,7 @@ public class HexagonalRenderer extends OrthogonalRenderer {
 
     @Override
     public Spatial render(TileLayer layer) {
-        Point startTile = new Point(0, 0);
+        Point startTile = screenToTileCoords(0, 0);
         int tileZIndex = 0;
 
         // instance the layer node
@@ -101,10 +96,10 @@ public class HexagonalRenderer extends OrthogonalRenderer {
         }
         
         if (staggerX) {
-            boolean staggeredRow = doStaggerX(0);
+            boolean staggeredRow = doStaggerX(startTile.x);
 
             while (startTile.y < height) {
-                Point rowTile = startTile.clone();
+                Point rowTile = new Point(startTile.x, startTile.y);
                 for (; rowTile.x < width; rowTile.x += 2) {
                     // look up tile at rowTile
                     final Tile tile = layer.getTileAt(rowTile.x, rowTile.y);
@@ -174,7 +169,7 @@ public class HexagonalRenderer extends OrthogonalRenderer {
 
     @Override
     protected void renderGrid() {
-        Point startTile = new Point(0, 0);
+        Point startTile = screenToTileCoords(0, 0);
 
         Mesh border = ObjectMesh.makeRectangleBorder(mapSize.x, mapSize.y);
         Geometry rect = new Geometry("GridBorder", border);
@@ -182,11 +177,14 @@ public class HexagonalRenderer extends OrthogonalRenderer {
         map.getGridVisual().attachChild(rect);
 
         if (staggerX) {
-            boolean staggeredRow = doStaggerX(0);
+            boolean staggeredRow = doStaggerX(startTile.x);
 
             while (startTile.y < height) {
                 Point rowTile = startTile.clone();
                 for (; rowTile.x < width; rowTile.x += 2) {
+                    if (rowTile.x < 0 || rowTile.y < 0) {
+                        continue;
+                    }
                     // set its position with rowPos and tileZIndex
                     List<Vector2f> points = tileToScreenPolygon(rowTile.x, rowTile.y);
                     Mesh mesh = ObjectMesh.makePolyline(points, true);
@@ -208,6 +206,9 @@ public class HexagonalRenderer extends OrthogonalRenderer {
             for (; startTile.y < height; startTile.y++) {
                 Point rowTile = startTile.clone();
                 for (; rowTile.x < width; rowTile.x++) {
+                    if (rowTile.x < 0 || rowTile.y < 0) {
+                        continue;
+                    }
                     // set its position with rowPos and tileZIndex
                     List<Vector2f> points = tileToScreenPolygon(rowTile.x, rowTile.y);
                     Mesh mesh = ObjectMesh.makePolyline(points, true);
