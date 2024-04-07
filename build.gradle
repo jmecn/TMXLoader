@@ -1,12 +1,14 @@
 plugins {
     id 'java-library'
     id 'maven-publish'
+    id 'signing'
 }
 
+group = 'io.github.jmecn'
 version = 0.3
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
+sourceCompatibility = JavaVersion.VERSION_1_8
+targetCompatibility = JavaVersion.VERSION_1_8
 
 [compileJava, compileTestJava, javadoc]*.options*.encoding = 'UTF-8'
 
@@ -14,7 +16,6 @@ repositories {
     mavenCentral()
 }
 
-def tmxLoaderVersion = 0.3
 def jme3 = [g:'org.jmonkeyengine', v:'3.6.1-stable']
 
 dependencies {
@@ -31,7 +32,7 @@ dependencies {
 jar {
     manifest {
         attributes 'Implementation-Title': 'TMXLoader',
-                   'Implementation-Version': tmxLoaderVersion,
+                   'Implementation-Version': project.version,
                    'Automatic-Module-Name': "${project.name.replace("-", ".")}",
                    'Created-By': "${JavaVersion.current()} (${System.getProperty("java.vendor")})"
     }
@@ -40,7 +41,7 @@ jar {
 javadoc {
     failOnError = false
     options.memberLevel = JavadocMemberLevel.PROTECTED
-    options.docTitle = "TMXLoader ${tmxLoaderVersion} Javadoc"
+    options.docTitle = "TMXLoader ${version} Javadoc"
     options.author = true
     options.use = true
     options.charSet = "UTF-8"
@@ -49,15 +50,100 @@ javadoc {
 }
 
 tasks.register('sourcesJar', Jar) {
-    from sourceSets.main.java.srcDirs
+    from sourceSets.main.allJava
+    archiveClassifier.set('sources')
 }
 
 tasks.register('javadocJar', Jar) {
-    dependsOn javadoc
-    from javadoc.destinationDir
+    from javadoc
+    archiveClassifier.set('javadoc')
 }
 
 artifacts {
-    archives sourcesJar
-    archives javadocJar
+    archives jar, sourcesJar, javadocJar
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            version project.version
+            from components.java
+            artifact sourcesJar
+            artifact javadocJar
+            pom {
+                name = POM_NAME
+                description = POM_DESCRIPTION
+                url = POM_URL
+                licenses {
+                    license {
+                        name = POM_LICENSE_NAME
+                        url = POM_LICENSE_URL
+                    }
+                }
+                developers {
+                    developer {
+                        id = 'yanmaoyuan'
+                        name = '闫茂源'
+                    }
+                }
+                scm {
+                    connection = POM_SCM_CONNECTION
+                    developerConnection = POM_SCM_DEVELOPER_CONNECTION
+                    url = POM_SCM_URL
+                }
+            }
+        }
+        gpr(MavenPublication) {
+            version project.version
+            from components.java
+            artifact sourcesJar
+            artifact javadocJar
+        }
+    }
+    repositories {
+        mavenLocal()
+
+        maven {
+            name = 'GitHubPackages'
+            url = uri('https://maven.pkg.github.com/jmecn/TMXLoader')
+            credentials {
+                username = project.findProperty("gpr.user") ?: System.getenv("GITHUB_USERNAME")
+                password = project.findProperty("gpr.key") ?: System.getenv("GITHUB_TOKEN")
+            }
+        }
+        maven {
+            name = 'OSSRH'
+            url = uri('https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/')
+            credentials {
+                username = project.findProperty("ossrhUsername") ?: System.getenv("OSSRH_USERNAME")
+                password = project.findProperty("ossrhPassword") ?: System.getenv("OSSRH_PASSWORD")
+            }
+        }
+
+        maven {
+            name = 'OSSRHSNAPSHOT'
+            url = uri('https://s01.oss.sonatype.org/content/repositories/snapshots/')
+            credentials {
+                username = project.findProperty("ossrhUsername") ?: System.getenv("OSSRH_USERNAME")
+                password = project.findProperty("ossrhPassword") ?: System.getenv("OSSRH_PASSWORD")
+            }
+        }
+    }
+}
+
+publishToMavenLocal.doLast {
+    println 'published ' + project.getName() + "-${version} to mavenLocal"
+}
+
+signing {
+    def signingKey = project.findProperty('signingKey') ?: System.getenv("GPG_KEY_ID")
+    def signingPassword = project.findProperty('signingPassword') ?: System.getenv("GPG_PASSWORD")
+    useInMemoryPgpKeys(signingKey, signingPassword)
+
+    sign configurations.archives
+    sign publishing.publications.mavenJava
+}
+
+tasks.withType(Sign).configureEach {
+    onlyIf { project.findProperty('signingKey') ?: System.getenv("GPG_KEY_ID") }
 }
