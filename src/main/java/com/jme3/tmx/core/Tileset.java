@@ -452,6 +452,14 @@ public class Tileset extends Base implements Iterable<Tile> {
         this.tileOffsetY = tileOffsetY;
     }
 
+    public int getTileOffsetX() {
+        return tileOffsetX;
+    }
+
+    public int getTileOffsetY() {
+        return tileOffsetY;
+    }
+
     public String getClazz() {
         return clazz;
     }

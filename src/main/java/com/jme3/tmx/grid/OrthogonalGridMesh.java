@@ -1,4 +1,4 @@
-package com.jme3.tmx.util;
+package com.jme3.tmx.grid;
 
 import com.jme3.scene.Mesh;
 import com.jme3.scene.VertexBuffer;

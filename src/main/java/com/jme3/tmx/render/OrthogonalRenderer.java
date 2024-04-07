@@ -5,13 +5,12 @@ import com.jme3.renderer.queue.RenderQueue.Bucket;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
-import com.jme3.scene.debug.Grid;
 import com.jme3.tmx.core.Tile;
 import com.jme3.tmx.core.TileLayer;
 import com.jme3.tmx.core.TiledMap;
 import com.jme3.tmx.enums.RenderOrder;
 import com.jme3.tmx.math2d.Point;
-import com.jme3.tmx.util.OrthogonalGridMesh;
+import com.jme3.tmx.grid.OrthogonalGridMesh;
 
 /**
  * Orthogonal render
@@ -113,54 +112,6 @@ public class OrthogonalRenderer extends MapRenderer {
 
     @Override
     protected void renderGrid() {
-        int startX = 0;
-        int startY = 0;
-        int endX = width - 1;
-        int endY = height - 1;
-
-        int incX = 1;
-        int incY = 1;
-        int tmp;
-        RenderOrder renderOrder = map.getRenderOrder();
-        switch (renderOrder) {
-            case RIGHT_UP: {
-                // swap y
-                tmp = endY;
-                endY = startY;
-                startY = tmp;
-                incY = -1;
-                break;
-            }
-            case LEFT_DOWN: {
-                // swap x
-                tmp = endX;
-                endX = startX;
-                startX = tmp;
-                incX = -1;
-                break;
-            }
-            case LEFT_UP: {
-                // swap x
-                tmp = endX;
-                endX = startX;
-                startX = tmp;
-                incX = -1;
-
-                // swap y
-                tmp = endY;
-                endY = startY;
-                startY = tmp;
-                incY = -1;
-                break;
-            }
-            case RIGHT_DOWN: {
-                break;
-            }
-        }
-        endX += incX;
-        endY += incY;
-
-        // instance the layer node
         Node gridVisual = map.getGridVisual();
         gridVisual.getChildren().clear();
 

@@ -524,8 +524,8 @@ public class TmxLoader implements AssetLoader {
                  * applied when drawing a tile from the related tileset. When
                  * not present, no offset is applied.
                  */
-                final int tileOffsetX = getAttribute(node, "x", 0);
-                final int tileOffsetY = getAttribute(node, "y", 0);
+                final int tileOffsetX = getAttribute(child, "x", 0);
+                final int tileOffsetY = getAttribute(child, "y", 0);
 
                 set.setTileOffset(tileOffsetX, tileOffsetY);
             } else if (nodeName.equalsIgnoreCase("transformations")) {
@@ -659,11 +659,13 @@ public class TmxLoader implements AssetLoader {
              * 0          1
              * </pre>
              */
+            float offsetX = - tileset.getTileOffsetX();
+            float offsetY = offset - tileset.getTileOffsetY();
             float[] vertices = new float[]{
-                    0, 0, height - offset,
-                    width, 0, height - offset,
-                    width, 0, -offset,
-                    0, 0, -offset};
+                    -offsetX, 0, height - offsetY,
+                    width - offsetX, 0, height - offsetY,
+                    width - offsetX, 0, -offsetY,
+                    0 - offsetX, 0, -offsetY};
 
             short[] indexes = new short[]{0, 1, 2, 0, 2, 3};
 

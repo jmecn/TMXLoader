@@ -58,7 +58,7 @@ public class TestZoom extends SimpleApplication {
     public void simpleInitApp() {
         assetManager.registerLoader(TmxLoader.class, "tmx", "tsx");
 
-        TiledMap tiledMap = (TiledMap) assetManager.loadAsset("Models/Examples/Orthogonal/01.tmx");
+        TiledMap tiledMap = (TiledMap) assetManager.loadAsset("Models/Examples/Isometric/01.tmx");
         assert tiledMap != null;
 
         tiledMapState = new TiledMapAppState();

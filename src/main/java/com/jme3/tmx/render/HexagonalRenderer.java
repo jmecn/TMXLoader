@@ -3,8 +3,11 @@ package com.jme3.tmx.render;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector2f;
 import com.jme3.renderer.queue.RenderQueue.Bucket;
+import com.jme3.scene.Geometry;
+import com.jme3.scene.Mesh;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.tmx.core.Tile;
@@ -14,6 +17,7 @@ import com.jme3.tmx.enums.Orientation;
 import com.jme3.tmx.enums.StaggerAxis;
 import com.jme3.tmx.enums.StaggerIndex;
 import com.jme3.tmx.math2d.Point;
+import com.jme3.tmx.util.ObjectMesh;
 
 /**
  * Hexagonal render
@@ -166,6 +170,53 @@ public class HexagonalRenderer extends OrthogonalRenderer {
         }
 
         return layer.getVisual();
+    }
+
+    @Override
+    protected void renderGrid() {
+        Point startTile = new Point(0, 0);
+
+        Mesh border = ObjectMesh.makeRectangleBorder(mapSize.x, mapSize.y);
+        Geometry rect = new Geometry("GridBorder", border);
+        rect.setMaterial(map.getGridMaterial());
+        map.getGridVisual().attachChild(rect);
+
+        if (staggerX) {
+            boolean staggeredRow = doStaggerX(0);
+
+            while (startTile.y < height) {
+                Point rowTile = startTile.clone();
+                for (; rowTile.x < width; rowTile.x += 2) {
+                    // set its position with rowPos and tileZIndex
+                    List<Vector2f> points = tileToScreenPolygon(rowTile.x, rowTile.y);
+                    Mesh mesh = ObjectMesh.makePolyline(points, true);
+                    Geometry geom = new Geometry("Grid#" + rowTile.x + "," + rowTile.y, mesh);
+                    geom.setMaterial(map.getGridMaterial());
+                    map.getGridVisual().attachChild(geom);
+                }
+
+                if (staggeredRow) {
+                    startTile.x -= 1;
+                    startTile.y += 1;
+                    staggeredRow = false;
+                } else {
+                    startTile.x += 1;
+                    staggeredRow = true;
+                }
+            }
+        } else {
+            for (; startTile.y < height; startTile.y++) {
+                Point rowTile = startTile.clone();
+                for (; rowTile.x < width; rowTile.x++) {
+                    // set its position with rowPos and tileZIndex
+                    List<Vector2f> points = tileToScreenPolygon(rowTile.x, rowTile.y);
+                    Mesh mesh = ObjectMesh.makePolyline(points, true);
+                    Geometry geom = new Geometry("Grid#" + rowTile.x + "," + rowTile.y, mesh);
+                    geom.setMaterial(map.getGridMaterial());
+                    map.getGridVisual().attachChild(geom);
+                }
+            }
+        }
     }
 
     @Override
@@ -343,10 +394,8 @@ public class HexagonalRenderer extends OrthogonalRenderer {
         }
     }
 
-    // TODO nothing to do with this code
     public List<Vector2f> tileToScreenPolygon(int x, int y) {
-
-        ArrayList<Vector2f> polygon = new ArrayList<Vector2f>(8);
+        ArrayList<Vector2f> polygon = new ArrayList<>(8);
         polygon.add(new Vector2f(0, tileHeight - sideOffsetY));
         polygon.add(new Vector2f(0, sideOffsetY));
         polygon.add(new Vector2f(sideOffsetX, 0));

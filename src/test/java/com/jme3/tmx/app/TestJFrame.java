@@ -24,6 +24,9 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
 import com.jme3.app.SimpleApplication;
+import com.jme3.input.MouseInput;
+import com.jme3.input.controls.ActionListener;
+import com.jme3.input.controls.MouseButtonTrigger;
 import com.jme3.system.AppSettings;
 import com.jme3.system.awt.AwtPanel;
 import com.jme3.system.awt.AwtPanelsContext;
@@ -147,7 +150,7 @@ public class TestJFrame extends SimpleApplication {
                 /*
                  * create JList
                  */
-                final JList<String> list = new JList<String>();
+                final JList<String> list = new JList<>();
                 list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
                 DefaultListModel<String> model = new DefaultListModel<>();
@@ -239,6 +242,21 @@ public class TestJFrame extends SimpleApplication {
         panel.attachTo(true, viewPort, guiViewPort);
         
         flyCam.setDragToRotate(true);
+
+        inputManager.addMapping("CLICK", new MouseButtonTrigger(MouseInput.BUTTON_LEFT));
+        inputManager.addListener((ActionListener) (name, isPressed, tpf) -> {
+            if (state.getMapRenderer() != null && isPressed) {
+                System.out.println("Click! ======");
+                System.out.println("cursor tile: " + state.getCursorTileCoordinate());
+                System.out.println("cursor pixel: " + state.getCursorPixelCoordinate());
+                System.out.println("cursor screen: " + state.getCursorScreenCoordinate());
+                System.out.println("center tile: " + state.getCameraTileCoordinate());
+                System.out.println("center pixel: " + state.getCameraPixelCoordinate());
+                System.out.println("center screen: " + state.getCameraScreenCoordinate());
+                System.out.println("map scare: " + state.getMapScale());
+                System.out.println("map translation: " + state.getMapTranslation());
+            }
+        }, "CLICK");
     }
 
     public void load(final String assetPath) {

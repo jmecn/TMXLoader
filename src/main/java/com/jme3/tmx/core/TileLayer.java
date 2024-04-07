@@ -209,6 +209,14 @@ public class TileLayer extends Layer {
                 if (spatial instanceof Geometry) {
                     Geometry geom = (Geometry) spatial;
                     geom.getMaterial().setColor("TintColor", tintColor);
+                } else {
+                    Node node = (Node) spatial;
+                    for (Spatial child : node.getChildren()) {
+                        if (child instanceof Geometry) {
+                            Geometry geom = (Geometry) child;
+                            geom.getMaterial().setColor("TintColor", tintColor);
+                        }
+                    }
                 }
             }
         }

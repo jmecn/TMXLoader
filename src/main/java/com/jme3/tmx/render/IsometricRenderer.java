@@ -2,11 +2,13 @@ package com.jme3.tmx.render;
 
 import com.jme3.math.Vector2f;
 import com.jme3.renderer.queue.RenderQueue.Bucket;
+import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.tmx.core.Tile;
 import com.jme3.tmx.core.TileLayer;
 import com.jme3.tmx.core.TiledMap;
+import com.jme3.tmx.grid.IsometricGridMesh;
 import com.jme3.tmx.math2d.Point;
 
 /**
@@ -52,6 +54,7 @@ public class IsometricRenderer extends MapRenderer {
                         flip(visual, tile);
                         
                         Vector2f pixelCoord = tileToScreenCoords(x, y);
+                        pixelCoord.x -= tileWidth * 0.5f;// move left to center the tile
                         visual.move(pixelCoord.x, tileZIndex, pixelCoord.y);
                         layer.setSpatialAt(x, y, visual);
                     }
@@ -69,7 +72,14 @@ public class IsometricRenderer extends MapRenderer {
 
     @Override
     protected void renderGrid() {
+        Node gridVisual = map.getGridVisual();
+        gridVisual.getChildren().clear();
 
+        // add boundary
+        IsometricGridMesh grid = new IsometricGridMesh(width, height, tileWidth, tileHeight);
+        Geometry geom = new Geometry("Grid#Boundary", grid);
+        geom.setMaterial(map.getGridMaterial());
+        gridVisual.attachChild(geom);
     }
 
     // Coordinates System Convert
