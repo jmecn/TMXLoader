@@ -25,10 +25,11 @@ public class StaggeredRenderer extends HexagonalRenderer {
     @Override
     public Point screenToTileCoords(float x, float y) {
 
-        if (staggerX)
+        if (staggerX) {
             x -= staggerEven ? sideOffsetX : 0;
-        else
+        } else {
             y -= staggerEven ? sideOffsetY : 0;
+        }
 
         // Start with the coordinates of a grid-aligned tile
         Point referencePoint = new Point(x / tileWidth, y / tileHeight);
@@ -50,15 +51,19 @@ public class StaggeredRenderer extends HexagonalRenderer {
         float yPos = rel.x * ((float) tileHeight / tileWidth);
 
         // Check whether the cursor is in any of the corners (neighboring tiles)
-        if (sideOffsetY - yPos > rel.y)
+        if (sideOffsetY - yPos > rel.y) {
             return topLeft(referencePoint.x, referencePoint.y);
-        if (-sideOffsetY + yPos > rel.y)
+        }
+        if (-sideOffsetY + yPos > rel.y) {
             return topRight(referencePoint.x, referencePoint.y);
+        }
 
-        if (sideOffsetY + yPos < rel.y)
+        if (sideOffsetY + yPos < rel.y) {
             return bottomLeft(referencePoint.x, referencePoint.y);
-        if (sideOffsetY * 3 - yPos < rel.y)
+        }
+        if (sideOffsetY * 3 - yPos < rel.y) {
             return bottomRight(referencePoint.x, referencePoint.y);
+        }
 
         return referencePoint;
 

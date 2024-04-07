@@ -1,7 +1,5 @@
 package com.jme3.tmx.render;
 
-import java.util.logging.Logger;
-
 import com.jme3.math.Vector2f;
 import com.jme3.renderer.queue.RenderQueue.Bucket;
 import com.jme3.scene.Node;
@@ -18,8 +16,6 @@ import com.jme3.tmx.math2d.Point;
  *
  */
 public class IsometricRenderer extends MapRenderer {
-
-    static Logger logger = Logger.getLogger(IsometricRenderer.class.getName());
 
     public IsometricRenderer(TiledMap map) {
         super(map);
@@ -42,7 +38,7 @@ public class IsometricRenderer extends MapRenderer {
         
         for(int p=0; p < height + width - 1; p++) {
             for(int y=0; y <= p; y++) {
-                int x = p-y;
+                int x = p - y;
                 if(y < height && x < width) {
                     final Tile tile = layer.getTileAt(x, y);
                     if (tile == null || tile.getVisual() == null) {

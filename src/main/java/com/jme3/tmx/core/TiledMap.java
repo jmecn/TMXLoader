@@ -2,8 +2,6 @@ package com.jme3.tmx.core;
 
 import java.util.*;
 import java.util.Map.Entry;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import com.jme3.math.ColorRGBA;
@@ -13,6 +11,8 @@ import com.jme3.tmx.enums.Orientation;
 import com.jme3.tmx.enums.RenderOrder;
 import com.jme3.tmx.enums.StaggerAxis;
 import com.jme3.tmx.enums.StaggerIndex;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A map contains three different kinds of layers. Tile layers were once
@@ -24,7 +24,7 @@ import com.jme3.tmx.enums.StaggerIndex;
  */
 public class TiledMap extends Base {
 
-    static Logger logger = Logger.getLogger(TiledMap.class.getName());
+    static Logger logger = LoggerFactory.getLogger(TiledMap.class.getName());
 
     /**
      * The TMX format version. Was “1.0” so far, and will be incremented to match minor Tiled releases.
@@ -32,7 +32,7 @@ public class TiledMap extends Base {
     private String version;
 
     /**
-     * The Tiled version used to save the file (since Tiled 1.0.1). May be a date (for snapshot builds). (optional)
+     * The Tiled version used to save the file (since Tiled 1.0.1). Maybe a date (for snapshot builds). (optional)
      */
     private String tiledVersion;
 
@@ -176,24 +176,19 @@ public class TiledMap extends Base {
     /**
      * addLayer.
      *
-     * @param layer
-     *            a {@link Layer} object.
-     * @return a {@link Layer} object.
+     * @param layer a {@link Layer} object.
      */
-    public Layer addLayer(Layer layer) {
+    public void addLayer(Layer layer) {
         layer.setMap(this);
         layers.add(layer);
         layerMap.put(layer.getName(), layer);
-        return layer;
     }
 
     /**
      * setLayer
      *
-     * @param index
-     *            a int
-     * @param layer
-     *            a {@link Layer} object
+     * @param index an int
+     * @param layer a {@link Layer} object
      */
     public void setLayer(int index, Layer layer) {
         layer.setMap(this);
@@ -206,10 +201,8 @@ public class TiledMap extends Base {
      * insertLayer.
      * </p>
      *
-     * @param index
-     *            a int.
-     * @param layer
-     *            a {@link Layer} object.
+     * @param index an int.
+     * @param layer a {@link Layer} object.
      */
     public void insertLayer(int index, Layer layer) {
         layer.setMap(this);
@@ -282,8 +275,7 @@ public class TiledMap extends Base {
         try {
             return layers.get(i);
         } catch (IndexOutOfBoundsException e) {
-            logger.log(Level.WARNING, "can't find the layer with the index:"
-                    + i + ".", e);
+            logger.error("can't find the layer with the index:{}.", i, e);
         }
         return null;
     }
@@ -318,11 +310,9 @@ public class TiledMap extends Base {
 
             int tw = t.getWidth();
             int th = t.getHeight();
-            if (tw != tileWidth) {
-                if (tileWidth == 0) {
-                    tileWidth = tw;
-                    tileHeight = th;
-                }
+            if (tw != tileWidth && tileWidth == 0) {
+                tileWidth = tw;
+                tileHeight = th;
             }
         }
 
@@ -441,7 +431,7 @@ public class TiledMap extends Base {
         }
 
         if (gid > 0 && tile == null) {
-            logger.warning("can find tile with gid:" + gid);
+            logger.warn("can find tile with gid:{}", gid);
         }
         return tile;
     }
@@ -493,7 +483,7 @@ public class TiledMap extends Base {
         try {
             this.orientation = Orientation.fromString(orient);
         } catch (IllegalArgumentException e) {
-            logger.warning("Unknown orientation '" + orientation + "'");
+            logger.warn("Unknown orientation '{}'", orientation);
         }
     }
 
@@ -569,7 +559,7 @@ public class TiledMap extends Base {
         try {
             this.staggerAxis = StaggerAxis.valueOf(staggerAxis.toUpperCase());
         } catch (IllegalArgumentException e) {
-            logger.warning("Unknown stagger axis '" + staggerAxis + "'");
+            logger.warn("Unknown stagger axis '{}'", staggerAxis);
         }
     }
 
@@ -585,7 +575,7 @@ public class TiledMap extends Base {
         try {
             this.staggerIndex = StaggerIndex.valueOf(staggerIndex.toUpperCase());
         } catch (IllegalArgumentException e) {
-            logger.warning("Unknown stagger index '" + staggerIndex + "'");
+            logger.warn("Unknown stagger index '{}'", staggerIndex);
         }
     }
 

@@ -2,7 +2,6 @@ package com.jme3.tmx.render;
 
 import java.util.Comparator;
 import java.util.List;
-import java.util.logging.Logger;
 
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
@@ -52,8 +51,6 @@ import com.jme3.tmx.util.ObjectMesh;
  * 
  */
 public abstract class MapRenderer {
-
-    static Logger logger = Logger.getLogger(MapRenderer.class.getName());
 
     /**
      * This value used to generate ellipse mesh.
@@ -210,12 +207,12 @@ public abstract class MapRenderer {
 
             // sort draw order
             switch (layer.getDrawOrder()) {
-            case TOPDOWN:
-                objects.sort(new CompareTopdown());
-                break;
-            case INDEX:
-                objects.sort(new CompareIndex());
-                break;
+                case TOPDOWN:
+                    objects.sort(new CompareTopdown());
+                    break;
+                case INDEX:
+                    objects.sort(new CompareIndex());
+                    break;
             }
         }
 

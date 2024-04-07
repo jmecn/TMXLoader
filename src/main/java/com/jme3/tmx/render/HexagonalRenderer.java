@@ -2,7 +2,6 @@ package com.jme3.tmx.render;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Logger;
 
 import com.jme3.math.Vector2f;
 import com.jme3.renderer.queue.RenderQueue.Bucket;
@@ -24,19 +23,15 @@ import com.jme3.tmx.math2d.Point;
  */
 public class HexagonalRenderer extends OrthogonalRenderer {
 
-    static Logger logger = Logger.getLogger(HexagonalRenderer.class.getName());
-
-    protected int tileWidth;
-    protected int tileHeight;
     protected int sideLengthX;
     protected int sideOffsetX;
     protected int sideLengthY;
     protected int sideOffsetY;
     protected int rowHeight;
     protected int columnWidth;
-    protected boolean staggerX = false;
-    protected boolean staggerEven = false;
-    protected int staggerIndex = 0;
+    protected boolean staggerX;
+    protected boolean staggerEven;
+    protected int staggerIndex;
 
     public HexagonalRenderer(TiledMap map) {
         super(map);
@@ -104,7 +99,7 @@ public class HexagonalRenderer extends OrthogonalRenderer {
         if (staggerX) {
             boolean staggeredRow = doStaggerX(0);
 
-            for (; startTile.y < height;) {
+            while (startTile.y < height) {
                 Point rowTile = startTile.clone();
                 for (; rowTile.x < width; rowTile.x += 2) {
                     // look up tile at rowTile
@@ -191,7 +186,8 @@ public class HexagonalRenderer extends OrthogonalRenderer {
     public Vector2f tileToScreenCoords(float x, float y) {
         int tileX = (int) Math.floor(x);
         int tileY = (int) Math.floor(y);
-        int pixelX, pixelY;
+        int pixelX;
+        int pixelY;
 
         if (staggerX) {
             pixelY = tileY * (tileHeight + sideLengthY);
@@ -301,43 +297,49 @@ public class HexagonalRenderer extends OrthogonalRenderer {
 
     public Point topRight(int x, int y) {
         if (!staggerX) {
-            if (((y & 1) ^ staggerIndex) != 0)
+            if (((y & 1) ^ staggerIndex) != 0) {
                 return new Point(x + 1, y - 1);
-            else
+            } else {
                 return new Point(x, y - 1);
+            }
         } else {
-            if (((x & 1) ^ staggerIndex) != 0)
+            if (((x & 1) ^ staggerIndex) != 0) {
                 return new Point(x + 1, y);
-            else
+            } else {
                 return new Point(x + 1, y - 1);
+            }
         }
     }
 
     public Point bottomLeft(int x, int y) {
         if (!staggerX) {
-            if (((y & 1) ^ staggerIndex) != 0)
+            if (((y & 1) ^ staggerIndex) != 0) {
                 return new Point(x, y + 1);
-            else
+            } else {
                 return new Point(x - 1, y + 1);
+            }
         } else {
-            if (((x & 1) ^ staggerIndex) != 0)
+            if (((x & 1) ^ staggerIndex) != 0) {
                 return new Point(x - 1, y + 1);
-            else
+            } else {
                 return new Point(x - 1, y);
+            }
         }
     }
 
     public Point bottomRight(int x, int y) {
         if (!staggerX) {
-            if (((y & 1) ^ staggerIndex) != 0)
+            if (((y & 1) ^ staggerIndex) != 0) {
                 return new Point(x + 1, y + 1);
-            else
+            } else {
                 return new Point(x, y + 1);
+            }
         } else {
-            if (((x & 1) ^ staggerIndex) != 0)
+            if (((x & 1) ^ staggerIndex) != 0) {
                 return new Point(x + 1, y + 1);
-            else
+            } else {
                 return new Point(x + 1, y);
+            }
         }
     }
 

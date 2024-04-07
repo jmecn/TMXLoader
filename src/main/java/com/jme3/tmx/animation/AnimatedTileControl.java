@@ -26,8 +26,6 @@ public class AnimatedTileControl extends AbstractControl {
     public AnimatedTileControl(Tile tile) {
         this.tile = tile;
         resetAnimation();
-        
-        // TODO currently just set it to the first animation
         setAnim(0);
     }
 
@@ -37,7 +35,7 @@ public class AnimatedTileControl extends AbstractControl {
     }
 
     public void setAnim(int index) {
-        anim = tile.getAnimations().get(0);
+        anim = tile.getAnimations().get(index);
         resetAnimation();
     }
 

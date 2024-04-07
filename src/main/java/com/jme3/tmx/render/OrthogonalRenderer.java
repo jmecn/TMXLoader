@@ -1,7 +1,5 @@
 package com.jme3.tmx.render;
 
-import java.util.logging.Logger;
-
 import com.jme3.math.Vector2f;
 import com.jme3.renderer.queue.RenderQueue.Bucket;
 import com.jme3.scene.Node;
@@ -19,8 +17,6 @@ import com.jme3.tmx.math2d.Point;
  *
  */
 public class OrthogonalRenderer extends MapRenderer {
-
-    static Logger logger = Logger.getLogger(OrthogonalRenderer.class.getName());
 
     public OrthogonalRenderer(TiledMap map) {
         super(map);

@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.jme3.material.Material;
 import com.jme3.scene.Geometry;
+import com.jme3.scene.Spatial;
 import com.jme3.texture.Texture;
 import com.jme3.tmx.animation.Animation;
 import com.jme3.tmx.animation.Frame;
@@ -324,8 +325,4 @@ public class Tile extends Base implements Cloneable {
         return tile;
     }
 
-    @Override
-    public Geometry getVisual() {
-        return (Geometry) visual;
-    }
 }
