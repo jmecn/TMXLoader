@@ -22,6 +22,7 @@ dependencies {
 
     // Core
     implementation "$jme3.g:jme3-core:$jme3.v"
+    api "org.slf4j:slf4j-api:1.7.36"
 
     // Test    
     testImplementation 'junit:junit:4.13.2'

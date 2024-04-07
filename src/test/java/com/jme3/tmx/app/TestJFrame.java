@@ -107,7 +107,7 @@ public class TestJFrame extends SimpleApplication {
         app.setShowSettings(false);
         AppSettings settings = new AppSettings(true);
         settings.setCustomRenderer(AwtPanelsContext.class);
-        settings.setGammaCorrection(true);
+        settings.setGammaCorrection(false);
         settings.setFrameRate(60);
         app.setSettings(settings);
         app.start();

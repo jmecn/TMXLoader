@@ -1,7 +1,6 @@
 package com.jme3.tmx.animation;
 
 import java.nio.FloatBuffer;
-import java.util.logging.Logger;
 
 import com.jme3.renderer.RenderManager;
 import com.jme3.renderer.ViewPort;
@@ -18,8 +17,6 @@ import com.jme3.tmx.core.Tile;
  * 
  */
 public class AnimatedTileControl extends AbstractControl {
-
-    static Logger logger = Logger.getLogger(AnimatedTileControl.class.getName());
 
     private final Tile tile;
     private Animation anim;

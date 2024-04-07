@@ -5,7 +5,6 @@ import java.awt.geom.Ellipse2D;
 import java.awt.geom.Rectangle2D;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.logging.Logger;
 
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
@@ -20,8 +19,6 @@ import com.jme3.tmx.enums.DrawOrder;
  * 
  */
 public class ObjectGroup extends Layer {
-
-    static Logger logger = Logger.getLogger(ObjectGroup.class.getName());
 
     /**
      * The color used to display the objects in this group.

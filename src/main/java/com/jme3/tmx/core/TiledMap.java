@@ -63,12 +63,14 @@ public class TiledMap extends Base {
     /**
      * The map width and height in tiles.
      */
-    private int width, height;
+    private int width;
+    private int height;
 
     /**
      * The width and height of a tile.
      */
-    private int tileWidth, tileHeight;
+    private int tileWidth;
+    private int tileHeight;
 
     /**
      * Only for hexagonal maps. Determines the width or height (depending on the

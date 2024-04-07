@@ -1,7 +1,6 @@
 package com.jme3.tmx.core;
 
 import java.util.List;
-import java.util.logging.Logger;
 
 import com.jme3.material.Material;
 import com.jme3.math.Vector2f;
@@ -31,8 +30,6 @@ import com.jme3.tmx.enums.ObjectType;
  * 
  */
 public class MapObject extends Base {
-
-    static Logger logger = Logger.getLogger(MapObject.class.getName());
 
     private ObjectGroup objectGroup;
 

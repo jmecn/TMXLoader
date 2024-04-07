@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 
-import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
@@ -20,7 +19,7 @@ import com.jme3.tmx.math2d.Point;
  */
 public class TileLayer extends Layer {
 
-    private Tile[][] map;
+    private Tile[][] tiles;
     
     private boolean[][] needUpdateSpatial;
     private Spatial[][] spatials;
@@ -40,7 +39,7 @@ public class TileLayer extends Layer {
     public TileLayer(int w, int h) {
         super(w, h);
 
-        map = new Tile[height][width];
+        tiles = new Tile[height][width];
         spatials = new Spatial[height][width];
         needUpdateSpatial = new boolean[height][width];
         chunks = new ArrayList<>();
@@ -96,7 +95,7 @@ public class TileLayer extends Layer {
     public void removeTile(Tile tile) {
         for (int y = 0; y < this.height; y++) {
             for (int x = 0; x < this.width; x++) {
-                if (map[y][x] == tile) {
+                if (tiles[y][x] == tile) {
                     setTileAt(x + this.x, y + this.y, null);
                     setSpatialAt(x + this.x, y + this.y, null);
                 }
@@ -117,7 +116,7 @@ public class TileLayer extends Layer {
      */
     public void setTileAt(int tx, int ty, Tile ti) {
         if (contains(tx, ty)) {
-            map[ty - y][tx - x] = ti;
+            tiles[ty - y][tx - x] = ti;
             needUpdateSpatial[ty - y][tx - x] = true;
             
             // tell map renderer to update it
@@ -136,7 +135,7 @@ public class TileLayer extends Layer {
      *         outside this layer
      */
     public Tile getTileAt(int tx, int ty) {
-        return (contains(tx, ty)) ? map[ty - y][tx - x] : null;
+        return (contains(tx, ty)) ? tiles[ty - y][tx - x] : null;
     }
 
     /**

@@ -1,8 +1,5 @@
 package com.jme3.tmx;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import com.jme3.app.Application;
 import com.jme3.app.FlyCamAppState;
 import com.jme3.app.SimpleApplication;
@@ -42,8 +39,6 @@ import com.jme3.tmx.render.StaggeredRenderer;
  */
 public class TiledMapAppState extends BaseAppState implements AnalogListener,
         ActionListener {
-
-    static Logger logger = Logger.getLogger(TiledMapAppState.class.getName());
 
     public static final String INIT_ERROR = "inputManager is null. Please initialize TiledMapAppState first.";
     public static final String LEFT = "left";
@@ -231,22 +226,21 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener,
         }
 
         switch (map.getOrientation()) {
-        case ORTHOGONAL:
-            mapRenderer = new OrthogonalRenderer(map);
-            break;
-        case ISOMETRIC:
-            mapRenderer = new IsometricRenderer(map);
-            break;
-        case HEXAGONAL:
-            mapRenderer = new HexagonalRenderer(map);
-            break;
-        case STAGGERED:
-            mapRenderer = new StaggeredRenderer(map);
-            break;
-        default:
-            logger.warning("Unknown orientation:" + map.getOrientation()
-                    + ". Use OrthogonalRender by default");
-            mapRenderer = new OrthogonalRenderer(map);
+            case ORTHOGONAL:
+                mapRenderer = new OrthogonalRenderer(map);
+                break;
+            case ISOMETRIC:
+                mapRenderer = new IsometricRenderer(map);
+                break;
+            case HEXAGONAL:
+                mapRenderer = new HexagonalRenderer(map);
+                break;
+            case STAGGERED:
+                mapRenderer = new StaggeredRenderer(map);
+                break;
+            default:
+                // use OrthogonalRenderer by default
+                mapRenderer = new OrthogonalRenderer(map);
         }
 
         Vector2f loc = mapRenderer.tileToScreenCoords(0, 0);
@@ -469,7 +463,7 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener,
             return;
         }
 
-        // recored the mouse position
+        // record the mouse position
         stopPos.set(inputManager.getCursorPosition());
         stopPos.subtractLocal(startPos);
 
@@ -536,7 +530,7 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener,
                 zoomCamera(-value);
                 break;
             default:
-                logger.log(Level.WARNING, "unknown input:{0}", name);
+                break;
         }
     }
 
@@ -544,7 +538,7 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener,
     public void onAction(String name, boolean isPressed, float tpf) {
         if (name.equals(DRAG)) {
             if (isPressed) {
-                // recored the mouse position
+                // record the mouse position
                 startPos.set(inputManager.getCursorPosition());
                 startLoc.set(mapTranslation);
             } else {
