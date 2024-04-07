@@ -226,7 +226,9 @@ public final class ObjectMesh {
 
     /**
      * Make a border for map marker. It's a half circle on the top and a triangle on the bottom, point to (0,0).
-     * @return
+     * @param radius the radius of the marker
+     * @param count how many points you need?
+     * @return the mesh
      */
     public static Mesh makeMarkerBorder(float radius, int count) {
         List<Vector2f> points = new ArrayList<>(count + 1);
@@ -250,7 +252,9 @@ public final class ObjectMesh {
 
     /**
      * Make a border for map marker. It's a half circle on the top and a triangle on the bottom, point to (0,0).
-     * @return
+     * @param radius the radius of the marker
+     * @param count how many points you need?
+     * @return the mesh
      */
     public static Mesh makeMarker(float radius, int count) {
         float baseHeight = radius * -2f;

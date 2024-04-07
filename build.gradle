@@ -1,5 +1,6 @@
 plugins {
     id 'java-library'
+    id 'maven-publish'
 }
 
 version = 0.3
@@ -13,6 +14,7 @@ repositories {
     mavenCentral()
 }
 
+def tmxLoaderVersion = 0.3
 def jme3 = [g:'org.jmonkeyengine', v:'3.6.1-stable']
 
 dependencies {
@@ -26,9 +28,36 @@ dependencies {
     testImplementation "$jme3.g:jme3-lwjgl:$jme3.v"
 }
 
-task sourcesJar(type: Jar) {
+jar {
+    manifest {
+        attributes 'Implementation-Title': 'TMXLoader',
+                   'Implementation-Version': tmxLoaderVersion,
+                   'Automatic-Module-Name': "${project.name.replace("-", ".")}",
+                   'Created-By': "${JavaVersion.current()} (${System.getProperty("java.vendor")})"
+    }
+}
+
+javadoc {
+    failOnError = false
+    options.memberLevel = JavadocMemberLevel.PROTECTED
+    options.docTitle = "TMXLoader ${tmxLoaderVersion} Javadoc"
+    options.author = true
+    options.use = true
+    options.charSet = "UTF-8"
+    options.encoding = "UTF-8"
+    source = sourceSets.main.allJava
+}
+
+tasks.register('sourcesJar', Jar) {
     from sourceSets.main.java.srcDirs
 }
+
+tasks.register('javadocJar', Jar) {
+    dependsOn javadoc
+    from javadoc.destinationDir
+}
+
 artifacts {
     archives sourcesJar
+    archives javadocJar
 }

@@ -399,23 +399,57 @@ public abstract class MapRenderer {
      * Coordinates System Convert *
      ******************************/
 
+    /**
+     * Convert the pixel coordinates to screen coordinates.
+     * @param x the x coordinate in pixel
+     * @param y the y coordinate in pixel
+     * @return the screen coordinates
+     */
     public abstract Vector2f pixelToScreenCoords(float x, float y);
 
+    /**
+     * Convert the screen coordinates to pixel coordinates.
+     * @param x the x coordinate in screen
+     * @param y the y coordinate in screen
+     * @return the pixel coordinates
+     */
     public abstract Point pixelToTileCoords(float x, float y);
 
+    /**
+     * Convert the tile coordinates to pixel coordinates.
+     * @param x the x coordinate in tile
+     * @param y the y coordinate in tile
+     * @return the pixel coordinates
+     */
     public abstract Vector2f tileToPixelCoords(float x, float y);
 
+    /**
+     * Convert the tile coordinates to screen coordinates.
+     * @param x the x coordinate in tile
+     * @param y the y coordinate in tile
+     * @return the screen coordinates
+     */
     public abstract Vector2f tileToScreenCoords(float x, float y);
 
+    /**
+     * Convert the screen coordinates to pixel coordinates.
+     * @param x the x coordinate in screen
+     * @param y the y coordinate in screen
+     * @return the pixel coordinates
+     */
     public abstract Vector2f screenToPixelCoords(float x, float y);
 
+    /**
+     * Convert the screen coordinates to tile coordinates.
+     * @param x the x coordinate in screen
+     * @param y the y coordinate in screen
+     * @return the tile coordinates
+     */
     public abstract Point screenToTileCoords(float x, float y);
 
     /**
      * Flip the tile
-     * 
-     * TODO how about change the uv coord?
-     * 
+     *
      * @param visual The spatial for this tile.
      * @param tile The image of this tile.
      */
@@ -431,7 +465,6 @@ public abstract class MapRenderer {
         }
 
         /*
-         * TODO flip diagonally
          * <pre>
          * [      *]
          * [    *  ]
@@ -440,7 +473,7 @@ public abstract class MapRenderer {
          * </pre>
          */
         if (tile.isFlippedAntiDiagonally()) {
-
+            // TODO flip diagonally
         }
     }
 
