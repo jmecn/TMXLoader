@@ -76,7 +76,7 @@ public abstract class MapRenderer {
         this.tileHeight = map.getTileHeight();
 
         this.mapSize = new Point();
-        this.mapSize.set(width * tileWidth, height * tileHeight);
+        this.mapSize.set((float)width * tileWidth, (float)height * tileHeight);
     }
 
     /**
@@ -122,6 +122,11 @@ public abstract class MapRenderer {
                 visual.setLocalTranslation(0, i, 0);
                 layer.setNeedUpdated(false);
             }
+        }
+
+        if (map.isGridUpdated()) {
+            renderGrid();
+            map.setGridUpdated(false);
         }
         return map.getVisual();
     }
@@ -326,15 +331,15 @@ public abstract class MapRenderer {
                         // When the object has a gid set, then it is represented by
                         // the image of the tile with that global ID. The image
                         // alignment currently depends on the map orientation.
-                        float height = tile.getHeight();
+                        float th = tile.getHeight();
                         if (map.getOrientation() == Orientation.ISOMETRIC) {
                             // in isometric it's aligned to the bottom-center.
-                            float width = tile.getWidth();
-                            visual.move(0, -width * 0.5f, -height);
+                            float tw = tile.getWidth();
+                            visual.move(0, -tw * 0.5f, -th);
                         } else {
                             // In orthogonal orientation it's aligned to the
                             // bottom-left
-                            visual.move(0, 0, -height);
+                            visual.move(0, 0, -th);
                         }
 
                         obj.setVisual(visual);
@@ -391,6 +396,8 @@ public abstract class MapRenderer {
 
         return layer.getVisual();
     }
+
+    protected abstract void renderGrid();
 
     /******************************
      * Coordinates System Convert *

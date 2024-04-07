@@ -67,6 +67,11 @@ public class IsometricRenderer extends MapRenderer {
         return layer.getVisual();
     }
 
+    @Override
+    protected void renderGrid() {
+
+    }
+
     // Coordinates System Convert
     @Override
     public Point pixelToTileCoords(float x, float y) {

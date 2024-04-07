@@ -2,6 +2,7 @@ package com.jme3.tmx;
 
 import com.jme3.asset.*;
 import com.jme3.material.Material;
+import com.jme3.material.RenderState;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector2f;
 import com.jme3.renderer.queue.RenderQueue.Bucket;
@@ -164,6 +165,7 @@ public class TmxLoader implements AssetLoader {
             logger.error("Error while parsing map file: {}", key.getName(), e);
         }
 
+        map.setGridMaterial(createGridMaterial());
         return map;
     }
 
@@ -1712,4 +1714,15 @@ public class TmxLoader implements AssetLoader {
         }
     }
 
+    /**
+     * for display the map grid
+     * @return
+     */
+    private Material createGridMaterial() {
+        Material mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+        mat.setColor("Color", ColorRGBA.Gray);
+        mat.getAdditionalRenderState().setWireframe(true);
+        mat.getAdditionalRenderState().setDepthTest(false);
+        return mat;
+    }
 }

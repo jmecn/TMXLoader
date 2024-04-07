@@ -4,6 +4,7 @@ import java.util.*;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
+import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 import com.jme3.renderer.queue.RenderQueue.Bucket;
 import com.jme3.scene.Node;
@@ -133,6 +134,11 @@ public class TiledMap extends Base {
     private List<Layer> layers;
     private Map<String, Layer> layerMap;
 
+
+    private Node gridVisual;// for render grid
+    private Material gridMaterial;// for render grid
+    private boolean isGridUpdated = true;
+
     /**
      * <p>
      * Constructor for Map.
@@ -162,6 +168,12 @@ public class TiledMap extends Base {
         // in a TiledMap I use Node as the spatial
         this.visual = new Node("TileMap");
         this.visual.setQueueBucket(Bucket.Gui);
+
+        this.gridVisual = new Node("TileMap Grid");
+        this.gridVisual.setQueueBucket(Bucket.Gui);
+        this.gridVisual.setLocalTranslation(0f, 999f, 0f);
+
+        getVisual().attachChild(gridVisual);
     }
 
     /**
@@ -634,5 +646,25 @@ public class TiledMap extends Base {
     @Override
     public Node getVisual() {
         return (Node)visual;
+    }
+
+    public Node getGridVisual() {
+        return gridVisual;
+    }
+
+    public Material getGridMaterial() {
+        return gridMaterial;
+    }
+
+    public void setGridMaterial(Material gridMaterial) {
+        this.gridMaterial = gridMaterial;
+    }
+
+    public boolean isGridUpdated() {
+        return isGridUpdated;
+    }
+
+    public void setGridUpdated(boolean isGridUpdated) {
+        this.isGridUpdated = isGridUpdated;
     }
 }
