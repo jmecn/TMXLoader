@@ -103,10 +103,8 @@ public class ObjectGroup extends Layer {
      * getObjectAt.
      * </p>
      * 
-     * @param x
-     *            a double.
-     * @param y
-     *            a double.
+     * @param x a double.
+     * @param y a double.
      * @return a {@link MapObject} object.
      */
     public MapObject getObjectAt(double x, double y) {
@@ -121,9 +119,11 @@ public class ObjectGroup extends Layer {
                 return obj;
             }
 
-            Rectangle2D.Double rect = new Rectangle2D.Double(obj.getX()
-                    + this.x * map.getTileWidth(), obj.getY() + this.y
-                    * map.getTileHeight(), obj.getWidth(), obj.getHeight());
+            Rectangle2D.Double rect = new Rectangle2D.Double(
+                    obj.getX() + this.x * map.getTileWidth(),
+                    obj.getY() + this.y * map.getTileHeight(),
+                    obj.getWidth(),
+                    obj.getHeight());
             if (rect.contains(x, y)) {
                 return obj;
             }
@@ -145,8 +145,11 @@ public class ObjectGroup extends Layer {
      * @return a {@link MapObject} object.
      */
     public MapObject getObjectNear(int x, int y, double zoom) {
-        Rectangle2D mouse = new Rectangle2D.Double(x - zoom - 1, y - zoom - 1,
-                2 * zoom + 1, 2 * zoom + 1);
+        Rectangle2D mouse = new Rectangle2D.Double(
+                x - zoom - 1,
+                y - zoom - 1,
+                2 * zoom + 1,
+                2 * zoom + 1);
         Shape shape;
 
         for (MapObject obj : objects) {
@@ -154,9 +157,9 @@ public class ObjectGroup extends Layer {
                 shape = new Ellipse2D.Double(obj.getX() * zoom, obj.getY()
                         * zoom, 10 * zoom, 10 * zoom);
             } else {
-                shape = new Rectangle2D.Double(obj.getX() + this.x
-                        * map.getTileWidth(), obj.getY() + this.y
-                        * map.getTileHeight(),
+                shape = new Rectangle2D.Double(
+                        obj.getX() + this.x * map.getTileWidth(),
+                        obj.getY() + this.y * map.getTileHeight(),
                         obj.getWidth() > 0 ? obj.getWidth() : zoom,
                         obj.getHeight() > 0 ? obj.getHeight() : zoom);
             }

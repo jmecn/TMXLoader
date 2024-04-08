@@ -2,6 +2,7 @@ package com.jme3.tmx.render;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
@@ -13,7 +14,7 @@ import com.jme3.scene.Mesh;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.tmx.core.*;
-import com.jme3.tmx.enums.Orientation;
+import com.jme3.tmx.enums.DrawOrder;
 import com.jme3.tmx.math2d.Point;
 import com.jme3.tmx.util.ObjectMesh;
 
@@ -51,11 +52,6 @@ import com.jme3.tmx.util.ObjectMesh;
  * 
  */
 public abstract class MapRenderer {
-
-    /**
-     * This value used to generate ellipse mesh.
-     */
-    private static final int ELLIPSE_POINTS = 36;
 
     protected TiledMap map;
     protected int width;
@@ -207,109 +203,27 @@ public abstract class MapRenderer {
             layer.getVisual().setLocalScale(1f, 1f / len, 1f);
 
             // sort draw order
-            switch (layer.getDrawOrder()) {
-                case TOPDOWN:
-                    objects.sort(new CompareTopdown());
-                    break;
-                case INDEX:
-                    objects.sort(new CompareIndex());
-                    break;
+            if (Objects.requireNonNull(layer.getDrawOrder()) == DrawOrder.TOPDOWN) {
+                objects.sort(new CompareTopdown());
+            } else if (layer.getDrawOrder() == DrawOrder.INDEX) {
+                objects.sort(new CompareIndex());
             }
         }
 
+        ObjectRenderer objectRenderer = new ObjectRenderer(layer);
         for (int i = 0; i < len; i++) {
             MapObject obj = objects.get(i);
 
-            if (!obj.isVisible()) {
-                continue;
-            }
+            if (obj.isVisible() && obj.isNeedUpdated()) {
 
-            if (obj.isNeedUpdated()) {
-
-                switch (obj.getShape()) {
-                    case RECTANGLE: {
-                        Node visual = rectangle(obj, mat, bgMat);
-                        obj.setVisual(visual);
-                        break;
-                    }
-                    case ELLIPSE: {
-                        Node visual = ellipse(obj, mat, bgMat);
-                        obj.setVisual(visual);
-                        break;
-                    }
-                    case POLYGON: {
-                        Node visual = polygon(obj, mat, bgMat);
-                        obj.setVisual(visual);
-                        break;
-                    }
-                    case POLYLINE: {
-                        Geometry visual = polyline(obj, mat);
-                        obj.setVisual(visual);
-                        break;
-                    }
-                    case POINT: {
-                        Node visual = point(obj, mat, bgMat);
-                        obj.setVisual(visual);
-                        break;
-                    }
-                    case IMAGE: {
-                        Geometry geom = new Geometry(obj.getName(), ObjectMesh.makeRectangle(obj.getWidth(), obj.getHeight()));
-                        geom.setMaterial(obj.getMaterial());
-                        geom.setQueueBucket(Bucket.Gui);
-                        obj.setVisual(geom);
-                        break;
-                    }
-                    case TILE: {
-                        Tile tile = obj.getTile();
-
-                        Spatial visual = tile.getVisual().clone();
-                        visual.setQueueBucket(Bucket.Gui);
-
-                        flip(visual, obj.getTile());
-
-                        // When the object has a gid set, then it is represented by
-                        // the image of the tile with that global ID. The image
-                        // alignment currently depends on the map orientation.
-                        float th = tile.getHeight();
-                        if (map.getOrientation() == Orientation.ISOMETRIC) {
-                            // in isometric it's aligned to the bottom-center.
-                            float tw = tile.getWidth();
-                            visual.move(0, -tw * 0.5f, -th);
-                        } else {
-                            // In orthogonal orientation it's aligned to the
-                            // bottom-left
-                            visual.move(0, 0, -th);
-                        }
-
-                        obj.setVisual(visual);
-                        break;
-                    }
-                    case TEXT: {
-                        // TODO render text
-                        text(obj, mat, bgMat);
-                        break;
-                    }
-                    default: {
-                        break;
-                    }
-
-                }
-
-                Spatial visual = obj.getVisual();
+                Spatial visual = objectRenderer.create(obj);
                 if (visual == null) {
                     continue;
-                }
-                double deg = obj.getRotation();
-                if (deg != 0) {
-                    float radian = (float) (FastMath.DEG_TO_RAD * deg);
-                    // rotate the spatial clockwise
-                    visual.rotate(0, -radian, 0);
                 }
 
                 float x = (float) obj.getX();
                 float y = (float) obj.getY();
 
-                // TODO if tileset .getTileHeight > map.getTileHeight, the object need to move down a little.
                 Vector2f screenCoord = pixelToScreenCoords(x, y);
                 obj.getVisual().move(screenCoord.x, i, screenCoord.y);
                 layer.getVisual().attachChild(obj.getVisual());
@@ -317,117 +231,6 @@ public abstract class MapRenderer {
         }
 
         return layer.getVisual();
-    }
-
-    private Node rectangle(MapObject obj, Material mat, Material bgMat) {
-        Mesh borderMesh = ObjectMesh.makeRectangleBorder(obj.getWidth(), obj.getHeight());
-        Mesh backMesh = ObjectMesh.makeRectangle(obj.getWidth(), obj.getHeight());
-
-        if (map.getOrientation() == Orientation.ISOMETRIC) {
-            ObjectMesh.toIsometric(borderMesh, map.getTileWidth(), map.getTileHeight());
-            ObjectMesh.toIsometric(backMesh, map.getTileWidth(), map.getTileHeight());
-        }
-
-        Geometry border = new Geometry("border", borderMesh);
-        border.setMaterial(mat);
-        border.setQueueBucket(Bucket.Gui);
-
-        Geometry back = new Geometry("rectangle", backMesh);
-        back.setMaterial(bgMat);
-        back.setQueueBucket(Bucket.Gui);
-
-        Node visual = new Node(obj.getName());
-        visual.attachChild(back);
-        visual.attachChild(border);
-        visual.setQueueBucket(Bucket.Gui);
-
-        return visual;
-    }
-
-    private Node ellipse(MapObject obj, Material mat, Material bgMat) {
-        Mesh borderMesh = ObjectMesh.makeEllipseBorder(obj.getWidth(), obj.getHeight(), ELLIPSE_POINTS);
-        Mesh backMesh = ObjectMesh.makeEllipse(obj.getWidth(), obj.getHeight(), ELLIPSE_POINTS);
-
-        if (map.getOrientation() == Orientation.ISOMETRIC) {
-            ObjectMesh.toIsometric(borderMesh, map.getTileWidth(), map.getTileHeight());
-            ObjectMesh.toIsometric(backMesh, map.getTileWidth(), map.getTileHeight());
-        }
-
-        Geometry border = new Geometry("border", borderMesh);
-        border.setMaterial(mat);
-        border.setQueueBucket(Bucket.Gui);
-
-        Geometry back = new Geometry("ellipse", backMesh);
-        back.setMaterial(bgMat);
-        back.setQueueBucket(Bucket.Gui);
-
-        Node visual = new Node(obj.getName());
-        visual.attachChild(back);
-        visual.attachChild(border);
-        visual.setQueueBucket(Bucket.Gui);
-
-        return visual;
-    }
-
-    private Node polygon(MapObject obj, Material mat, Material bgMat) {
-        Mesh borderMesh = ObjectMesh.makePolyline(obj.getPoints(), true);
-        Mesh backMesh = ObjectMesh.makePolygon(obj.getPoints());
-
-        if (map.getOrientation() == Orientation.ISOMETRIC) {
-            ObjectMesh.toIsometric(borderMesh, map.getTileWidth(), map.getTileHeight());
-            ObjectMesh.toIsometric(backMesh, map.getTileWidth(), map.getTileHeight());
-        }
-
-        Geometry border = new Geometry("border", borderMesh);
-        border.setMaterial(mat);
-        border.setQueueBucket(Bucket.Gui);
-
-        Geometry back = new Geometry("polygon", backMesh);
-        back.setMaterial(bgMat);
-        back.setQueueBucket(Bucket.Gui);
-
-        Node visual = new Node(obj.getName());
-        visual.attachChild(back);
-        visual.attachChild(border);
-        visual.setQueueBucket(Bucket.Gui);
-
-        return visual;
-    }
-
-    private Geometry polyline(MapObject obj, Material mat) {
-        Mesh mesh = ObjectMesh.makePolyline(obj.getPoints(), false);
-
-        if (map.getOrientation() == Orientation.ISOMETRIC) {
-            ObjectMesh.toIsometric(mesh, map.getTileWidth(), map.getTileHeight());
-        }
-
-        Geometry geom = new Geometry(obj.getName(), mesh);
-        geom.setMaterial(mat);
-        geom.setQueueBucket(Bucket.Gui);
-
-        return geom;
-    }
-
-    private Node point(MapObject obj, Material mat, Material bgMat) {
-        Geometry border = new Geometry("border", ObjectMesh.makeMarkerBorder(map.getTileHeight() * 0.5f, ELLIPSE_POINTS));
-        border.setMaterial(mat);
-        border.setQueueBucket(Bucket.Gui);
-
-        Geometry back = new Geometry("marker", ObjectMesh.makeMarker(map.getTileHeight() * 0.5f, ELLIPSE_POINTS));
-        back.setMaterial(bgMat);
-        back.setQueueBucket(Bucket.Gui);
-
-        Node visual = new Node(obj.getName());
-        visual.attachChild(back);
-        visual.attachChild(border);
-        visual.setQueueBucket(Bucket.Gui);
-
-        return visual;
-    }
-
-    private void text(MapObject obj, Material mat, Material bgMat) {
-        // TODO render text
-        ObjectText objectText = obj.getTextData();
     }
 
     protected Spatial render(ImageLayer layer) {
