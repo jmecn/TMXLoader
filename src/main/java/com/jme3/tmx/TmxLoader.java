@@ -385,7 +385,8 @@ public class TmxLoader implements AssetLoader {
         // Load the layers and objectgroups
         Node child = mapNode.getFirstChild();
         while (child != null) {
-            switch (child.getNodeName()) {
+            String childName = child.getNodeName();
+            switch (childName) {
                 case LAYER: {
                     Layer layer = readTileLayer(child);
                     map.addLayer(layer);
@@ -406,9 +407,14 @@ public class TmxLoader implements AssetLoader {
                     map.addLayer(layer);
                     break;
                 }
-                default:
-                    logger.info("Unexpected value: {}", child.getNodeName());
+                default: {
+                    if (TILESET.equals(childName) || PROPERTIES.equals(childName) || "#text".equals(childName)) {
+                        // Ignore, already processed
+                    } else {
+                        logger.warn("Unsupported map element: {}", childName);
+                    }
                     break;
+                }
             }
             child = child.getNextSibling();
         }
@@ -587,7 +593,7 @@ public class TmxLoader implements AssetLoader {
         int tileHeight = tileset.getTileHeight();
         int offset = tileHeight - mapTileHeight;
         if (tileHeight > mapTileHeight) {
-            logger.info("map - tile = {}", offset);
+            logger.info("mapTileHeight({}) < tileHeight({}), offset={}", mapTileHeight, tileHeight, offset);
         } else {
             offset = 0;
         }
@@ -1314,35 +1320,77 @@ public class TmxLoader implements AssetLoader {
         for (int i = 0; i < children.getLength(); i++) {
             Node child = children.item(i);
             String nodeName = child.getNodeName();
-            if (IMAGE.equalsIgnoreCase(nodeName)) {
-                obj.setShape(ObjectType.IMAGE);
-
-                AnImage image = readImage(child);
-                obj.setImageSource(image.source);
-                obj.setTexture(image.texture);
-                obj.setMaterial(image.createMaterial());
-                break;
-            } else if (ELLIPSE.equalsIgnoreCase(nodeName)) {
-                obj.setShape(ObjectType.ELLIPSE);
-                break;
-            } else if (POINT.equalsIgnoreCase(nodeName)) {
-                obj.setShape(ObjectType.POINT);
-                break;
-            } else if (POLYGON.equalsIgnoreCase(nodeName)) {
-                obj.setShape(ObjectType.POLYGON);
-                obj.setPoints(readPoints(child));
-                break;
-            } else if (POLYLINE.equalsIgnoreCase(nodeName)) {
-                obj.setShape(ObjectType.POLYLINE);
-                obj.setPoints(readPoints(child));
-                break;
-            } else if (TEXT.equalsIgnoreCase(nodeName)) {
-                obj.setShape(ObjectType.TEXT);
-                obj.setTextData(readTextObject(child));
-                break;
-            } else {
-                logger.warn("unknown object type:{}", nodeName);
+            // 把if-else 改写成 switch-case
+            switch (nodeName) {
+                case ELLIPSE: {
+                    obj.setShape(ObjectType.ELLIPSE);
+                    break;
+                }
+                case POINT: {
+                    obj.setShape(ObjectType.POINT);
+                    break;
+                }
+                case POLYGON: {
+                    obj.setShape(ObjectType.POLYGON);
+                    obj.setPoints(readPoints(child));
+                    break;
+                }
+                case POLYLINE: {
+                    obj.setShape(ObjectType.POLYLINE);
+                    obj.setPoints(readPoints(child));
+                    break;
+                }
+                case TEXT: {
+                    obj.setShape(ObjectType.TEXT);
+                    obj.setTextData(readTextObject(child));
+                    break;
+                }
+                case IMAGE: {
+                    obj.setShape(ObjectType.IMAGE);
+                    AnImage image = readImage(child);
+                    obj.setImageSource(image.source);
+                    obj.setTexture(image.texture);
+                    obj.setMaterial(image.createMaterial());
+                    break;
+                }
+                default: {
+                    if ("#text".equals(nodeName)) {
+                        // ignore
+                    } else {
+                        logger.warn("unknown object type:{}", nodeName);
+                    }
+                    break;
+                }
             }
+//            if (IMAGE.equalsIgnoreCase(nodeName)) {
+//                obj.setShape(ObjectType.IMAGE);
+//
+//                AnImage image = readImage(child);
+//                obj.setImageSource(image.source);
+//                obj.setTexture(image.texture);
+//                obj.setMaterial(image.createMaterial());
+//                break;
+//            } else if (ELLIPSE.equalsIgnoreCase(nodeName)) {
+//                obj.setShape(ObjectType.ELLIPSE);
+//                break;
+//            } else if (POINT.equalsIgnoreCase(nodeName)) {
+//                obj.setShape(ObjectType.POINT);
+//                break;
+//            } else if (POLYGON.equalsIgnoreCase(nodeName)) {
+//                obj.setShape(ObjectType.POLYGON);
+//                obj.setPoints(readPoints(child));
+//                break;
+//            } else if (POLYLINE.equalsIgnoreCase(nodeName)) {
+//                obj.setShape(ObjectType.POLYLINE);
+//                obj.setPoints(readPoints(child));
+//                break;
+//            } else if (TEXT.equalsIgnoreCase(nodeName)) {
+//                obj.setShape(ObjectType.TEXT);
+//                obj.setTextData(readTextObject(child));
+//                break;
+//            } else {
+//                logger.warn("unknown object type:{}", nodeName);
+//            }
         }
 
         return obj;

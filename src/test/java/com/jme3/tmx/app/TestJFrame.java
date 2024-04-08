@@ -13,15 +13,7 @@ import java.awt.event.WindowEvent;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 
-import javax.swing.DefaultListModel;
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.ListSelectionModel;
-import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
+import javax.swing.*;
 
 import com.jme3.app.SimpleApplication;
 import com.jme3.input.MouseInput;
@@ -127,8 +119,7 @@ public class TestJFrame extends SimpleApplication {
                     return;
                 }
 
-                final AwtPanelsContext ctx = (AwtPanelsContext) app
-                        .getContext();
+                final AwtPanelsContext ctx = (AwtPanelsContext) app.getContext();
                 panel = ctx.createPanel(PaintMode.Accelerated);
                 panel.setPreferredSize(new Dimension(800, 600));
                 ctx.setInputSource(panel);
@@ -154,8 +145,8 @@ public class TestJFrame extends SimpleApplication {
                 list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
                 DefaultListModel<String> model = new DefaultListModel<>();
-                for (int i = 0; i < names.length; i++) {
-                    model.addElement(names[i]);
+                for (String name : names) {
+                    model.addElement(name);
                 }
 
                 list.setModel(model);
@@ -179,20 +170,15 @@ public class TestJFrame extends SimpleApplication {
                     }
                 });
 
-                final JPanel buttonPanel = new JPanel(new FlowLayout(
-                        FlowLayout.CENTER));
+                final JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
                 frame.getContentPane().add(buttonPanel, BorderLayout.PAGE_END);
 
-                final JButton okButton = new JButton("Ok");
-                okButton.setMnemonic('O');
-                buttonPanel.add(okButton);
-                frame.getRootPane().setDefaultButton(okButton);
-                okButton.addActionListener(e -> {
-                    String value = list.getSelectedValue();
-                    app.load(value);
-                });
+                final JButton gridButton = new JButton("Toggle Grid");
+                buttonPanel.add(gridButton);
+                frame.getRootPane().setDefaultButton(gridButton);
+                gridButton.addActionListener(e -> app.toggleGrid());
 
-                final JButton cancelButton = new JButton("Cancel");
+                final JButton cancelButton = new JButton("Close");
                 cancelButton.setMnemonic('C');
                 buttonPanel.add(cancelButton);
                 cancelButton.addActionListener(e -> frame.dispose());
@@ -260,29 +246,29 @@ public class TestJFrame extends SimpleApplication {
     }
 
     public void load(final String assetPath) {
-        enqueue(new Callable<Void>() {
-            @Override
-            public Void call() throws Exception {
-                System.out.println(assetPath);
-                TiledMap map = null;
-                try {
-                    map = (TiledMap) assetManager.loadAsset(assetPath);
-                } catch (Exception e) {
-                    // i don't care
-                }
-
-                if (map != null) {
-                    TiledMapAppState tiledMap = stateManager.getState(TiledMapAppState.class);
-                    tiledMap.setMap(map);
-                    tiledMap.update(0);
-
-                    // look at the center of this map
-                    tiledMap.moveToTile(map.getWidth() * 0.5f, map.getHeight() * 0.5f);
-                }
-                return null;
+        enqueue((Callable<Void>) () -> {
+            TiledMap map = null;
+            try {
+                map = (TiledMap) assetManager.loadAsset(assetPath);
+            } catch (Exception e) {
+                // i don't care
             }
 
+            if (map != null) {
+                TiledMapAppState tiledMap = stateManager.getState(TiledMapAppState.class);
+                tiledMap.setMap(map);
+                tiledMap.update(0);
+
+                // look at the center of this map
+                tiledMap.moveToTile(map.getWidth() * 0.5f, map.getHeight() * 0.5f);
+            }
+            return null;
         });
 
+    }
+
+    public void toggleGrid() {
+        TiledMapAppState tiledMap = stateManager.getState(TiledMapAppState.class);
+        tiledMap.toggleGrid();
     }
 }

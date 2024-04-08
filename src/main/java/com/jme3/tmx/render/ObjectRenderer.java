@@ -48,68 +48,38 @@ public class ObjectRenderer {
         }
     }
 
-    Spatial create(MapObject obj) {
+    public Spatial create(MapObject obj) {
         switch (obj.getShape()) {
             case RECTANGLE: {
-                Node visual = rectangle(obj, mat, bgMat);
-                obj.setVisual(visual);
+                rectangle(obj);
                 break;
             }
             case ELLIPSE: {
-                Node visual = ellipse(obj, mat, bgMat);
-                obj.setVisual(visual);
+                ellipse(obj);
                 break;
             }
             case POLYGON: {
-                Node visual = polygon(obj, mat, bgMat);
-                obj.setVisual(visual);
+                polygon(obj);
                 break;
             }
             case POLYLINE: {
-                Geometry visual = polyline(obj, mat);
-                obj.setVisual(visual);
+                polyline(obj);
                 break;
             }
             case POINT: {
-                Node visual = point(obj, mat, bgMat);
-                obj.setVisual(visual);
+                point(obj);
                 break;
             }
             case IMAGE: {
-                Geometry geom = new Geometry(obj.getName(), ObjectMesh.makeRectangle(obj.getWidth(), obj.getHeight()));
-                geom.setMaterial(obj.getMaterial());
-                geom.setQueueBucket(RenderQueue.Bucket.Gui);
-                obj.setVisual(geom);
+                image(obj);
                 break;
             }
             case TILE: {
-                Tile tile = obj.getTile();
-
-                Spatial visual = tile.getVisual().clone();
-                visual.setQueueBucket(RenderQueue.Bucket.Gui);
-
-                // flip(visual, obj.getTile());
-
-                // When the object has a gid set, then it is represented by
-                // the image of the tile with that global ID. The image
-                // alignment currently depends on the map orientation.
-                float th = tile.getHeight();
-                if (map.getOrientation() == Orientation.ISOMETRIC) {
-                    // in isometric it's aligned to the bottom-center.
-                    float tw = tile.getWidth();
-                    visual.move(0, -tw * 0.5f, -th);
-                } else {
-                    // In orthogonal orientation it's aligned to the
-                    // bottom-left
-                    visual.move(0, 0, -th);
-                }
-
-                obj.setVisual(visual);
+                tile(obj);
                 break;
             }
             case TEXT: {
-                // TODO render text
-                text(obj, mat, bgMat);
+                text(obj);
                 break;
             }
             default: {
@@ -132,8 +102,7 @@ public class ObjectRenderer {
         return visual;
     }
 
-
-    private Node rectangle(MapObject obj, Material mat, Material bgMat) {
+    private void rectangle(MapObject obj) {
         Mesh borderMesh = ObjectMesh.makeRectangleBorder(obj.getWidth(), obj.getHeight());
         Mesh backMesh = ObjectMesh.makeRectangle(obj.getWidth(), obj.getHeight());
 
@@ -155,10 +124,10 @@ public class ObjectRenderer {
         visual.attachChild(border);
         visual.setQueueBucket(RenderQueue.Bucket.Gui);
 
-        return visual;
+        obj.setVisual(visual);
     }
 
-    private Node ellipse(MapObject obj, Material mat, Material bgMat) {
+    private void ellipse(MapObject obj) {
         Mesh borderMesh = ObjectMesh.makeEllipseBorder(obj.getWidth(), obj.getHeight(), ELLIPSE_POINTS);
         Mesh backMesh = ObjectMesh.makeEllipse(obj.getWidth(), obj.getHeight(), ELLIPSE_POINTS);
 
@@ -180,10 +149,10 @@ public class ObjectRenderer {
         visual.attachChild(border);
         visual.setQueueBucket(RenderQueue.Bucket.Gui);
 
-        return visual;
+        obj.setVisual(visual);
     }
 
-    private Node polygon(MapObject obj, Material mat, Material bgMat) {
+    private void polygon(MapObject obj) {
         Mesh borderMesh = ObjectMesh.makePolyline(obj.getPoints(), true);
         Mesh backMesh = ObjectMesh.makePolygon(obj.getPoints());
 
@@ -205,24 +174,24 @@ public class ObjectRenderer {
         visual.attachChild(border);
         visual.setQueueBucket(RenderQueue.Bucket.Gui);
 
-        return visual;
+        obj.setVisual(visual);
     }
 
-    private Geometry polyline(MapObject obj, Material mat) {
+    private void polyline(MapObject obj) {
         Mesh mesh = ObjectMesh.makePolyline(obj.getPoints(), false);
 
         if (map.getOrientation() == Orientation.ISOMETRIC) {
             ObjectMesh.toIsometric(mesh, map.getTileWidth(), map.getTileHeight());
         }
 
-        Geometry geom = new Geometry(obj.getName(), mesh);
-        geom.setMaterial(mat);
-        geom.setQueueBucket(RenderQueue.Bucket.Gui);
+        Geometry visual = new Geometry(obj.getName(), mesh);
+        visual.setMaterial(mat);
+        visual.setQueueBucket(RenderQueue.Bucket.Gui);
 
-        return geom;
+        obj.setVisual(visual);
     }
 
-    private Node point(MapObject obj, Material mat, Material bgMat) {
+    private void point(MapObject obj) {
         Geometry border = new Geometry("border", ObjectMesh.makeMarkerBorder(16, ELLIPSE_POINTS));
         border.setMaterial(mat);
         border.setQueueBucket(RenderQueue.Bucket.Gui);
@@ -236,10 +205,43 @@ public class ObjectRenderer {
         visual.attachChild(border);
         visual.setQueueBucket(RenderQueue.Bucket.Gui);
 
-        return visual;
+        obj.setVisual(visual);
     }
 
-    private void text(MapObject obj, Material mat, Material bgMat) {
+    private void image(MapObject obj) {
+        Geometry visual = new Geometry(obj.getName(), ObjectMesh.makeRectangle(obj.getWidth(), obj.getHeight()));
+        visual.setMaterial(obj.getMaterial());
+        visual.setQueueBucket(RenderQueue.Bucket.Gui);
+
+        obj.setVisual(visual);
+    }
+
+    private void tile(MapObject obj) {
+        Tile tile = obj.getTile();
+
+        Spatial visual = tile.getVisual().clone();
+        visual.setQueueBucket(RenderQueue.Bucket.Gui);
+
+        // flip(visual, obj.getTile());
+
+        // When the object has a gid set, then it is represented by
+        // the image of the tile with that global ID. The image
+        // alignment currently depends on the map orientation.
+        float th = tile.getHeight();
+        if (map.getOrientation() == Orientation.ISOMETRIC) {
+            // in isometric it's aligned to the bottom-center.
+            float tw = tile.getWidth();
+            visual.move(0, -tw * 0.5f, -th);
+        } else {
+            // In orthogonal orientation it's aligned to the
+            // bottom-left
+            visual.move(0, 0, -th);
+        }
+
+        obj.setVisual(visual);
+    }
+
+    private void text(MapObject obj) {
         // TODO render text
         ObjectText objectText = obj.getTextData();
     }
