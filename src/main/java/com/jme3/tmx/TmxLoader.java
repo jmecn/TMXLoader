@@ -1372,7 +1372,7 @@ public class TmxLoader implements AssetLoader {
     }
 
     private ObjectText readTextObject(Node node) {
-        String fontFamily = getAttributeValue(node, "fontfamily");
+        String fontFamily = getAttribute(node, "fontfamily", "sans-serif");
         int pixelSize = getAttribute(node, "pixelsize", 16);
         boolean wrap = getAttribute(node, "wrap", 0) == 1;
         String color = getAttributeValue(node, COLOR);

@@ -578,13 +578,20 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener,
                 drag();
             }
         } else if (GRID.equals(name) && isPressed) {
-            if (gridVisual.getParent() == null) {
-                if (map != null && map.getVisual() != null) {
-                    map.getVisual().attachChild(gridVisual);
-                }
-            } else {
-                gridVisual.removeFromParent();
+            toggleGrid();
+        }
+    }
+
+    /**
+     * show/hide the grid
+     */
+    public void toggleGrid() {
+        if (gridVisual.getParent() == null) {
+            if (map != null && map.getVisual() != null) {
+                map.getVisual().attachChild(gridVisual);
             }
+        } else {
+            gridVisual.removeFromParent();
         }
     }
 
