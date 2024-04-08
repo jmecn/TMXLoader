@@ -30,7 +30,7 @@ public class WangColor extends Base {
     private float probability;
 
     public WangColor() {
-
+        super();
     }
 
     public String getName() {

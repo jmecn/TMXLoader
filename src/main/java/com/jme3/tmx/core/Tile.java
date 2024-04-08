@@ -5,7 +5,6 @@ import java.util.List;
 
 import com.jme3.material.Material;
 import com.jme3.scene.Geometry;
-import com.jme3.scene.Spatial;
 import com.jme3.texture.Texture;
 import com.jme3.tmx.animation.Animation;
 import com.jme3.tmx.animation.Frame;
@@ -270,7 +269,7 @@ public class Tile extends Base implements Cloneable {
     }
 
     public boolean isAnimated() {
-        return animations.size() > 0;
+        return !animations.isEmpty();
     }
 
     /*
@@ -311,9 +310,6 @@ public class Tile extends Base implements Cloneable {
         tile.texture = texture;
         tile.material = material;
         tile.visual = visual;
-
-        // FIXME Don't clone it here. Keep the same visual as they will be cloned in MapRenderer.
-        // if (visual != null) tile.visual = visual.clone();
 
         // animation
         tile.animations.addAll(animations);// share the animation

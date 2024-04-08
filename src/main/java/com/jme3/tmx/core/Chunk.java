@@ -209,6 +209,6 @@ public class Chunk extends Visual {
      * @return true if the spatial should be updated.
      */
     public boolean isNeedUpdateAt(int tx, int ty) {
-        return (contains(tx, ty)) ? needUpdateSpatial[ty - y][tx - x] : false;
+        return contains(tx, ty) && needUpdateSpatial[ty - y][tx - x];
     }
 }

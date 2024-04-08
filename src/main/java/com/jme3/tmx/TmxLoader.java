@@ -845,11 +845,9 @@ public class TmxLoader implements AssetLoader {
                 for (int k = 0; k < frames.getLength(); k++) {
                     Node frameNode = frames.item(k);
                     if (frameNode.getNodeName().equalsIgnoreCase("frame")) {
-                        Frame frame = new Frame();
-                        frame.tileId = getAttribute(frameNode, "tileid", 0);
-                        frame.duration = getAttribute(frameNode, "duration", 0);
-
-                        animation.addFrame(frame);
+                        int tileId = getAttribute(frameNode, "tileid", 0);
+                        int duration = getAttribute(frameNode, "duration", 0);
+                        animation.addFrame(new Frame(tileId, duration));
                     }
                 }
                 tile.addAnimation(animation);

@@ -80,7 +80,6 @@ public class ObjectGroup extends Layer {
     }
 
     public MapObject get(int id) {
-        int len = objects.size();
         for (MapObject obj : objects) {
             if (obj.getId() == id) {
                 return obj;

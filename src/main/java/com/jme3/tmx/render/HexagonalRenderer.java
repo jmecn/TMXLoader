@@ -58,14 +58,14 @@ public class HexagonalRenderer extends OrthogonalRenderer {
 
         // The map size is the same regardless of which indexes are shifted.
         if (staggerX) {
-            mapSize.set(width * columnWidth + sideOffsetX, height * (tileHeight + sideLengthY));
+            mapSize.set((float)width * columnWidth + sideOffsetX, (float)height * (tileHeight + sideLengthY));
 
             if (width > 1) {
                 mapSize.y += rowHeight;
             }
 
         } else {
-            mapSize.set(width * (tileWidth + sideLengthX), height * rowHeight + sideOffsetY);
+            mapSize.set((float)width * (tileWidth + sideLengthX), (float)height * rowHeight + sideOffsetY);
 
             if (height > 1) {
                 mapSize.x += columnWidth;
@@ -396,13 +396,13 @@ public class HexagonalRenderer extends OrthogonalRenderer {
 
     public List<Vector2f> tileToScreenPolygon(int x, int y) {
         ArrayList<Vector2f> polygon = new ArrayList<>(8);
-        polygon.add(new Vector2f(0, tileHeight - sideOffsetY));
+        polygon.add(new Vector2f(0, (float)tileHeight - sideOffsetY));
         polygon.add(new Vector2f(0, sideOffsetY));
         polygon.add(new Vector2f(sideOffsetX, 0));
-        polygon.add(new Vector2f(tileWidth - sideOffsetX, 0));
+        polygon.add(new Vector2f((float)tileWidth - sideOffsetX, 0));
         polygon.add(new Vector2f(tileWidth, sideOffsetY));
-        polygon.add(new Vector2f(tileWidth, tileHeight - sideOffsetY));
-        polygon.add(new Vector2f(tileWidth - sideOffsetX, tileHeight));
+        polygon.add(new Vector2f(tileWidth, (float)tileHeight - sideOffsetY));
+        polygon.add(new Vector2f((float)tileWidth - sideOffsetX, tileHeight));
         polygon.add(new Vector2f(sideOffsetX, tileHeight));
         
         Vector2f topRight = tileToScreenCoords(x, y);

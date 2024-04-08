@@ -62,7 +62,8 @@ public class Tileset extends Base implements Iterable<Tile> {
      * Irrelevant for image collection tilesets, but stores the maximum
      * tile width and height.
      */
-    private int tileWidth, tileHeight;
+    private int tileWidth;
+    private int tileHeight;
 
     /**
      * The spacing in pixels between the tiles in this tileset (applies to the
@@ -267,8 +268,6 @@ public class Tileset extends Base implements Iterable<Tile> {
      *            the image to be used, must not be null
      */
     public void setTexture(Texture texture) {
-        assert texture != null;
-
         this.texture = texture;
 
         TileCutter cutter = new TileCutter(texture, tileWidth, tileHeight, tileMargin, tileSpacing);

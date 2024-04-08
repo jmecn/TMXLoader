@@ -10,10 +10,31 @@ public class Frame {
     /**
      * The local ID of a tile within the parent tileset.
      */
-    public int tileId;
+    private int tileId;
     /**
      * How long (in milliseconds) this frame should be displayed before
      * advancing to the next frame.
      */
-    public int duration;
+    private int duration;
+
+    public Frame(int tileId, int duration) {
+        this.tileId = tileId;
+        this.duration = duration;
+    }
+
+    public int getTileId() {
+        return tileId;
+    }
+
+    public void setTileId(int tileId) {
+        this.tileId = tileId;
+    }
+
+    public int getDuration() {
+        return duration;
+    }
+
+    public void setDuration(int duration) {
+        this.duration = duration;
+    }
 }

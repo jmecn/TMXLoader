@@ -6,7 +6,6 @@ import java.util.List;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.FastMath;
-import com.jme3.math.Matrix3f;
 import com.jme3.math.Vector2f;
 import com.jme3.renderer.queue.RenderQueue.Bucket;
 import com.jme3.scene.Geometry;
@@ -429,7 +428,6 @@ public abstract class MapRenderer {
     private void text(MapObject obj, Material mat, Material bgMat) {
         // TODO render text
         ObjectText objectText = obj.getTextData();
-        System.out.println(objectText);
     }
 
     protected Spatial render(ImageLayer layer) {

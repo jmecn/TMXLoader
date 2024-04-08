@@ -57,10 +57,10 @@ public class AnimatedTileControl extends AbstractControl {
         float ms = tpf * 1000;
         unusedTime += ms;
         Frame frame = anim.getFrame(currentFrameIndex);
-        int previousTileId = frame.tileId;
+        int previousTileId = frame.getTileId();
 
-        while (frame.duration > 0 && unusedTime > frame.duration) {
-            unusedTime -= frame.duration;
+        while (frame.getDuration() > 0 && unusedTime > frame.getDuration()) {
+            unusedTime -= frame.getDuration();
             currentFrameIndex = (currentFrameIndex + 1) % anim.getTotalFrames();
 
             frame = anim.getFrame(currentFrameIndex);
@@ -69,11 +69,11 @@ public class AnimatedTileControl extends AbstractControl {
         /*
          * whether this caused the current tileId to change.
          */
-        if (previousTileId != frame.tileId) {
+        if (previousTileId != frame.getTileId()) {
             Geometry geom = (Geometry) spatial;
             Mesh mesh = geom.getMesh();
 
-            Tile t = tile.getTileset().getTile(frame.tileId);
+            Tile t = tile.getTileset().getTile(frame.getTileId());
             Mesh tMesh = ((Geometry) t.getVisual()).getMesh();
             FloatBuffer data = (FloatBuffer)tMesh.getBuffer(Type.TexCoord).getData();
             mesh.setBuffer(Type.TexCoord, 2, data);
