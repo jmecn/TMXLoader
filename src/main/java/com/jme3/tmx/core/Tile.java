@@ -200,8 +200,9 @@ public class Tile extends Base implements Cloneable {
         this.material = material;
     }
 
-    public void setVisual(Geometry visual) {
-        this.visual = visual;
+    @Override
+    public Geometry getVisual() {
+        return (Geometry) visual;
     }
 
     /*
@@ -254,8 +255,7 @@ public class Tile extends Base implements Cloneable {
             return null;
         }
 
-        for (int i = 0; i < len; i++) {
-            Animation anim = animations.get(i);
+        for (Animation anim : animations) {
             if (anim.equalsIgnoreCase(name)) {
                 return anim;
             }

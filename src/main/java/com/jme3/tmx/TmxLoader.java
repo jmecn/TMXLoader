@@ -664,13 +664,13 @@ public class TmxLoader implements AssetLoader {
              * 0          1
              * </pre>
              */
-            float offsetX = - tileset.getTileOffsetX();
-            float offsetY = offset - tileset.getTileOffsetY();
+            float offsetX = tileset.getTileOffsetX();
+            float offsetY = tileset.getTileOffsetY() - offset;
             float[] vertices = new float[]{
-                    -offsetX, 0, height - offsetY,
-                    width - offsetX, 0, height - offsetY,
-                    width - offsetX, 0, -offsetY,
-                    0 - offsetX, 0, -offsetY};
+                    offsetX,         0, offsetY + height,
+                    offsetX + width, 0, offsetY + height,
+                    offsetX + width, 0, offsetY,
+                    offsetX,         0, offsetY};
 
             short[] indexes = new short[]{0, 1, 2, 0, 2, 3};
 
@@ -736,7 +736,7 @@ public class TmxLoader implements AssetLoader {
      */
     private WangSet readWangSet(Node node) {
         String name = getAttributeValue(node, NAME);
-        String clazz = getAttribute(node, CLASS, "");
+        String clazz = getAttribute(node, TYPE, "");
         int tile = getAttribute(node, TILE, -1);
 
         WangSet wangSet = new WangSet(name);
@@ -1362,35 +1362,6 @@ public class TmxLoader implements AssetLoader {
                     break;
                 }
             }
-//            if (IMAGE.equalsIgnoreCase(nodeName)) {
-//                obj.setShape(ObjectType.IMAGE);
-//
-//                AnImage image = readImage(child);
-//                obj.setImageSource(image.source);
-//                obj.setTexture(image.texture);
-//                obj.setMaterial(image.createMaterial());
-//                break;
-//            } else if (ELLIPSE.equalsIgnoreCase(nodeName)) {
-//                obj.setShape(ObjectType.ELLIPSE);
-//                break;
-//            } else if (POINT.equalsIgnoreCase(nodeName)) {
-//                obj.setShape(ObjectType.POINT);
-//                break;
-//            } else if (POLYGON.equalsIgnoreCase(nodeName)) {
-//                obj.setShape(ObjectType.POLYGON);
-//                obj.setPoints(readPoints(child));
-//                break;
-//            } else if (POLYLINE.equalsIgnoreCase(nodeName)) {
-//                obj.setShape(ObjectType.POLYLINE);
-//                obj.setPoints(readPoints(child));
-//                break;
-//            } else if (TEXT.equalsIgnoreCase(nodeName)) {
-//                obj.setShape(ObjectType.TEXT);
-//                obj.setTextData(readTextObject(child));
-//                break;
-//            } else {
-//                logger.warn("unknown object type:{}", nodeName);
-//            }
         }
 
         return obj;

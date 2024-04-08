@@ -236,11 +236,6 @@ public class TestJFrame extends SimpleApplication {
                 System.out.println("cursor tile: " + state.getCursorTileCoordinate());
                 System.out.println("cursor pixel: " + state.getCursorPixelCoordinate());
                 System.out.println("cursor screen: " + state.getCursorScreenCoordinate());
-                System.out.println("center tile: " + state.getCameraTileCoordinate());
-                System.out.println("center pixel: " + state.getCameraPixelCoordinate());
-                System.out.println("center screen: " + state.getCameraScreenCoordinate());
-                System.out.println("map scare: " + state.getMapScale());
-                System.out.println("map translation: " + state.getMapTranslation());
             }
         }, "CLICK");
     }

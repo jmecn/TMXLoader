@@ -4,13 +4,15 @@ import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.FastMath;
 import com.jme3.renderer.queue.RenderQueue;
-import com.jme3.scene.Geometry;
-import com.jme3.scene.Mesh;
-import com.jme3.scene.Node;
-import com.jme3.scene.Spatial;
+import com.jme3.scene.*;
 import com.jme3.tmx.core.*;
+import com.jme3.tmx.enums.FillMode;
 import com.jme3.tmx.enums.Orientation;
 import com.jme3.tmx.util.ObjectMesh;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.nio.FloatBuffer;
 
 /**
  * desc: This class is used to create objects for the ObjectGroup
@@ -19,19 +21,17 @@ import com.jme3.tmx.util.ObjectMesh;
  * @date 2024/4/8
  */
 public class ObjectRenderer {
+    private static final Logger logger = LoggerFactory.getLogger(ObjectRenderer.class);
     /**
      * This value used to generate ellipse mesh.
      */
     private static final int ELLIPSE_POINTS = 36;
 
-    private ObjectGroup layer;
-    private TiledMap map;
-
-    private Material mat;
-    private Material bgMat;
+    private final TiledMap map;
+    private final Material mat;
+    private final Material bgMat;
 
     public ObjectRenderer(ObjectGroup layer) {
-        this.layer = layer;
         this.map = layer.getMap();
 
         ColorRGBA borderColor = layer.getColor();
@@ -217,25 +217,46 @@ public class ObjectRenderer {
     }
 
     private void tile(MapObject obj) {
+        // The tile
         Tile tile = obj.getTile();
 
-        Spatial visual = tile.getVisual().clone();
+        Geometry visual = tile.getVisual().clone();
+        visual.setName(obj.getName());
         visual.setQueueBucket(RenderQueue.Bucket.Gui);
 
-        // flip(visual, obj.getTile());
+        float th = tile.getHeight();
+        float tw = tile.getWidth();
+        float offsetX = tile.getTileset().getTileOffsetX();
+        float offsetY = tile.getTileset().getTileOffsetY();
+
+        logger.info("map tile width:{}, height:{}, tile width: {}, height: {}", map.getTileWidth(), map.getTileHeight(), tw, th);
 
         // When the object has a gid set, then it is represented by
         // the image of the tile with that global ID. The image
         // alignment currently depends on the map orientation.
-        float th = tile.getHeight();
+
+        // In orthogonal, it's aligned to the bottom-left
+        float[] vertices = new float[]{
+                offsetX,    0, offsetY,
+                offsetX+tw, 0, offsetY,
+                offsetX+tw, 0, offsetY-th,
+                offsetX,    0, offsetY-th};
+
+        // In isometric, it's aligned to the bottom-center.
         if (map.getOrientation() == Orientation.ISOMETRIC) {
-            // in isometric it's aligned to the bottom-center.
-            float tw = tile.getWidth();
-            visual.move(0, -tw * 0.5f, -th);
-        } else {
-            // In orthogonal orientation it's aligned to the
-            // bottom-left
-            visual.move(0, 0, -th);
+            for (int i = 0; i < vertices.length; i += 3) {
+                vertices[i] -= tw * 0.5f;
+            }
+        }
+
+        Mesh mesh = visual.getMesh();
+        mesh.setBuffer(VertexBuffer.Type.Position, 3, vertices);
+
+        flip(visual, obj.getTile());
+
+        // scale the tile
+        if (tile.getTileset().getFillMode() == FillMode.STRETCH) {
+            visual.setLocalScale((float) obj.getWidth() / tile.getWidth(), 1, (float) obj.getHeight() / tile.getHeight());
         }
 
         obj.setVisual(visual);
@@ -244,6 +265,37 @@ public class ObjectRenderer {
     private void text(MapObject obj) {
         // TODO render text
         ObjectText objectText = obj.getTextData();
+    }
+
+
+    /**
+     * Flip the tile
+     *
+     * @param visual The spatial for this tile.
+     * @param tile The image of this tile.
+     */
+    protected void flip(Spatial visual, Tile tile) {
+        if (tile.isFlippedHorizontally()) {
+            visual.rotate(0, 0, FastMath.PI);
+            visual.move(tile.getWidth(), 0, 0);
+        }
+
+        if (tile.isFlippedVertically()) {
+            visual.rotate(FastMath.PI, 0, 0);
+            visual.move(0, 0, tile.getHeight());
+        }
+
+        /*
+         * <pre>
+         * [      *]
+         * [    *  ]
+         * [  *    ]
+         * [*      ]
+         * </pre>
+         */
+        if (tile.isFlippedAntiDiagonally()) {
+            // TODO flip diagonally
+        }
     }
 
 }

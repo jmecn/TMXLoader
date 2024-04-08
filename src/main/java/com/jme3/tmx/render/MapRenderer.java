@@ -225,8 +225,8 @@ public abstract class MapRenderer {
                 float y = (float) obj.getY();
 
                 Vector2f screenCoord = pixelToScreenCoords(x, y);
-                obj.getVisual().move(screenCoord.x, i, screenCoord.y);
-                layer.getVisual().attachChild(obj.getVisual());
+                visual.move(screenCoord.x, i, screenCoord.y);
+                layer.getVisual().attachChild(visual);
             }
         }
 
