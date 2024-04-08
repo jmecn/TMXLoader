@@ -48,9 +48,4 @@ public class TileCutter {
 
         return null;
     }
-
-    public void setTileOffset(int tileOffsetX, int tileOffsetY) {
-        this.nextX = tileMargin;
-        this.nextY = tileMargin;
-    }
 }
