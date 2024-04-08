@@ -3,6 +3,7 @@ package com.jme3.tmx.render;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.jme3.material.Material;
 import com.jme3.math.Vector2f;
 import com.jme3.renderer.queue.RenderQueue.Bucket;
 import com.jme3.scene.Geometry;
@@ -166,15 +167,13 @@ public class HexagonalRenderer extends OrthogonalRenderer {
     }
 
     @Override
-    protected void renderGrid() {
-        Node gridVisual = map.getGridVisual();
-        gridVisual.getChildren().clear();
-
+    public void renderGrid(Node gridVisual, Material gridMaterial) {
         Point startTile = screenToTileCoords(0, 0);
 
         Mesh border = ObjectMesh.makeRectangleBorder(mapSize.x, mapSize.y);
         Geometry rect = new Geometry("GridBorder", border);
-        rect.setMaterial(map.getGridMaterial());
+        rect.setMaterial(gridMaterial);
+        gridVisual.attachChild(rect);
 
         if (staggerX) {
             boolean staggeredRow = doStaggerX(startTile.x);
@@ -189,7 +188,7 @@ public class HexagonalRenderer extends OrthogonalRenderer {
                     List<Vector2f> points = tileToScreenPolygon(rowTile.x, rowTile.y);
                     Mesh mesh = ObjectMesh.makePolyline(points, true);
                     Geometry geom = new Geometry("Grid#" + rowTile.x + "," + rowTile.y, mesh);
-                    geom.setMaterial(map.getGridMaterial());
+                    geom.setMaterial(gridMaterial);
                     gridVisual.attachChild(geom);
                 }
 
@@ -213,7 +212,7 @@ public class HexagonalRenderer extends OrthogonalRenderer {
                     List<Vector2f> points = tileToScreenPolygon(rowTile.x, rowTile.y);
                     Mesh mesh = ObjectMesh.makePolyline(points, true);
                     Geometry geom = new Geometry("Grid#" + rowTile.x + "," + rowTile.y, mesh);
-                    geom.setMaterial(map.getGridMaterial());
+                    geom.setMaterial(gridMaterial);
                     gridVisual.attachChild(geom);
                 }
             }

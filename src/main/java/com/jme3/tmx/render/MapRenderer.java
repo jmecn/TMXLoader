@@ -6,6 +6,7 @@ import java.util.List;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.FastMath;
+import com.jme3.math.Matrix3f;
 import com.jme3.math.Vector2f;
 import com.jme3.renderer.queue.RenderQueue.Bucket;
 import com.jme3.scene.Geometry;
@@ -124,10 +125,6 @@ public abstract class MapRenderer {
             }
         }
 
-        if (map.isGridUpdated()) {
-            renderGrid();
-            map.setGridUpdated(false);
-        }
         return map.getVisual();
     }
 
@@ -232,91 +229,34 @@ public abstract class MapRenderer {
 
                 switch (obj.getShape()) {
                     case RECTANGLE: {
-                        Geometry border = new Geometry("border",
-                                ObjectMesh.makeRectangleBorder(obj.getWidth(), obj.getHeight()));
-                        border.setMaterial(mat);
-                        border.setQueueBucket(Bucket.Gui);
-
-                        Geometry back = new Geometry("rectangle",
-                                ObjectMesh.makeRectangle(obj.getWidth(), obj.getHeight()));
-                        back.setMaterial(bgMat);
-                        back.setQueueBucket(Bucket.Gui);
-
-                        Node visual = new Node(obj.getName());
-                        visual.attachChild(back);
-                        visual.attachChild(border);
-                        visual.setQueueBucket(Bucket.Gui);
-
+                        Node visual = rectangle(obj, mat, bgMat);
                         obj.setVisual(visual);
                         break;
                     }
                     case ELLIPSE: {
-                        Geometry border = new Geometry("border",
-                                ObjectMesh.makeEllipseBorder(obj.getWidth(), obj.getHeight(), ELLIPSE_POINTS));
-                        border.setMaterial(mat);
-                        border.setQueueBucket(Bucket.Gui);
-
-                        Geometry back = new Geometry("ellipse",
-                                ObjectMesh.makeEllipse(obj.getWidth(), obj.getHeight(), ELLIPSE_POINTS));
-                        back.setMaterial(bgMat);
-                        back.setQueueBucket(Bucket.Gui);
-
-                        Node visual = new Node(obj.getName());
-                        visual.attachChild(back);
-                        visual.attachChild(border);
-                        visual.setQueueBucket(Bucket.Gui);
-
+                        Node visual = ellipse(obj, mat, bgMat);
                         obj.setVisual(visual);
                         break;
                     }
                     case POLYGON: {
-                        Geometry border = new Geometry("border", ObjectMesh.makePolyline(obj.getPoints(), true));
-                        border.setMaterial(mat);
-                        border.setQueueBucket(Bucket.Gui);
-
-                        Geometry back = new Geometry("polygon", ObjectMesh.makePolygon(obj.getPoints()));
-                        back.setMaterial(bgMat);
-                        back.setQueueBucket(Bucket.Gui);
-
-                        Node visual = new Node(obj.getName());
-                        visual.attachChild(back);
-                        visual.attachChild(border);
-                        visual.setQueueBucket(Bucket.Gui);
-
+                        Node visual = polygon(obj, mat, bgMat);
                         obj.setVisual(visual);
                         break;
                     }
                     case POLYLINE: {
-                        Geometry visual = new Geometry("polyline", ObjectMesh.makePolyline(obj.getPoints(), false));
-                        visual.setMaterial(mat);
-                        visual.setQueueBucket(Bucket.Gui);
-
+                        Geometry visual = polyline(obj, mat);
                         obj.setVisual(visual);
                         break;
                     }
                     case POINT: {
-                        Geometry border = new Geometry("border", ObjectMesh.makeMarkerBorder(map.getTileHeight() * 0.5f, ELLIPSE_POINTS));
-                        border.setMaterial(mat);
-                        border.setQueueBucket(Bucket.Gui);
-
-                        Geometry back = new Geometry("marker", ObjectMesh.makeMarker(map.getTileHeight() * 0.5f, ELLIPSE_POINTS));
-                        back.setMaterial(bgMat);
-                        back.setQueueBucket(Bucket.Gui);
-
-                        Node visual = new Node(obj.getName());
-                        visual.attachChild(back);
-                        visual.attachChild(border);
-                        visual.setQueueBucket(Bucket.Gui);
-
+                        Node visual = point(obj, mat, bgMat);
                         obj.setVisual(visual);
                         break;
                     }
                     case IMAGE: {
-                        Geometry geom = new Geometry(obj.getName(),
-                                ObjectMesh.makeRectangle(obj.getWidth(), obj.getHeight()));
+                        Geometry geom = new Geometry(obj.getName(), ObjectMesh.makeRectangle(obj.getWidth(), obj.getHeight()));
                         geom.setMaterial(obj.getMaterial());
                         geom.setQueueBucket(Bucket.Gui);
-
                         obj.setVisual(geom);
                         break;
                     }
@@ -343,6 +283,11 @@ public abstract class MapRenderer {
                         }
 
                         obj.setVisual(visual);
+                        break;
+                    }
+                    case TEXT: {
+                        // TODO render text
+                        text(obj, mat, bgMat);
                         break;
                     }
                     default: {
@@ -375,6 +320,118 @@ public abstract class MapRenderer {
         return layer.getVisual();
     }
 
+    private Node rectangle(MapObject obj, Material mat, Material bgMat) {
+        Mesh borderMesh = ObjectMesh.makeRectangleBorder(obj.getWidth(), obj.getHeight());
+        Mesh backMesh = ObjectMesh.makeRectangle(obj.getWidth(), obj.getHeight());
+
+        if (map.getOrientation() == Orientation.ISOMETRIC) {
+            ObjectMesh.toIsometric(borderMesh, map.getTileWidth(), map.getTileHeight());
+            ObjectMesh.toIsometric(backMesh, map.getTileWidth(), map.getTileHeight());
+        }
+
+        Geometry border = new Geometry("border", borderMesh);
+        border.setMaterial(mat);
+        border.setQueueBucket(Bucket.Gui);
+
+        Geometry back = new Geometry("rectangle", backMesh);
+        back.setMaterial(bgMat);
+        back.setQueueBucket(Bucket.Gui);
+
+        Node visual = new Node(obj.getName());
+        visual.attachChild(back);
+        visual.attachChild(border);
+        visual.setQueueBucket(Bucket.Gui);
+
+        return visual;
+    }
+
+    private Node ellipse(MapObject obj, Material mat, Material bgMat) {
+        Mesh borderMesh = ObjectMesh.makeEllipseBorder(obj.getWidth(), obj.getHeight(), ELLIPSE_POINTS);
+        Mesh backMesh = ObjectMesh.makeEllipse(obj.getWidth(), obj.getHeight(), ELLIPSE_POINTS);
+
+        if (map.getOrientation() == Orientation.ISOMETRIC) {
+            ObjectMesh.toIsometric(borderMesh, map.getTileWidth(), map.getTileHeight());
+            ObjectMesh.toIsometric(backMesh, map.getTileWidth(), map.getTileHeight());
+        }
+
+        Geometry border = new Geometry("border", borderMesh);
+        border.setMaterial(mat);
+        border.setQueueBucket(Bucket.Gui);
+
+        Geometry back = new Geometry("ellipse", backMesh);
+        back.setMaterial(bgMat);
+        back.setQueueBucket(Bucket.Gui);
+
+        Node visual = new Node(obj.getName());
+        visual.attachChild(back);
+        visual.attachChild(border);
+        visual.setQueueBucket(Bucket.Gui);
+
+        return visual;
+    }
+
+    private Node polygon(MapObject obj, Material mat, Material bgMat) {
+        Mesh borderMesh = ObjectMesh.makePolyline(obj.getPoints(), true);
+        Mesh backMesh = ObjectMesh.makePolygon(obj.getPoints());
+
+        if (map.getOrientation() == Orientation.ISOMETRIC) {
+            ObjectMesh.toIsometric(borderMesh, map.getTileWidth(), map.getTileHeight());
+            ObjectMesh.toIsometric(backMesh, map.getTileWidth(), map.getTileHeight());
+        }
+
+        Geometry border = new Geometry("border", borderMesh);
+        border.setMaterial(mat);
+        border.setQueueBucket(Bucket.Gui);
+
+        Geometry back = new Geometry("polygon", backMesh);
+        back.setMaterial(bgMat);
+        back.setQueueBucket(Bucket.Gui);
+
+        Node visual = new Node(obj.getName());
+        visual.attachChild(back);
+        visual.attachChild(border);
+        visual.setQueueBucket(Bucket.Gui);
+
+        return visual;
+    }
+
+    private Geometry polyline(MapObject obj, Material mat) {
+        Mesh mesh = ObjectMesh.makePolyline(obj.getPoints(), false);
+
+        if (map.getOrientation() == Orientation.ISOMETRIC) {
+            ObjectMesh.toIsometric(mesh, map.getTileWidth(), map.getTileHeight());
+        }
+
+        Geometry geom = new Geometry(obj.getName(), mesh);
+        geom.setMaterial(mat);
+        geom.setQueueBucket(Bucket.Gui);
+
+        return geom;
+    }
+
+    private Node point(MapObject obj, Material mat, Material bgMat) {
+        Geometry border = new Geometry("border", ObjectMesh.makeMarkerBorder(map.getTileHeight() * 0.5f, ELLIPSE_POINTS));
+        border.setMaterial(mat);
+        border.setQueueBucket(Bucket.Gui);
+
+        Geometry back = new Geometry("marker", ObjectMesh.makeMarker(map.getTileHeight() * 0.5f, ELLIPSE_POINTS));
+        back.setMaterial(bgMat);
+        back.setQueueBucket(Bucket.Gui);
+
+        Node visual = new Node(obj.getName());
+        visual.attachChild(back);
+        visual.attachChild(border);
+        visual.setQueueBucket(Bucket.Gui);
+
+        return visual;
+    }
+
+    private void text(MapObject obj, Material mat, Material bgMat) {
+        // TODO render text
+        ObjectText objectText = obj.getTextData();
+        System.out.println(objectText);
+    }
+
     protected Spatial render(ImageLayer layer) {
         // instance the layer node
         if (layer.getVisual() == null) {
@@ -397,7 +454,7 @@ public abstract class MapRenderer {
         return layer.getVisual();
     }
 
-    protected abstract void renderGrid();
+    public abstract void renderGrid(Node gridVisual, Material gridMaterial);
 
     /******************************
      * Coordinates System Convert *

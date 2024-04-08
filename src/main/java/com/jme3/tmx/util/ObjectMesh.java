@@ -1,13 +1,16 @@
 package com.jme3.tmx.util;
 
+import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
 import com.jme3.math.FastMath;
+import com.jme3.math.Matrix3f;
 import com.jme3.math.Vector2f;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Mesh;
 import com.jme3.scene.Mesh.Mode;
+import com.jme3.scene.VertexBuffer;
 import com.jme3.scene.VertexBuffer.Type;
 import com.jme3.tmx.math2d.Triangulation;
 import com.jme3.util.BufferUtils;
@@ -22,6 +25,23 @@ import com.jme3.util.BufferUtils;
 public final class ObjectMesh {
 
     private ObjectMesh() {}
+
+    public static void toIsometric(Mesh mesh, int tileWidth, int tileHeight) {
+        float ratio = (float) tileHeight / tileWidth;
+        Matrix3f mat3 = new Matrix3f(
+                1f, 0f, -1f,
+                0f, 1f, 0f,
+                ratio, 0f, ratio);
+
+        VertexBuffer vb = mesh.getBuffer(VertexBuffer.Type.Position);
+        FloatBuffer fb = (FloatBuffer) vb.getData();
+        for (int i = 0; i < fb.capacity(); i += 3) {
+            Vector3f v = new Vector3f(fb.get(i), 0f, fb.get(i + 2));
+            mat3.multLocal(v);
+            fb.put(i, v.x);
+            fb.put(i + 2, v.z);
+        }
+    }
 
     /**
      * Make an ellipse mesh.

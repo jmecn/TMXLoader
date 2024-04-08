@@ -1,5 +1,6 @@
 package com.jme3.tmx.render;
 
+import com.jme3.material.Material;
 import com.jme3.math.Vector2f;
 import com.jme3.renderer.queue.RenderQueue.Bucket;
 import com.jme3.scene.Geometry;
@@ -71,14 +72,11 @@ public class IsometricRenderer extends MapRenderer {
     }
 
     @Override
-    protected void renderGrid() {
-        Node gridVisual = map.getGridVisual();
-        gridVisual.getChildren().clear();
-
+    public void renderGrid(Node gridVisual, Material gridMaterial) {
         // add boundary
         IsometricGridMesh grid = new IsometricGridMesh(width, height, tileWidth, tileHeight);
         Geometry geom = new Geometry("Grid#Boundary", grid);
-        geom.setMaterial(map.getGridMaterial());
+        geom.setMaterial(gridMaterial);
         gridVisual.attachChild(geom);
     }
 

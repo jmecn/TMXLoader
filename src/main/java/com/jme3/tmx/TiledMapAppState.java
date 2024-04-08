@@ -4,6 +4,7 @@ import com.jme3.app.Application;
 import com.jme3.app.FlyCamAppState;
 import com.jme3.app.SimpleApplication;
 import com.jme3.app.state.BaseAppState;
+import com.jme3.asset.AssetManager;
 import com.jme3.input.InputManager;
 import com.jme3.input.Joystick;
 import com.jme3.input.KeyInput;
@@ -13,10 +14,8 @@ import com.jme3.input.controls.AnalogListener;
 import com.jme3.input.controls.KeyTrigger;
 import com.jme3.input.controls.MouseAxisTrigger;
 import com.jme3.input.controls.MouseButtonTrigger;
-import com.jme3.math.FastMath;
-import com.jme3.math.Quaternion;
-import com.jme3.math.Vector2f;
-import com.jme3.math.Vector3f;
+import com.jme3.material.Material;
+import com.jme3.math.*;
 import com.jme3.renderer.Camera;
 import com.jme3.renderer.ViewPort;
 import com.jme3.renderer.queue.RenderQueue.Bucket;
@@ -48,8 +47,9 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener,
     public static final String DRAG = "dragAndDrop";
     public static final String ZOOMIN = "zoomin";
     public static final String ZOOMOUT = "zoomout";
+    public static final String GRID = "grid";
 
-    private static final String[] MAPPINGS = new String[] { LEFT, RIGHT, UP, DOWN, DRAG, ZOOMIN, ZOOMOUT };
+    private static final String[] MAPPINGS = new String[] { LEFT, RIGHT, UP, DOWN, DRAG, ZOOMIN, ZOOMOUT, GRID };
 
     // Tiled Map
     private TiledMap map;
@@ -59,6 +59,11 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener,
     private final Node rootNode;
     private final Quaternion mapRotation;
 
+    // The grid
+    private final Node gridVisual;// for render grid
+    private Material gridMaterial;// for render grid
+    private boolean isGridUpdated = true;
+
     // The mapNode
     private final Vector3f mapTranslation;
     private float mapScale;
@@ -67,6 +72,7 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener,
     private Camera cam;
     private ViewPort viewPort;
     private InputManager inputManager;
+    private AssetManager assetManager;
     private final Vector2f screenDimension;
     private final Vector2f mapDimension;
 
@@ -116,6 +122,10 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener,
         rootNode = new Node("Tiled Map Root");
         rootNode.setQueueBucket(Bucket.Gui);
 
+        gridVisual = new Node("Tiled Map Grid");
+        gridVisual.setQueueBucket(Bucket.Gui);
+        gridVisual.setLocalTranslation(0f, 999f, 0f);
+
         // translate the scene from XOZ plane to XOY plane
         mapRotation = new Quaternion();
         mapRotation.fromAngles(FastMath.HALF_PI, 0, 0);
@@ -129,6 +139,7 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener,
     @Override
     protected void initialize(Application app) {
         inputManager = app.getInputManager();
+        assetManager = app.getAssetManager();
         viewPort = app.getViewPort();
         cam = app.getCamera();
 
@@ -147,6 +158,7 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener,
         cam.lookAtDirection(new Vector3f(0f, 0f, -1f), Vector3f.UNIT_Y);
         cam.setLocation(new Vector3f(halfWidth, halfHeight, 0));
 
+        gridMaterial = createGridMaterial();
         if (this.map != null) {
             viewPort.setBackgroundColor(map.getBackgroundColor());
         }
@@ -188,10 +200,16 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener,
 
     @Override
     public void update(float tpf) {
-        Spatial spatial = null;
+        Spatial spatial;
         if (mapRenderer != null) {
             spatial = mapRenderer.render();
-            
+
+            if (isGridUpdated) {
+                gridVisual.getChildren().clear();
+                mapRenderer.renderGrid(gridVisual, gridMaterial);
+                isGridUpdated = false;
+            }
+
             if (isMapUpdated) {
                 // move it to the left bottom of screen space
                 mapDimension.set(mapRenderer.getMapDimension());
@@ -246,6 +264,14 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener,
         Vector2f loc = mapRenderer.tileToScreenCoords(0, 0);
         mapTranslation.set(loc.x, 0, loc.y);
         isMapUpdated = true;
+
+        gridVisual.getChildren().clear();
+        mapRenderer.renderGrid(gridVisual, gridMaterial);
+        if (gridVisual.getParent() != null) {
+            gridVisual.removeFromParent();
+            map.getVisual().attachChild(gridVisual);
+        }
+        isGridUpdated = false;
     }
 
     public TiledMap getMap() {
@@ -348,6 +374,9 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener,
                 MouseInput.AXIS_WHEEL, true));
         inputManager.addMapping(DRAG, new MouseButtonTrigger(
                 MouseInput.BUTTON_LEFT));
+
+        // add key mapping to show/hide grid
+        inputManager.addMapping(GRID, new KeyTrigger(KeyInput.KEY_G));
 
         inputManager.addListener(this, MAPPINGS);
 
@@ -540,7 +569,7 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener,
 
     @Override
     public void onAction(String name, boolean isPressed, float tpf) {
-        if (name.equals(DRAG)) {
+        if (DRAG.equals(name)) {
             if (isPressed) {
                 // record the mouse position
                 startPos.set(inputManager.getCursorPosition());
@@ -548,7 +577,26 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener,
             } else {
                 drag();
             }
+        } else if (GRID.equals(name) && isPressed) {
+            if (gridVisual.getParent() == null) {
+                if (map != null && map.getVisual() != null) {
+                    map.getVisual().attachChild(gridVisual);
+                }
+            } else {
+                gridVisual.removeFromParent();
+            }
         }
     }
 
+    /**
+     * for display the map grid
+     * @return
+     */
+    private Material createGridMaterial() {
+        Material mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+        mat.setColor("Color", ColorRGBA.Gray);
+        mat.getAdditionalRenderState().setWireframe(true);
+        mat.getAdditionalRenderState().setDepthTest(false);
+        return mat;
+    }
 }

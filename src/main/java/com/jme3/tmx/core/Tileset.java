@@ -272,7 +272,6 @@ public class Tileset extends Base implements Iterable<Tile> {
         this.texture = texture;
 
         TileCutter cutter = new TileCutter(texture, tileWidth, tileHeight, tileMargin, tileSpacing);
-        cutter.setTileOffset(tileOffsetX, tileOffsetY);
 
         Tile tile = cutter.getNextTile();
         while (tile != null) {

@@ -165,7 +165,6 @@ public class TmxLoader implements AssetLoader {
             logger.error("Error while parsing map file: {}", key.getName(), e);
         }
 
-        map.setGridMaterial(createGridMaterial());
         return map;
     }
 
@@ -1382,18 +1381,9 @@ public class TmxLoader implements AssetLoader {
         boolean underline = getAttribute(node, "underline", 0) == 1;
         boolean strikeout = getAttribute(node, "strikeout", 0) == 1;
         boolean kerning = getAttribute(node, "kerning", 1) == 1;
-        String horizontalAlignment = getAttributeValue(node, "halign");
-        String verticalAlignment = getAttributeValue(node, "valign");
-
-        String text = null;
-        Node child = node.getFirstChild();
-        while (child != null) {
-            if (TEXT.equalsIgnoreCase(child.getNodeName())) {
-                text = child.getNodeValue();
-                break;
-            }
-            child = child.getNextSibling();
-        }
+        String horizontalAlignment = getAttribute(node, "halign", "left");// Left, Center, Right, Justify
+        String verticalAlignment = getAttribute(node, "valign", "top");// Top, Center, Bottom
+        String text = node.getTextContent();
 
         ObjectText objectText = new ObjectText(text);
         objectText.setFontFamily(fontFamily);
@@ -1716,15 +1706,4 @@ public class TmxLoader implements AssetLoader {
         }
     }
 
-    /**
-     * for display the map grid
-     * @return
-     */
-    private Material createGridMaterial() {
-        Material mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
-        mat.setColor("Color", ColorRGBA.Gray);
-        mat.getAdditionalRenderState().setWireframe(true);
-        mat.getAdditionalRenderState().setDepthTest(false);
-        return mat;
-    }
 }
