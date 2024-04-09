@@ -5,6 +5,8 @@ TMXLoader is used for loading .tmx assets created by [Tiled Map Editor](http://w
 You can download it here: [TmxLoader v0.3](https://github.com/jmecn/TMXLoader/releases/tag/v0.3).
 Or use the [source](https://github.com/jmecn/TMXLoader).
 
+[![Java CI with Gradle](https://github.com/jmecn/TMXLoader/actions/workflows/gradle.yml/badge.svg?branch=master)](https://github.com/jmecn/TMXLoader/actions/workflows/gradle.yml)
+
 # How to use
 
 	package net.jmecn.tmx;
