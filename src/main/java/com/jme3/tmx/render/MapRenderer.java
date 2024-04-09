@@ -62,7 +62,7 @@ public abstract class MapRenderer {
     /**
      * The whole map size in pixel
      */
-    protected Point mapSize;
+    protected Vector2f mapSize;
 
     protected MapRenderer(TiledMap map) {
         this.map = map;
@@ -71,7 +71,7 @@ public abstract class MapRenderer {
         this.tileWidth = map.getTileWidth();
         this.tileHeight = map.getTileHeight();
 
-        this.mapSize = new Point();
+        this.mapSize = new Vector2f();
         this.mapSize.set((float)width * tileWidth, (float)height * tileHeight);
     }
 
