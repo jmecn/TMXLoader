@@ -265,13 +265,18 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener,
         mapTranslation.set(loc.x, 0, loc.y);
         isMapUpdated = true;
 
-        gridVisual.getChildren().clear();
-        mapRenderer.renderGrid(gridVisual, gridMaterial);
-        if (gridVisual.getParent() != null) {
-            gridVisual.removeFromParent();
-            map.getVisual().attachChild(gridVisual);
+        if (gridMaterial != null) {
+            // in case the gridMaterial is not initialized
+            gridVisual.getChildren().clear();
+            mapRenderer.renderGrid(gridVisual, gridMaterial);
+            if (gridVisual.getParent() != null) {
+                gridVisual.removeFromParent();
+                map.getVisual().attachChild(gridVisual);
+            }
+            isGridUpdated = false;
+        } else {
+            isGridUpdated = true;
         }
-        isGridUpdated = false;
     }
 
     public TiledMap getMap() {
