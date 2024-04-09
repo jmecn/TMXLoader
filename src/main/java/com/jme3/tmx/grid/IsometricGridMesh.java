@@ -11,7 +11,6 @@ import java.nio.ShortBuffer;
  * desc:
  *
  * @author yanmaoyuan
- * @date 2024/4/7
  */
 public class IsometricGridMesh extends Mesh {
     public IsometricGridMesh() {

@@ -18,7 +18,6 @@ import java.nio.FloatBuffer;
  * desc: This class is used to create objects for the ObjectGroup
  *
  * @author yanmaoyuan
- * @date 2024/4/8
  */
 public class ObjectRenderer {
     private static final Logger logger = LoggerFactory.getLogger(ObjectRenderer.class);

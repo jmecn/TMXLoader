@@ -5,7 +5,8 @@ plugins {
 }
 
 group = 'io.github.jmecn'
-version = 0.3
+version = '0.3.0-SNAPSHOT'
+ext.isReleaseVersion = !version.endsWith("SNAPSHOT")
 
 sourceCompatibility = JavaVersion.VERSION_1_8
 targetCompatibility = JavaVersion.VERSION_1_8
@@ -70,36 +71,6 @@ artifacts {
 publishing {
     publications {
         mavenJava(MavenPublication) {
-            version project.version
-            from components.java
-            artifact sourcesJar
-            artifact javadocJar
-            pom {
-                name = POM_NAME
-                description = POM_DESCRIPTION
-                url = POM_URL
-                licenses {
-                    license {
-                        name = POM_LICENSE_NAME
-                        url = POM_LICENSE_URL
-                    }
-                }
-                developers {
-                    developer {
-                        id = 'jmecn'
-                        name = 'yanmaoyuan'
-                        email = '115050813@qq.com'
-                    }
-                }
-                scm {
-                    connection = POM_SCM_CONNECTION
-                    developerConnection = POM_SCM_DEVELOPER_CONNECTION
-                    url = POM_SCM_URL
-                }
-            }
-        }
-        gpr(MavenPublication) {
-            version project.version
             from components.java
             artifact sourcesJar
             artifact javadocJar
@@ -164,14 +135,18 @@ publishToMavenLocal.doLast {
 }
 
 signing {
-    def signingKey = project.findProperty('signingKey') ?: System.getenv("GPG_KEY_ID")
+    def signingKeyId = project.findProperty('signingKeyId') ?: System.getenv("GPG_KEY_ID")
+    def signingKey = project.findProperty('signingKey') ?: System.getenv("GPG_KEY")
     def signingPassword = project.findProperty('signingPassword') ?: System.getenv("GPG_PASSWORD")
-    useInMemoryPgpKeys(signingKey, signingPassword)
+
+    required { isReleaseVersion && gradle.taskGraph.hasTask("publish") && signingKey }
+
+    useInMemoryPgpKeys(signingKeyId, signingKey, signingPassword)
 
     sign configurations.archives
     sign publishing.publications.mavenJava
 }
 
 tasks.withType(Sign).configureEach {
-    onlyIf { project.findProperty('signingKey') ?: System.getenv("GPG_KEY_ID") }
+    onlyIf { project.findProperty('signingKey') ?: System.getenv("GPG_KEY") }
 }
