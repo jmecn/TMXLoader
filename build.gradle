@@ -86,8 +86,9 @@ publishing {
                 }
                 developers {
                     developer {
-                        id = 'yanmaoyuan'
-                        name = '闫茂源'
+                        id = 'jmecn'
+                        name = 'yanmaoyuan'
+                        email = '115050813@qq.com'
                     }
                 }
                 scm {
@@ -115,23 +116,23 @@ publishing {
                 password = project.findProperty("gpr.key") ?: System.getenv("GITHUB_TOKEN")
             }
         }
-        maven {
-            name = 'OSSRH'
-            url = uri('https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/')
-            credentials {
-                username = project.findProperty("ossrhUsername") ?: System.getenv("OSSRH_USERNAME")
-                password = project.findProperty("ossrhPassword") ?: System.getenv("OSSRH_PASSWORD")
-            }
-        }
-
-        maven {
-            name = 'OSSRHSNAPSHOT'
-            url = uri('https://s01.oss.sonatype.org/content/repositories/snapshots/')
-            credentials {
-                username = project.findProperty("ossrhUsername") ?: System.getenv("OSSRH_USERNAME")
-                password = project.findProperty("ossrhPassword") ?: System.getenv("OSSRH_PASSWORD")
-            }
-        }
+//        maven {
+//            name = 'OSSRH'
+//            url = uri('https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/')
+//            credentials {
+//                username = project.findProperty("ossrhUsername") ?: System.getenv("OSSRH_USERNAME")
+//                password = project.findProperty("ossrhPassword") ?: System.getenv("OSSRH_PASSWORD")
+//            }
+//        }
+//
+//        maven {
+//            name = 'OSSRHSNAPSHOT'
+//            url = uri('https://s01.oss.sonatype.org/content/repositories/snapshots/')
+//            credentials {
+//                username = project.findProperty("ossrhUsername") ?: System.getenv("OSSRH_USERNAME")
+//                password = project.findProperty("ossrhPassword") ?: System.getenv("OSSRH_PASSWORD")
+//            }
+//        }
     }
 }
 
