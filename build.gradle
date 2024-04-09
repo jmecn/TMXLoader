@@ -103,6 +103,29 @@ publishing {
             from components.java
             artifact sourcesJar
             artifact javadocJar
+            pom {
+                name = POM_NAME
+                description = POM_DESCRIPTION
+                url = POM_URL
+                licenses {
+                    license {
+                        name = POM_LICENSE_NAME
+                        url = POM_LICENSE_URL
+                    }
+                }
+                developers {
+                    developer {
+                        id = 'jmecn'
+                        name = 'yanmaoyuan'
+                        email = '115050813@qq.com'
+                    }
+                }
+                scm {
+                    connection = POM_SCM_CONNECTION
+                    developerConnection = POM_SCM_DEVELOPER_CONNECTION
+                    url = POM_SCM_URL
+                }
+            }
         }
     }
     repositories {
