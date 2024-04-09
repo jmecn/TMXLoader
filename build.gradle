@@ -29,7 +29,7 @@ dependencies {
     testImplementation "$jme3.g:jme3-desktop:$jme3.v"
     testImplementation "$jme3.g:jme3-lwjgl:$jme3.v"
     // slf4j-logback实现
-    testImplementation 'ch.qos.logback:logback-classic:1.2.6'
+    testImplementation 'ch.qos.logback:logback-classic:1.2.13'
 
 }
 
