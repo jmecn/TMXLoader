@@ -27,11 +27,11 @@ import com.jme3.tmx.util.ObjectMesh;
 public class HexagonalRenderer extends OrthogonalRenderer {
 
     protected int sideLengthX;
-    protected int sideOffsetX;
+    protected float sideOffsetX;
     protected int sideLengthY;
-    protected int sideOffsetY;
-    protected int rowHeight;
-    protected int columnWidth;
+    protected float sideOffsetY;
+    protected float rowHeight;
+    protected float columnWidth;
     protected boolean staggerX;
     protected boolean staggerEven;
     protected int staggerIndex;
@@ -50,22 +50,22 @@ public class HexagonalRenderer extends OrthogonalRenderer {
             sideLengthY = map.getHexSideLength();
         }
 
-        sideOffsetX = (tileWidth - sideLengthX) / 2;
-        sideOffsetY = (tileHeight - sideLengthY) / 2;
+        sideOffsetX = (tileWidth - sideLengthX) * 0.5f;
+        sideOffsetY = (tileHeight - sideLengthY) * 0.5f;
 
         columnWidth = sideOffsetX + sideLengthX;
         rowHeight = sideOffsetY + sideLengthY;
 
         // The map size is the same regardless of which indexes are shifted.
         if (staggerX) {
-            mapSize.set((float)width * columnWidth + sideOffsetX, (float)height * (tileHeight + sideLengthY));
+            mapSize.set(width * columnWidth + sideOffsetX, (float)height * (tileHeight + sideLengthY));
 
             if (width > 1) {
                 mapSize.y += rowHeight;
             }
 
         } else {
-            mapSize.set((float)width * (tileWidth + sideLengthX), (float)height * rowHeight + sideOffsetY);
+            mapSize.set((float)width * (tileWidth + sideLengthX), height * rowHeight + sideOffsetY);
 
             if (height > 1) {
                 mapSize.x += columnWidth;
@@ -237,17 +237,17 @@ public class HexagonalRenderer extends OrthogonalRenderer {
     public Vector2f tileToScreenCoords(float x, float y) {
         int tileX = (int) Math.floor(x);
         int tileY = (int) Math.floor(y);
-        int pixelX;
-        int pixelY;
+        float pixelX;
+        float pixelY;
 
         if (staggerX) {
-            pixelY = tileY * (tileHeight + sideLengthY);
+            pixelY = (float)tileY * (tileHeight + sideLengthY);
             if (doStaggerX(tileX))
                 pixelY += rowHeight;
 
             pixelX = tileX * columnWidth;
         } else {
-            pixelX = tileX * (tileWidth + sideLengthX);
+            pixelX = (float)tileX * (tileWidth + sideLengthX);
             if (doStaggerY(tileY))
                 pixelX += columnWidth;
 
@@ -292,18 +292,18 @@ public class HexagonalRenderer extends OrthogonalRenderer {
         Point[] centers = new Point[4];
 
         if (staggerX) {
-            int left = sideLengthX / 2;
-            int centerX = left + columnWidth;
-            int centerY = tileHeight / 2;
+            float left = sideLengthX * 0.5f;
+            float centerX = left + columnWidth;
+            float centerY = tileHeight * 0.5f;
 
             centers[0] = new Point(left, centerY);
             centers[1] = new Point(centerX, centerY - rowHeight);
             centers[2] = new Point(centerX, centerY + rowHeight);
             centers[3] = new Point(centerX + columnWidth, centerY);
         } else {
-            int top = sideLengthY / 2;
-            int centerX = tileWidth / 2;
-            int centerY = top + rowHeight;
+            float top = sideLengthY * 0.5f;
+            float centerX = tileWidth * 0.5f;
+            float centerY = top + rowHeight;
 
             centers[0] = new Point(centerX, top);
             centers[1] = new Point(centerX - columnWidth, centerY);
@@ -396,13 +396,13 @@ public class HexagonalRenderer extends OrthogonalRenderer {
 
     public List<Vector2f> tileToScreenPolygon(int x, int y) {
         ArrayList<Vector2f> polygon = new ArrayList<>(8);
-        polygon.add(new Vector2f(0, (float)tileHeight - sideOffsetY));
+        polygon.add(new Vector2f(0, tileHeight - sideOffsetY));
         polygon.add(new Vector2f(0, sideOffsetY));
         polygon.add(new Vector2f(sideOffsetX, 0));
-        polygon.add(new Vector2f((float)tileWidth - sideOffsetX, 0));
+        polygon.add(new Vector2f(tileWidth - sideOffsetX, 0));
         polygon.add(new Vector2f(tileWidth, sideOffsetY));
-        polygon.add(new Vector2f(tileWidth, (float)tileHeight - sideOffsetY));
-        polygon.add(new Vector2f((float)tileWidth - sideOffsetX, tileHeight));
+        polygon.add(new Vector2f(tileWidth, tileHeight - sideOffsetY));
+        polygon.add(new Vector2f(tileWidth - sideOffsetX, tileHeight));
         polygon.add(new Vector2f(sideOffsetX, tileHeight));
         
         Vector2f topRight = tileToScreenCoords(x, y);
