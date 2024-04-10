@@ -1,8 +1,5 @@
 package com.jme3.tmx.render;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.jme3.material.Material;
 import com.jme3.math.Vector2f;
 import com.jme3.renderer.queue.RenderQueue.Bucket;
@@ -16,8 +13,8 @@ import com.jme3.tmx.core.TiledMap;
 import com.jme3.tmx.enums.StaggerAxis;
 import com.jme3.tmx.enums.StaggerIndex;
 import com.jme3.tmx.math2d.Point;
+import com.jme3.tmx.render.grid.HexGrid;
 import com.jme3.tmx.render.shape.Rect;
-import com.jme3.tmx.util.ObjectMesh;
 
 /**
  * Hexagonal render
@@ -62,14 +59,14 @@ public class HexagonalRenderer extends OrthogonalRenderer {
 
         // The map size is the same regardless of which indexes are shifted.
         if (staggerX) {
-            mapSize.set(width * columnWidth + sideOffsetX, (float)height * (tileHeight + sideLengthY));
+            mapSize.set(width * columnWidth + sideOffsetX, height * (tileHeight + sideLengthY));
 
             if (width > 1) {
                 mapSize.y += rowHeight;
             }
 
         } else {
-            mapSize.set((float)width * (tileWidth + sideLengthX), height * rowHeight + sideOffsetY);
+            mapSize.set(width * (tileWidth + sideLengthX), height * rowHeight + sideOffsetY);
 
             if (height > 1) {
                 mapSize.x += columnWidth;
@@ -172,55 +169,15 @@ public class HexagonalRenderer extends OrthogonalRenderer {
 
     @Override
     public void renderGrid(Node gridVisual, Material gridMaterial) {
-        Point startTile = screenToTileCoords(0, 0);
-
         Mesh border = new Rect(mapSize.x, mapSize.y, true);
         Geometry rect = new Geometry("GridBorder", border);
         rect.setMaterial(gridMaterial);
         gridVisual.attachChild(rect);
 
-        if (staggerX) {
-            boolean staggeredRow = doStaggerX(startTile.x);
-
-            while (startTile.y < height) {
-                Point rowTile = startTile.clone();
-                for (; rowTile.x < width; rowTile.x += 2) {
-                    if (rowTile.x < 0 || rowTile.y < 0) {
-                        continue;
-                    }
-                    // set its position with rowPos and tileZIndex
-                    List<Vector2f> points = tileToScreenPolygon(rowTile.x, rowTile.y);
-                    Mesh mesh = ObjectMesh.makePolyline(points, true);
-                    Geometry geom = new Geometry("Grid#" + rowTile.x + "," + rowTile.y, mesh);
-                    geom.setMaterial(gridMaterial);
-                    gridVisual.attachChild(geom);
-                }
-
-                if (staggeredRow) {
-                    startTile.x -= 1;
-                    startTile.y += 1;
-                    staggeredRow = false;
-                } else {
-                    startTile.x += 1;
-                    staggeredRow = true;
-                }
-            }
-        } else {
-            for (; startTile.y < height; startTile.y++) {
-                Point rowTile = startTile.clone();
-                for (; rowTile.x < width; rowTile.x++) {
-                    if (rowTile.x < 0 || rowTile.y < 0) {
-                        continue;
-                    }
-                    // set its position with rowPos and tileZIndex
-                    List<Vector2f> points = tileToScreenPolygon(rowTile.x, rowTile.y);
-                    Mesh mesh = ObjectMesh.makePolyline(points, true);
-                    Geometry geom = new Geometry("Grid#" + rowTile.x + "," + rowTile.y, mesh);
-                    geom.setMaterial(gridMaterial);
-                    gridVisual.attachChild(geom);
-                }
-            }
-        }
+        HexGrid grid = new HexGrid(width, height, map.getTileWidth(), map.getTileHeight(), map.getHexSideLength(), map.getStaggerAxis(), map.getStaggerIndex());
+        Geometry geom = new Geometry("HexGrid", grid);
+        geom.setMaterial(gridMaterial);
+        gridVisual.attachChild(geom);
     }
 
     @Override
@@ -241,17 +198,17 @@ public class HexagonalRenderer extends OrthogonalRenderer {
     public Vector2f tileToScreenCoords(float x, float y) {
         int tileX = (int) Math.floor(x);
         int tileY = (int) Math.floor(y);
-        float pixelX;
-        float pixelY;
+        int pixelX;
+        int pixelY;
 
         if (staggerX) {
-            pixelY = (float)tileY * (tileHeight + sideLengthY);
+            pixelY = tileY * (tileHeight + sideLengthY);
             if (doStaggerX(tileX))
                 pixelY += rowHeight;
 
             pixelX = tileX * columnWidth;
         } else {
-            pixelX = (float)tileX * (tileWidth + sideLengthX);
+            pixelX = tileX * (tileWidth + sideLengthX);
             if (doStaggerY(tileY))
                 pixelX += columnWidth;
 
@@ -396,23 +353,5 @@ public class HexagonalRenderer extends OrthogonalRenderer {
                 return new Point(x + 1, y);
             }
         }
-    }
-
-    public List<Vector2f> tileToScreenPolygon(int x, int y) {
-        ArrayList<Vector2f> polygon = new ArrayList<>(8);
-        polygon.add(new Vector2f(0, rowHeight));
-        polygon.add(new Vector2f(0, sideOffsetY));
-        polygon.add(new Vector2f(sideOffsetX, 0));
-        polygon.add(new Vector2f(columnWidth, 0));
-        polygon.add(new Vector2f(tileWidth, sideOffsetY));
-        polygon.add(new Vector2f(tileWidth, rowHeight));
-        polygon.add(new Vector2f(columnWidth, tileHeight));
-        polygon.add(new Vector2f(sideOffsetX, tileHeight));
-        
-        Vector2f topRight = tileToScreenCoords(x, y);
-        for(Vector2f p : polygon) {
-            p.addLocal(topRight);
-        }
-        return polygon;
     }
 }

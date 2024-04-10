@@ -28,7 +28,12 @@ public class Point {
         this.x = (int) Math.floor(x);
         this.y = (int) Math.floor(y);
     }
-    
+
+    public void set(int x, int y) {
+        this.x = x;
+        this.y = y;
+    }
+
     public void setLocation(int x, int y) {
         this.x = x;
         this.y = y;

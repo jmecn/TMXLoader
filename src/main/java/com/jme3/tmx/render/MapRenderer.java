@@ -17,7 +17,6 @@ import com.jme3.tmx.core.*;
 import com.jme3.tmx.enums.DrawOrder;
 import com.jme3.tmx.math2d.Point;
 import com.jme3.tmx.render.shape.Rect;
-import com.jme3.tmx.util.ObjectMesh;
 
 /**
  * <p>
@@ -63,7 +62,7 @@ public abstract class MapRenderer {
     /**
      * The whole map size in pixel
      */
-    protected Vector2f mapSize;
+    protected Point mapSize;
 
     protected MapRenderer(TiledMap map) {
         this.map = map;
@@ -72,8 +71,7 @@ public abstract class MapRenderer {
         this.tileWidth = map.getTileWidth();
         this.tileHeight = map.getTileHeight();
 
-        this.mapSize = new Vector2f();
-        this.mapSize.set((float)width * tileWidth, (float)height * tileHeight);
+        this.mapSize = new Point(width * tileWidth, height * tileHeight);
     }
 
     /**
