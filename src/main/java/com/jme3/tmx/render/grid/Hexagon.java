@@ -1,16 +1,14 @@
 package com.jme3.tmx.render.grid;
 
 import com.jme3.math.Vector2f;
-import com.jme3.scene.Mesh;
 import com.jme3.tmx.enums.StaggerAxis;
+import com.jme3.tmx.render.shape.Polygon;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * This is the basic grid shape in hexagonal map.
- *
- * The origin point is in the top-left corner.
+ * This is the basic grid shape in hexagonal map. The origin point is in the top-left corner.
  *
  * <pre>
  * O-/----\---X
@@ -22,9 +20,9 @@ import java.util.List;
  *</pre>
  * @author yanmaoyuan
  */
-public class Hexagon extends Mesh {
+public class Hexagon extends Polygon {
 
-    public Hexagon(int mapTileWidth, int mapTileHeight, int hexSideLength, StaggerAxis staggerAxis) {
+    public Hexagon(int mapTileWidth, int mapTileHeight, int hexSideLength, StaggerAxis staggerAxis, boolean border) {
         int sideLengthX = 0;
         int sideLengthY = 0;
         boolean isStaggerX = staggerAxis == StaggerAxis.X;
@@ -59,6 +57,12 @@ public class Hexagon extends Mesh {
         polygon.add(new Vector2f(columnWidth, tileHeight));
         if (isStaggerX) {
             polygon.add(new Vector2f(0, tileHeight));
+        }
+
+        if (border) {
+            polyline(polygon, true);
+        } else {
+            fill(polygon);
         }
     }
 }

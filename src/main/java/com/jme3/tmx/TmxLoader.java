@@ -20,6 +20,7 @@ import com.jme3.tmx.animation.Animation;
 import com.jme3.tmx.animation.Frame;
 import com.jme3.tmx.core.*;
 import com.jme3.tmx.enums.*;
+import com.jme3.tmx.render.shape.TileMesh;
 import com.jme3.tmx.util.ColorUtil;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
@@ -588,15 +589,16 @@ public class TmxLoader implements AssetLoader {
             sharedMat = tileset.getMaterial();
         }
 
-        List<Tile> tiles = tileset.getTiles();
-        int mapTileHeight = map.getTileHeight();
-        int tileHeight = tileset.getTileHeight();
-        int offset = tileHeight - mapTileHeight;
-        if (tileHeight > mapTileHeight) {
-            logger.info("mapTileHeight({}) < tileHeight({}), offset={}", mapTileHeight, tileHeight, offset);
-        } else {
-            offset = 0;
+        int offsetX = tileset.getTileOffsetX();
+        int offsetY = tileset.getTileOffsetY();
+
+        // if the tileset tilesize is larger than the map tilesize, adjust the offset
+        int diffY = tileset.getTileHeight() - map.getTileHeight();
+        if (diffY > 0) {
+            offsetY = offsetY - diffY;
         }
+
+        List<Tile> tiles = tileset.getTiles();
         int len = tiles.size();
         for (int i = 0; i < len; i++) {
             Tile tile = tiles.get(i);
@@ -614,27 +616,13 @@ public class TmxLoader implements AssetLoader {
                 continue;
             }
 
-            float x = tile.getX();
-            float y = tile.getY();
-            float width = tile.getWidth();
-            float height = tile.getHeight();
+            int x = tile.getX();
+            int y = tile.getY();
+            int width = tile.getWidth();
+            int height = tile.getHeight();
 
-            /**
-             * Calculate the texCoord of this tile in an Image.
-             *
-             * <pre>
-             * (u0,v1)    (u1,v1)
-             * *----------*
-             * |        * |
-             * |      *   |
-             * |    *     |
-             * |  *       |
-             * *----------*
-             * (u0,v0)    (u1,v0)
-             * </pre>
-             */
-            float imageWidth;
-            float imageHeight;
+            int imageWidth;
+            int imageHeight;
             if (useSharedImage) {
                 imageWidth = image.getWidth();
                 imageHeight = image.getHeight();
@@ -643,49 +631,7 @@ public class TmxLoader implements AssetLoader {
                 imageHeight = tile.getTexture().getImage().getHeight();
             }
 
-            float u0 = x / imageWidth;
-            float v0 = (imageHeight - y - height) / imageHeight;
-            float u1 = (x + width) / imageWidth;
-            float v1 = (imageHeight - y) / imageHeight;
-
-            float[] texCoord = new float[]{u0, v0, u1, v0, u1, v1, u0, v1};
-
-            /**
-             * Calculate the vertices' position of this tile.
-             *
-             * <pre>
-             * 3          2
-             * *----------*
-             * |        * |
-             * |      *   |
-             * |    *     |
-             * |  *       |
-             * *----------*
-             * 0          1
-             * </pre>
-             */
-            float offsetX = tileset.getTileOffsetX();
-            float offsetY = tileset.getTileOffsetY() - offset;
-            float[] vertices = new float[]{
-                    offsetX,         0, offsetY + height,
-                    offsetX + width, 0, offsetY + height,
-                    offsetX + width, 0, offsetY,
-                    offsetX,         0, offsetY};
-
-            short[] indexes = new short[]{0, 1, 2, 0, 2, 3};
-
-            /**
-             * Normals are all the same: to Vector3f.UNIT_Y
-             */
-            float[] normals = new float[]{0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0};
-
-            Mesh mesh = new Mesh();
-            mesh.setBuffer(Type.Position, 3, vertices);
-            mesh.setBuffer(Type.TexCoord, 2, texCoord);
-            mesh.setBuffer(Type.Normal, 3, normals);
-            mesh.setBuffer(Type.Index, 3, indexes);
-            mesh.updateBound();
-            mesh.setStatic();
+            TileMesh mesh = new TileMesh(x, y, width, height, imageWidth, imageHeight, offsetX, offsetY);
 
             Geometry geometry = new Geometry(name, mesh);
             geometry.setQueueBucket(Bucket.Gui);

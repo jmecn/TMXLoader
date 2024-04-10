@@ -13,7 +13,6 @@ import java.util.List;
  * desc:
  *
  * @author yanmaoyuan
- * @date 2024/4/10
  */
 public class Polygon extends Polyline {
 
