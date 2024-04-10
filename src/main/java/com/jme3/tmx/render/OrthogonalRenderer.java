@@ -11,7 +11,7 @@ import com.jme3.tmx.core.TileLayer;
 import com.jme3.tmx.core.TiledMap;
 import com.jme3.tmx.enums.RenderOrder;
 import com.jme3.tmx.math2d.Point;
-import com.jme3.tmx.grid.OrthogonalGridMesh;
+import com.jme3.tmx.render.grid.OrthoGrid;
 
 /**
  * Orthogonal render
@@ -114,7 +114,7 @@ public class OrthogonalRenderer extends MapRenderer {
     @Override
     public void renderGrid(Node gridVisual, Material gridMaterial) {
         // add boundary
-        OrthogonalGridMesh grid = new OrthogonalGridMesh(width, height, tileWidth, tileHeight);
+        OrthoGrid grid = new OrthoGrid(width, height, tileWidth, tileHeight);
         Geometry geom = new Geometry("Grid#Boundary", grid);
         geom.setMaterial(gridMaterial);
         gridVisual.attachChild(geom);

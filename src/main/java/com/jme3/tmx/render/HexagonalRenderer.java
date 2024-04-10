@@ -16,6 +16,7 @@ import com.jme3.tmx.core.TiledMap;
 import com.jme3.tmx.enums.StaggerAxis;
 import com.jme3.tmx.enums.StaggerIndex;
 import com.jme3.tmx.math2d.Point;
+import com.jme3.tmx.render.shape.Rect;
 import com.jme3.tmx.util.ObjectMesh;
 
 /**
@@ -173,7 +174,7 @@ public class HexagonalRenderer extends OrthogonalRenderer {
     public void renderGrid(Node gridVisual, Material gridMaterial) {
         Point startTile = screenToTileCoords(0, 0);
 
-        Mesh border = ObjectMesh.makeRectangleBorder(mapSize.x, mapSize.y);
+        Mesh border = new Rect(mapSize.x, mapSize.y, true);
         Geometry rect = new Geometry("GridBorder", border);
         rect.setMaterial(gridMaterial);
         gridVisual.attachChild(rect);
@@ -399,13 +400,13 @@ public class HexagonalRenderer extends OrthogonalRenderer {
 
     public List<Vector2f> tileToScreenPolygon(int x, int y) {
         ArrayList<Vector2f> polygon = new ArrayList<>(8);
-        polygon.add(new Vector2f(0, tileHeight - sideOffsetY));
+        polygon.add(new Vector2f(0, rowHeight));
         polygon.add(new Vector2f(0, sideOffsetY));
         polygon.add(new Vector2f(sideOffsetX, 0));
-        polygon.add(new Vector2f(tileWidth - sideOffsetX, 0));
+        polygon.add(new Vector2f(columnWidth, 0));
         polygon.add(new Vector2f(tileWidth, sideOffsetY));
-        polygon.add(new Vector2f(tileWidth, tileHeight - sideOffsetY));
-        polygon.add(new Vector2f(tileWidth - sideOffsetX, tileHeight));
+        polygon.add(new Vector2f(tileWidth, rowHeight));
+        polygon.add(new Vector2f(columnWidth, tileHeight));
         polygon.add(new Vector2f(sideOffsetX, tileHeight));
         
         Vector2f topRight = tileToScreenCoords(x, y);

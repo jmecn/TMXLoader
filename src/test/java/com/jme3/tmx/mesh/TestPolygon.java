@@ -10,7 +10,7 @@ import com.jme3.math.Vector2f;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Mesh;
 import com.jme3.system.AppSettings;
-import com.jme3.tmx.util.ObjectMesh;
+import com.jme3.tmx.render.shape.Polygon;
 
 public class TestPolygon extends SimpleApplication {
 
@@ -36,7 +36,7 @@ public class TestPolygon extends SimpleApplication {
         points.add(new Vector2f(18,90));
         points.add(new Vector2f(0,89));
         
-        Mesh mesh = ObjectMesh.makePolyline(points, true);
+        Mesh mesh = new Polygon(points, false);
         
         Material mat = new Material(assetManager, "com/jme3/tmx/resources/Tiled.j3md");
         mat.setColor("Color", ColorRGBA.Red);

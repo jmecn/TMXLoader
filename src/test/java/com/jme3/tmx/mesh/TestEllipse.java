@@ -6,14 +6,14 @@ import com.jme3.math.ColorRGBA;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Mesh;
 import com.jme3.system.AppSettings;
-import com.jme3.tmx.util.ObjectMesh;
+import com.jme3.tmx.render.shape.Ellipse;
 
 public class TestEllipse extends SimpleApplication {
 
     @Override
     public void simpleInitApp() {
 
-        Mesh mesh = ObjectMesh.makeEllipse(300, 200, 24);
+        Mesh mesh = new Ellipse(300, 200, 24, false);
         
         Material mat = new Material(assetManager, "com/jme3/tmx/resources/Tiled.j3md");
         mat.setColor("Color", ColorRGBA.Red);

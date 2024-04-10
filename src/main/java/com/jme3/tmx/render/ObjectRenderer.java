@@ -8,6 +8,7 @@ import com.jme3.scene.*;
 import com.jme3.tmx.core.*;
 import com.jme3.tmx.enums.FillMode;
 import com.jme3.tmx.enums.Orientation;
+import com.jme3.tmx.render.shape.*;
 import com.jme3.tmx.util.ObjectMesh;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -102,8 +103,8 @@ public class ObjectRenderer {
     }
 
     private void rectangle(MapObject obj) {
-        Mesh borderMesh = ObjectMesh.makeRectangleBorder(obj.getWidth(), obj.getHeight());
-        Mesh backMesh = ObjectMesh.makeRectangle(obj.getWidth(), obj.getHeight());
+        Mesh borderMesh = new Rect((float)obj.getWidth(), (float)obj.getHeight(), true);
+        Mesh backMesh = new Rect((float)obj.getWidth(), (float)obj.getHeight(), false);
 
         if (map.getOrientation() == Orientation.ISOMETRIC) {
             ObjectMesh.toIsometric(borderMesh, map.getTileWidth(), map.getTileHeight());
@@ -127,8 +128,8 @@ public class ObjectRenderer {
     }
 
     private void ellipse(MapObject obj) {
-        Mesh borderMesh = ObjectMesh.makeEllipseBorder(obj.getWidth(), obj.getHeight(), ELLIPSE_POINTS);
-        Mesh backMesh = ObjectMesh.makeEllipse(obj.getWidth(), obj.getHeight(), ELLIPSE_POINTS);
+        Mesh borderMesh = new Ellipse((float)obj.getWidth(), (float)obj.getHeight(), ELLIPSE_POINTS, true);
+        Mesh backMesh = new Ellipse((float)obj.getWidth(), (float)obj.getHeight(), ELLIPSE_POINTS, false);
 
         if (map.getOrientation() == Orientation.ISOMETRIC) {
             ObjectMesh.toIsometric(borderMesh, map.getTileWidth(), map.getTileHeight());
@@ -152,8 +153,8 @@ public class ObjectRenderer {
     }
 
     private void polygon(MapObject obj) {
-        Mesh borderMesh = ObjectMesh.makePolyline(obj.getPoints(), true);
-        Mesh backMesh = ObjectMesh.makePolygon(obj.getPoints());
+        Mesh borderMesh = new Polygon(obj.getPoints(), true);
+        Mesh backMesh = new Polygon(obj.getPoints(), false);
 
         if (map.getOrientation() == Orientation.ISOMETRIC) {
             ObjectMesh.toIsometric(borderMesh, map.getTileWidth(), map.getTileHeight());
@@ -177,7 +178,7 @@ public class ObjectRenderer {
     }
 
     private void polyline(MapObject obj) {
-        Mesh mesh = ObjectMesh.makePolyline(obj.getPoints(), false);
+        Mesh mesh = new Polyline(obj.getPoints(), false);
 
         if (map.getOrientation() == Orientation.ISOMETRIC) {
             ObjectMesh.toIsometric(mesh, map.getTileWidth(), map.getTileHeight());
@@ -191,11 +192,11 @@ public class ObjectRenderer {
     }
 
     private void point(MapObject obj) {
-        Geometry border = new Geometry("border", ObjectMesh.makeMarkerBorder(16, ELLIPSE_POINTS));
+        Geometry border = new Geometry("border", new Marker(16, ELLIPSE_POINTS, true));
         border.setMaterial(mat);
         border.setQueueBucket(RenderQueue.Bucket.Gui);
 
-        Geometry back = new Geometry("marker", ObjectMesh.makeMarker(16, ELLIPSE_POINTS));
+        Geometry back = new Geometry("marker", new Marker(16, ELLIPSE_POINTS, false));
         back.setMaterial(bgMat);
         back.setQueueBucket(RenderQueue.Bucket.Gui);
 
@@ -208,7 +209,7 @@ public class ObjectRenderer {
     }
 
     private void image(MapObject obj) {
-        Geometry visual = new Geometry(obj.getName(), ObjectMesh.makeRectangle(obj.getWidth(), obj.getHeight()));
+        Geometry visual = new Geometry(obj.getName(), new Rect((float)obj.getWidth(), (float)obj.getHeight(), false));
         visual.setMaterial(obj.getMaterial());
         visual.setQueueBucket(RenderQueue.Bucket.Gui);
 

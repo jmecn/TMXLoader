@@ -1,4 +1,4 @@
-package com.jme3.tmx.grid;
+package com.jme3.tmx.render.grid;
 
 import com.jme3.scene.Mesh;
 import com.jme3.scene.VertexBuffer;
@@ -12,11 +12,9 @@ import java.nio.ShortBuffer;
  *
  * @author yanmaoyuan
  */
-public class IsometricGridMesh extends Mesh {
-    public IsometricGridMesh() {
-    }
+public class IsoGrid extends Mesh {
 
-    public IsometricGridMesh(int width, int height, int tileWidth, int tileHeight) {
+    public IsoGrid(int width, int height, int tileWidth, int tileHeight) {
         int lineCount = height + width + 6;
         FloatBuffer fpb = BufferUtils.createFloatBuffer(6 * lineCount);
         ShortBuffer sib = BufferUtils.createShortBuffer(2 * lineCount);

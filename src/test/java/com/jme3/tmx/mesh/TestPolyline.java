@@ -10,7 +10,7 @@ import com.jme3.math.Vector2f;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Mesh;
 import com.jme3.system.AppSettings;
-import com.jme3.tmx.util.ObjectMesh;
+import com.jme3.tmx.render.shape.Polyline;
 
 public class TestPolyline extends SimpleApplication {
 
@@ -18,14 +18,14 @@ public class TestPolyline extends SimpleApplication {
     public void simpleInitApp() {
 
         // points
-        List<Vector2f> points = new ArrayList<Vector2f>();
+        List<Vector2f> points = new ArrayList<>();
         points.add(new Vector2f(0,0));
         points.add(new Vector2f(75,78));
         points.add(new Vector2f(133,82));
         points.add(new Vector2f(176,179));
         points.add(new Vector2f(274,183));
         
-        Mesh mesh = ObjectMesh.makePolyline(points, false);
+        Mesh mesh = new Polyline(points, false);
         
         Material mat = new Material(assetManager, "com/jme3/tmx/resources/Tiled.j3md");
         mat.setColor("Color", ColorRGBA.Red);

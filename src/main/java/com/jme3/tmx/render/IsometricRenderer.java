@@ -9,7 +9,7 @@ import com.jme3.scene.Spatial;
 import com.jme3.tmx.core.Tile;
 import com.jme3.tmx.core.TileLayer;
 import com.jme3.tmx.core.TiledMap;
-import com.jme3.tmx.grid.IsometricGridMesh;
+import com.jme3.tmx.render.grid.IsoGrid;
 import com.jme3.tmx.math2d.Point;
 
 /**
@@ -74,7 +74,7 @@ public class IsometricRenderer extends MapRenderer {
     @Override
     public void renderGrid(Node gridVisual, Material gridMaterial) {
         // add boundary
-        IsometricGridMesh grid = new IsometricGridMesh(width, height, tileWidth, tileHeight);
+        IsoGrid grid = new IsoGrid(width, height, tileWidth, tileHeight);
         Geometry geom = new Geometry("Grid#Boundary", grid);
         geom.setMaterial(gridMaterial);
         gridVisual.attachChild(geom);

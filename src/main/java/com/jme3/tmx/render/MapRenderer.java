@@ -16,6 +16,7 @@ import com.jme3.scene.Spatial;
 import com.jme3.tmx.core.*;
 import com.jme3.tmx.enums.DrawOrder;
 import com.jme3.tmx.math2d.Point;
+import com.jme3.tmx.render.shape.Rect;
 import com.jme3.tmx.util.ObjectMesh;
 
 /**
@@ -245,7 +246,7 @@ public abstract class MapRenderer {
         Material mat = layer.getMaterial();
         setTintColor(mat, layer);
 
-        Mesh mesh = ObjectMesh.makeRectangle(mapSize.x, mapSize.y);
+        Mesh mesh = new Rect(mapSize.x, mapSize.y, false);
         Geometry geom = new Geometry(layer.getName(), mesh);
         geom.setMaterial(mat);
         geom.setQueueBucket(Bucket.Gui);
