@@ -27,11 +27,11 @@ import com.jme3.tmx.util.ObjectMesh;
 public class HexagonalRenderer extends OrthogonalRenderer {
 
     protected int sideLengthX;
-    protected float sideOffsetX;
     protected int sideLengthY;
-    protected float sideOffsetY;
-    protected float rowHeight;
-    protected float columnWidth;
+    protected int sideOffsetX;
+    protected int sideOffsetY;
+    protected int rowHeight;
+    protected int columnWidth;
     protected boolean staggerX;
     protected boolean staggerEven;
     protected int staggerIndex;
@@ -50,11 +50,14 @@ public class HexagonalRenderer extends OrthogonalRenderer {
             sideLengthY = map.getHexSideLength();
         }
 
-        sideOffsetX = (tileWidth - sideLengthX) * 0.5f;
-        sideOffsetY = (tileHeight - sideLengthY) * 0.5f;
+        sideOffsetX = (map.getTileWidth() - sideLengthX) / 2;
+        sideOffsetY = (map.getTileHeight() - sideLengthY) / 2;
 
         columnWidth = sideOffsetX + sideLengthX;
         rowHeight = sideOffsetY + sideLengthY;
+
+        tileWidth = columnWidth + sideOffsetX;
+        tileHeight = rowHeight + sideOffsetY;
 
         // The map size is the same regardless of which indexes are shifted.
         if (staggerX) {
