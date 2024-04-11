@@ -17,8 +17,10 @@ import com.jme3.tmx.animation.Animation;
 import com.jme3.tmx.animation.Frame;
 import com.jme3.tmx.core.*;
 import com.jme3.tmx.enums.*;
+import com.jme3.tmx.math2d.Point;
 import com.jme3.tmx.render.shape.TileMesh;
 import com.jme3.tmx.util.ColorUtil;
+import com.jme3.tmx.util.TileCutter;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
 import org.w3c.dom.Document;
@@ -73,6 +75,7 @@ public class TmxLoader implements AssetLoader {
     public static final String CLASS = "class";
     public static final String COLOR = "color";
     public static final String TILESET = "tileset";
+    public static final String GID = "gid";
     public static final String TILE = "tile";
     public static final String SOURCE = "source";
     public static final String IMAGE = "image";
@@ -84,6 +87,7 @@ public class TmxLoader implements AssetLoader {
     public static final String OBJECTGROUP = "objectgroup";
     public static final String OBJECT = "object";
     public static final String PROPERTIES = "properties";
+    public static final String _TEXT = "#text";
     public static final String PROPERTY = "property";
     public static final String POINT = "point";
     public static final String POLYLINE = "polyline";
@@ -406,7 +410,7 @@ public class TmxLoader implements AssetLoader {
                     break;
                 }
                 default: {
-                    if (TILESET.equals(childName) || PROPERTIES.equals(childName) || "#text".equals(childName)) {
+                    if (TILESET.equals(childName) || PROPERTIES.equals(childName) || _TEXT.equals(childName)) {
                         // Ignore, already processed
                     } else {
                         logger.warn("Unsupported map element: {}", childName);
@@ -478,6 +482,7 @@ public class TmxLoader implements AssetLoader {
         }
 
         boolean hasTilesetImage = false;
+        TiledImage image = null;
         NodeList children = node.getChildNodes();
         for (int i = 0; i < children.getLength(); i++) {
             Node child = children.item(i);
@@ -489,16 +494,16 @@ public class TmxLoader implements AssetLoader {
                     continue;
                 }
 
-                AnImage image = readImage(child);
-                if (image.texture != null) {
+                image = readImage(child);
+                if (image.getTexture() != null) {
                     // Not a shared image, but an entire set in one image
                     // file. There should be only one image element in this
                     // case.
                     hasTilesetImage = true;
 
-                    set.setImageSource(image.source);
-                    set.setTexture(image.texture);
-                    set.setMaterial(image.createMaterial());
+                    set.setImageSource(image.getSource());
+                    set.setTexture(image.getTexture());
+                    set.setMaterial(image.getMaterial());
                 }
             } else if ("grid".equals(nodeName)) {
                 /*
@@ -554,10 +559,17 @@ public class TmxLoader implements AssetLoader {
             }
 
             if (hasTilesetImage) {
-                // add tileoffset to the material
+
+                TileCutter cutter = new TileCutter(image.getWidth(), image.getHeight(), tileWidth, tileHeight, tileMargin, tileSpacing);
+
+                Tile tile = cutter.getNextTile();
+                while (tile != null) {
+                    set.addNewTile(tile);
+                    tile = cutter.getNextTile();
+                }
+
                 Material mat = set.getMaterial();
-                Vector2f tileOffset = new Vector2f(set.getTileOffsetX(), set.getTileOffsetY());
-                mat.setVector2("TileOffset", tileOffset);
+                mat.setBoolean("UseTilesetImage", true);
             }
         }
 
@@ -593,14 +605,8 @@ public class TmxLoader implements AssetLoader {
             sharedMat = tileset.getMaterial();
         }
 
-        int offsetX = 0;
-        int offsetY = 0;
-
-        // if the tileset tilesize is larger than the map tilesize, adjust the offset
-        int diffY = tileset.getTileHeight() - map.getTileHeight();
-        if (diffY > 0) {
-            offsetY = - diffY;
-        }
+        Point offset = new Point(tileset.getTileOffsetX(), tileset.getTileOffsetY());
+        Point origin = new Point(0, map.getTileHeight());
 
         List<Tile> tiles = tileset.getTiles();
         int len = tiles.size();
@@ -614,11 +620,6 @@ public class TmxLoader implements AssetLoader {
              * material.
              */
             boolean useSharedImage = tile.getTexture() == null;
-            if (!useSharedImage && tile.getMaterial() == null) {
-                // this shouldn't happen, just in case someone uses Tiles created by code.
-                logger.warn("The tile mush has a material if it don't use sharedImage: {}", name);
-                continue;
-            }
 
             int x = tile.getX();
             int y = tile.getY();
@@ -635,7 +636,7 @@ public class TmxLoader implements AssetLoader {
                 imageHeight = tile.getTexture().getImage().getHeight();
             }
 
-            TileMesh mesh = new TileMesh(x, y, width, height, imageWidth, imageHeight, offsetY);
+            TileMesh mesh = new TileMesh(x, y, width, height, imageWidth, imageHeight, offset, origin);
 
             Geometry geometry = new Geometry(name, mesh);
             geometry.setQueueBucket(Bucket.Gui);
@@ -792,9 +793,9 @@ public class TmxLoader implements AssetLoader {
         for (int i = 0; i < children.getLength(); i++) {
             Node child = children.item(i);
             if (IMAGE.equals(child.getNodeName())) {
-                AnImage image = readImage(child);
-                tile.setTexture(image.texture);
-                tile.setMaterial(image.createMaterial());
+                TiledImage image = readImage(child);
+                tile.setTexture(image.getTexture());
+                tile.setMaterial(image.getMaterial());
             } else if ("animation".equalsIgnoreCase(child.getNodeName())) {
                 Animation animation = new Animation(null);
                 NodeList frames = child.getChildNodes();
@@ -822,17 +823,19 @@ public class TmxLoader implements AssetLoader {
      * @return
      * @throws IOException
      */
-    private AnImage readImage(Node t) {
-
-        AnImage image = new AnImage();
-
+    private TiledImage readImage(Node t) {
         String source = getAttributeValue(t, SOURCE);
+        String trans = getAttributeValue(t, "trans");
+        String format = getAttributeValue(t, "format");// useless for jme3
+        int width = getAttribute(t, WIDTH, 0);
+        int height = getAttribute(t, HEIGHT, 0);
 
+        Texture2D texture = null;
         // load a image from file or decode from the CDATA.
         if (source != null) {
             String assetPath = toJmeAssetPath(key.getFolder() + source);
-            image.source = assetPath;
-            image.texture = loadTexture2D(assetPath);
+            source = assetPath;
+            texture = loadTexture2D(assetPath);
         } else {
             NodeList nl = t.getChildNodes();
             for (int i = 0; i < nl.getLength(); i++) {
@@ -843,21 +846,34 @@ public class TmxLoader implements AssetLoader {
                         String sdata = cdata.getNodeValue();
                         byte[] imageData = Base64.getDecoder().decode(sdata.trim());
 
-                        image.texture = loadTexture2D(imageData);
+                        texture = loadTexture2D(imageData);
                     }
                     break;
                 }
             }
         }
 
-        image.trans = getAttributeValue(t, "trans");
-        // useless for jme3
-        image.format = getAttributeValue(t, "format");
-        image.width = getAttribute(t, WIDTH, 0);
-        image.height = getAttribute(t, HEIGHT, 0);
+        if (texture != null && (width == 0 || height == 0)) {
+            logger.warn("Image size is not specified, using the texture size.");
+            width = texture.getImage().getWidth();
+            height = texture.getImage().getHeight();
+        }
+
+        TiledImage image = new TiledImage(source, trans, format, width, height);
+        image.setTexture(texture);
+
+        // create material
+        Material mat = new Material(assetManager, "com/jme3/tmx/resources/Tiled.j3md");
+        mat.setTexture("ColorMap", texture);
+        if (trans != null) {
+            ColorRGBA transparentColor = ColorUtil.toColorRGBA(trans);
+            mat.setColor("TransColor", transparentColor);
+        }
+        Vector2f imageSize = new Vector2f(width, height);
+        mat.setVector2("ImageSize", imageSize);
+        image.setMaterial(mat);
 
         return image;
-
     }
 
     /**
@@ -1149,11 +1165,11 @@ public class TmxLoader implements AssetLoader {
             String nodeName = child.getNodeName();
             if (nodeName.equalsIgnoreCase(IMAGE)) {
 
-                AnImage image = readImage(child);
-                if (image.texture != null) {
-                    layer.setSource(image.source);
-                    layer.setTexture(image.texture);
-                    layer.setMaterial(image.createMaterial());
+                TiledImage image = readImage(child);
+                if (image.getTexture() != null) {
+                    layer.setSource(image.getSource());
+                    layer.setTexture(image.getTexture());
+                    layer.setMaterial(image.getMaterial());
 
                     hasImage = true;
                     break;
@@ -1297,14 +1313,14 @@ public class TmxLoader implements AssetLoader {
                 }
                 case IMAGE: {
                     obj.setShape(ObjectType.IMAGE);
-                    AnImage image = readImage(child);
-                    obj.setImageSource(image.source);
-                    obj.setTexture(image.texture);
-                    obj.setMaterial(image.createMaterial());
+                    TiledImage image = readImage(child);
+                    obj.setImageSource(image.getSource());
+                    obj.setTexture(image.getTexture());
+                    obj.setMaterial(image.getMaterial());
                     break;
                 }
                 default: {
-                    if ("#text".equals(nodeName)) {
+                    if (PROPERTIES.equals(nodeName) || _TEXT.equals(nodeName)) {
                         // ignore
                     } else {
                         logger.warn("unknown object type:{}", nodeName);
@@ -1643,33 +1659,6 @@ public class TmxLoader implements AssetLoader {
             return dest;
         } else {
             throw new IllegalArgumentException("Can't locate asset: " + src);
-        }
-    }
-
-    /**
-     * When read a &lt;image&gt; element there 5 attribute there. This class is
-     * just a data struct to return the whole image node;
-     *
-     * @author yanmaoyuan
-     */
-    private class AnImage {
-        String source;
-        String trans;
-        // useless for jme3
-        String format;
-        int width;
-        int height;
-
-        Texture2D texture = null;
-
-        private Material createMaterial() {
-            Material mat = new Material(assetManager, "com/jme3/tmx/resources/Tiled.j3md");
-            mat.setTexture("ColorMap", texture);
-            if (trans != null) {
-                ColorRGBA transparentColor = ColorUtil.toColorRGBA(trans);
-                mat.setColor("TransColor", transparentColor);
-            }
-            return mat;
         }
     }
 

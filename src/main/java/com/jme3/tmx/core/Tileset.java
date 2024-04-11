@@ -11,7 +11,6 @@ import com.jme3.tmx.enums.FillMode;
 import com.jme3.tmx.enums.ObjectAlignment;
 import com.jme3.tmx.enums.Orientation;
 import com.jme3.tmx.enums.TileRenderSize;
-import com.jme3.tmx.util.TileCutter;
 
 /**
  * If there are multiple &lt;tileset&gt; elements, they are in ascending order of
@@ -269,14 +268,6 @@ public class Tileset extends Base implements Iterable<Tile> {
      */
     public void setTexture(Texture texture) {
         this.texture = texture;
-
-        TileCutter cutter = new TileCutter(texture, tileWidth, tileHeight, tileMargin, tileSpacing);
-
-        Tile tile = cutter.getNextTile();
-        while (tile != null) {
-            addNewTile(tile);
-            tile = cutter.getNextTile();
-        }
     }
 
     public Material getMaterial() {

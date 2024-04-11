@@ -8,6 +8,7 @@ import com.jme3.scene.*;
 import com.jme3.tmx.core.*;
 import com.jme3.tmx.enums.FillMode;
 import com.jme3.tmx.enums.Orientation;
+import com.jme3.tmx.math2d.Point;
 import com.jme3.tmx.render.shape.*;
 import com.jme3.tmx.util.ObjectMesh;
 import org.slf4j.Logger;
@@ -226,8 +227,6 @@ public class ObjectRenderer {
 
         float th = tile.getHeight();
         float tw = tile.getWidth();
-        float offsetX = tile.getTileset().getTileOffsetX();
-        float offsetY = tile.getTileset().getTileOffsetY();
 
         // When the object has a gid set, then it is represented by
         // the image of the tile with that global ID. The image
@@ -235,10 +234,10 @@ public class ObjectRenderer {
 
         // In orthogonal, it's aligned to the bottom-left
         float[] vertices = new float[]{
-                offsetX,    0, offsetY,
-                offsetX+tw, 0, offsetY,
-                offsetX+tw, 0, offsetY-th,
-                offsetX,    0, offsetY-th};
+                0,  0, -th,
+                tw, 0, -th,
+                tw, 0, 0,
+                0,  0, 0};
 
         // In isometric, it's aligned to the bottom-center.
         if (map.getOrientation() == Orientation.ISOMETRIC) {
