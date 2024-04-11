@@ -512,6 +512,7 @@ public class TmxLoader implements AssetLoader {
 
                     Material material = image.getMaterial();
                     material.setBoolean("UseTilesetImage", true);
+                    material.setVector2("TileSize", new Vector2f(tileWidth, tileHeight));
 
                     set.setImageSource(image.getSource());
                     set.setTexture(image.getTexture());

@@ -21,8 +21,12 @@ public class TileMesh extends Mesh {
 
         float[] normals = new float[]{0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0};
 
+        // use TexCoord2 to store the tile's position in the image.
+        // this is useful when we want to get the tile's position in the image.
+        float[] texCoord2 = new float[]{x, y, x, y, x, y, x, y};
         this.setBuffer(VertexBuffer.Type.Position, 3, vertices);
         this.setBuffer(VertexBuffer.Type.TexCoord, 2, texCoords);
+        this.setBuffer(VertexBuffer.Type.TexCoord2, 2, texCoord2);
         this.setBuffer(VertexBuffer.Type.Normal, 3, normals);
         this.setBuffer(VertexBuffer.Type.Index, 3, indexes);
         this.updateBound();
@@ -77,10 +81,14 @@ public class TileMesh extends Mesh {
      * </pre>
      */
     private float[] getTexCoords(float x, float y, float width, float height, float imageWidth, float imageHeight) {
-        float u0 = x / imageWidth;
-        float v0 = 1f - y / imageHeight;
-        float u1 = (x + width) / imageWidth;
-        float v1 = 1f - (y + height) / imageHeight;
+//        float u0 = x / imageWidth;
+//        float v0 = 1f - y / imageHeight;
+//        float u1 = (x + width) / imageWidth;
+//        float v1 = 1f - (y + height) / imageHeight;
+        float u0 = 0f;
+        float v0 = 0f;
+        float u1 = 1f;
+        float v1 = 1f;
         return new float[]{u0, v0, u1, v0, u1, v1, u0, v1};
     }
 }

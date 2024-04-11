@@ -6,6 +6,8 @@ MaterialDef Tiled {
         Color TransColor
         Color TintColor
         Vector2 ImageSize
+        Vector2 TileSize
+        Vector2 TilePosition
         Boolean UseTilesetImage
     }
 
