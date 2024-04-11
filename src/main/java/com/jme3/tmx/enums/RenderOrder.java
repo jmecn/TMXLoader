@@ -13,6 +13,9 @@ package com.jme3.tmx.enums;
         RenderOrder(String value) {
             this.value = value;
         }
+        public String getValue() {
+            return value;
+        }
         public static RenderOrder fromString(String value) {
             for (RenderOrder o : values()) {
                 if (o.value.equals(value)) {

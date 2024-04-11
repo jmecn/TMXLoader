@@ -4,11 +4,11 @@ import com.jme3.asset.*;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector2f;
+import com.jme3.math.Vector4f;
 import com.jme3.renderer.queue.RenderQueue.Bucket;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Spatial.BatchHint;
 import com.jme3.texture.Image;
-import com.jme3.texture.Texture;
 import com.jme3.texture.Texture.MagFilter;
 import com.jme3.texture.Texture.WrapMode;
 import com.jme3.texture.Texture2D;
@@ -87,7 +87,7 @@ public class TmxLoader implements AssetLoader {
     public static final String OBJECTGROUP = "objectgroup";
     public static final String OBJECT = "object";
     public static final String PROPERTIES = "properties";
-    public static final String TEXT_ = "#text";
+    public static final String TEXT_EMPTY = "#text";
     public static final String PROPERTY = "property";
     public static final String POINT = "point";
     public static final String POLYLINE = "polyline";
@@ -276,24 +276,16 @@ public class TmxLoader implements AssetLoader {
         int mapWidth = getAttribute(mapNode, WIDTH, 0);
         int mapHeight = getAttribute(mapNode, HEIGHT, 0);
 
+        if (mapWidth <= 0 || mapHeight <= 0) {
+            // Maybe this map is still using the dimensions element
+            Point mapSize = readDimensions(doc);
+            mapWidth = mapSize.x;
+            mapHeight = mapSize.y;
+        }
+
         if (mapWidth > 0 && mapHeight > 0) {
             map = new TiledMap(mapWidth, mapHeight);
         } else {
-            // Maybe this map is still using the dimensions element
-            NodeList l = doc.getElementsByTagName("dimensions");
-            for (int i = 0; (item = l.item(i)) != null; i++) {
-                if (item.getParentNode() == mapNode) {
-                    mapWidth = getAttribute(item, WIDTH, 0);
-                    mapHeight = getAttribute(item, HEIGHT, 0);
-
-                    if (mapWidth > 0 && mapHeight > 0) {
-                        map = new TiledMap(mapWidth, mapHeight);
-                    }
-                }
-            }
-        }
-
-        if (map == null) {
             logger.warn("Couldn't locate map dimensions.");
             throw new IllegalArgumentException("Couldn't locate map dimensions.");
         }
@@ -302,14 +294,14 @@ public class TmxLoader implements AssetLoader {
         String version = getAttributeValue(mapNode, VERSION);
         String tiledVersion = getAttributeValue(mapNode, TILEDVERSION);
         String clazz = getAttribute(mapNode, CLASS, "");
-        String orientation = getAttributeValue(mapNode, ORIENTATION);
-        String renderOrder = getAttributeValue(mapNode, RENDERORDER);
+        String orientation = getAttribute(mapNode, ORIENTATION, Orientation.ORTHOGONAL.getValue());
+        String renderOrder = getAttribute(mapNode, RENDERORDER, RenderOrder.RIGHT_DOWN.getValue());
         int compressionLevel = getAttribute(mapNode, COMPRESSIONLEVEL, -1);
         int tileWidth = getAttribute(mapNode, TILE_WIDTH, 0);
         int tileHeight = getAttribute(mapNode, TILE_HEIGHT, 0);
         int hexSideLength = getAttribute(mapNode, HEXSIDELNGTH, 0);
-        String staggerAxis = getAttributeValue(mapNode, STAGGER_AXIS);
-        String staggerIndex = getAttributeValue(mapNode, STAGGER_INDEX);
+        String staggerAxis = getAttribute(mapNode, STAGGER_AXIS, StaggerAxis.Y.getValue());
+        String staggerIndex = getAttribute(mapNode, STAGGER_INDEX, StaggerIndex.ODD.getValue());
         int parallaxOriginX = getAttribute(mapNode, PARALLAX_ORIGIN_X, 0);
         int parallaxOriginY = getAttribute(mapNode, PARALLAX_ORIGIN_Y, 0);
         String bgStr = getAttributeValue(mapNode, BACKGROUND_COLOR);
@@ -320,19 +312,8 @@ public class TmxLoader implements AssetLoader {
         map.setVersion(version);
         map.setTiledVersion(tiledVersion);
         map.setClazz(clazz);
-
-        if (orientation != null) {
-            map.setOrientation(orientation);
-        } else {
-            map.setOrientation(Orientation.ORTHOGONAL);
-        }
-
-        if (renderOrder != null) {
-            map.setRenderOrder(renderOrder.toLowerCase());
-        } else {
-            map.setRenderOrder(RenderOrder.RIGHT_DOWN);
-        }
-
+        map.setOrientation(orientation);
+        map.setRenderOrder(renderOrder.toLowerCase());
         map.setCompressionLevel(compressionLevel);
 
         if (tileWidth > 0) {
@@ -345,14 +326,8 @@ public class TmxLoader implements AssetLoader {
             map.setHexSideLength(hexSideLength);
         }
 
-        if (staggerAxis != null) {
-            map.setStaggerAxis(staggerAxis);
-        }
-
-        if (staggerIndex != null) {
-            map.setStaggerIndex(staggerIndex);
-        }
-
+        map.setStaggerAxis(staggerAxis);
+        map.setStaggerIndex(staggerIndex);
         map.setParallaxOriginX(parallaxOriginX);
         map.setParallaxOriginY(parallaxOriginY);
 
@@ -376,8 +351,25 @@ public class TmxLoader implements AssetLoader {
 
         readTilesets(doc);
 
-        // Load the layers and objectgroups
         readLayers(mapNode);
+    }
+
+    private Point readDimensions(Document doc) {
+        Point mapSize = new Point(0, 0);
+        // Maybe this map is still using the dimensions element
+        NodeList l = doc.getElementsByTagName("dimensions");
+        Node item;
+        Node mapNode = doc.getDocumentElement();
+        for (int i = 0; (item = l.item(i)) != null; i++) {
+            if (item.getParentNode() == mapNode) {
+                int mapWidth = getAttribute(item, WIDTH, 0);
+                int mapHeight = getAttribute(item, HEIGHT, 0);
+
+                mapSize.set(mapWidth, mapHeight);
+            }
+        }
+
+        return mapSize;
     }
 
     private void readTilesets(Document doc) {
@@ -419,7 +411,7 @@ public class TmxLoader implements AssetLoader {
                     break;
                 }
                 default: {
-                    if (TILESET.equals(childName) || PROPERTIES.equals(childName) || TEXT_.equals(childName)) {
+                    if (TILESET.equals(childName) || PROPERTIES.equals(childName) || TEXT_EMPTY.equals(childName)) {
                         // Ignore, already processed
                     } else {
                         logger.warn("Unsupported map element: {}", childName);
@@ -465,30 +457,15 @@ public class TmxLoader implements AssetLoader {
 
         final String name = getAttributeValue(node, NAME);
         String clazz = getAttribute(node, CLASS, "");
-        String objectAlignment = getAttribute(node, "objectalignment", "unspecified");
-        String tileRenderSize = getAttribute(node, "tilerendersize", "tile");
-        String fillMode = getAttribute(node, "fillmode", "stretch");
+        String objectAlignment = getAttribute(node, "objectalignment", ObjectAlignment.UNSPECIFIED.getValue());
+        String tileRenderSize = getAttribute(node, "tilerendersize", TileRenderSize.TILE.getValue());
+        String fillMode = getAttribute(node, "fillmode", FillMode.STRETCH.getValue());
 
         set.setName(name);
         set.setClazz(clazz);
-
-        if (objectAlignment != null) {
-            set.setObjectAlignment(objectAlignment);
-        } else {
-            set.setObjectAlignment(ObjectAlignment.UNSPECIFIED);
-        }
-
-        if (tileRenderSize != null) {
-            set.setTileRenderSize(tileRenderSize);
-        } else {
-            set.setTileRenderSize(TileRenderSize.TILE);
-        }
-
-        if (fillMode != null) {
-            set.setFillMode(fillMode);
-        } else {
-            set.setFillMode(FillMode.STRETCH);
-        }
+        set.setObjectAlignment(objectAlignment);
+        set.setTileRenderSize(tileRenderSize);
+        set.setFillMode(fillMode);
 
         boolean hasTilesetImage = false;
         TiledImage image = null;
@@ -512,13 +489,16 @@ public class TmxLoader implements AssetLoader {
 
                     Material material = image.getMaterial();
                     material.setBoolean("UseTilesetImage", true);
-                    material.setVector2("TileSize", new Vector2f(tileWidth, tileHeight));
+                    material.setVector4("TileSize", new Vector4f(tileWidth, tileHeight, tileMargin, tileSpacing));
 
                     set.setImageSource(image.getSource());
                     set.setTexture(image.getTexture());
                     set.setMaterial(material);
 
                     TileCutter cutter = new TileCutter(image.getWidth(), image.getHeight(), tileWidth, tileHeight, tileMargin, tileSpacing);
+                    set.setColumns(cutter.getColumns());
+                    set.setTileCount(cutter.getTileCount());
+
                     Tile tile = cutter.getNextTile();
                     while (tile != null) {
                         set.addNewTile(tile);
@@ -590,27 +570,6 @@ public class TmxLoader implements AssetLoader {
      */
     private void createVisual(Tileset tileset) {
 
-        Texture texture = tileset.getTexture();
-        Material sharedMat = null;
-        Image image = null;
-        /**
-         * If this tileset has a texture, means that most of the tiles are share
-         * the same TextureAltas, I just need to apply the shared material to
-         * their visual part.
-         *
-         * Some tiles like "Player" or "Monster" maybe use their own texture to
-         * perform animation, should be handled differently. Such as create a
-         * com.jme3.scene.Node instead of com.jme3.scene.Geometry for them, and
-         * create a Control to make them animated.
-         *
-         */
-        boolean hasSharedImage = texture != null;
-
-        if (hasSharedImage) {
-            image = texture.getImage();
-            sharedMat = tileset.getMaterial();
-        }
-
         Point offset = new Point(tileset.getTileOffsetX(), tileset.getTileOffsetY());
         Point origin = new Point(0, map.getTileHeight());
 
@@ -621,48 +580,27 @@ public class TmxLoader implements AssetLoader {
 
             String name = "tile#" + tileset.getFirstGid() + "#" + tile.getId();
 
-            /**
-             * If the tile has a texture, means that it don't use the shared
-             * material.
-             */
-            boolean useSharedImage = tile.getTexture() == null;
-
-            int x = tile.getX();
-            int y = tile.getY();
-            int width = tile.getWidth();
-            int height = tile.getHeight();
-
-            int imageWidth;
-            int imageHeight;
-            if (useSharedImage) {
-                imageWidth = image.getWidth();
-                imageHeight = image.getHeight();
-            } else {
-                imageWidth = tile.getTexture().getImage().getWidth();
-                imageHeight = tile.getTexture().getImage().getHeight();
-            }
-
-            TileMesh mesh = new TileMesh(x, y, width, height, imageWidth, imageHeight, offset, origin);
+            Point coord = new Point(tile.getX(), tile.getY());
+            Point size = new Point(tile.getWidth(), tile.getHeight());
+            TileMesh mesh = new TileMesh(coord, size, offset, origin);
 
             Geometry geometry = new Geometry(name, mesh);
             geometry.setQueueBucket(Bucket.Gui);
 
-            if (useSharedImage) {
-                geometry.setMaterial(sharedMat);
-            } else {
+            if (tile.getMaterial() != null) {
                 geometry.setMaterial(tile.getMaterial());
+            } else {
+                geometry.setMaterial(tileset.getMaterial());
             }
 
             if (tile.isAnimated()) {
                 geometry.setBatchHint(BatchHint.Never);
-
                 AnimatedTileControl control = new AnimatedTileControl(tile);
                 geometry.addControl(control);
             }
 
             tile.setVisual(geometry);
         }
-
     }
 
     /**
@@ -761,7 +699,7 @@ public class TmxLoader implements AssetLoader {
 
         int id = getAttribute(t, "id", -1);
 
-        if (!set.isSetFromImage() || id > set.getMaxTileId()) {
+        if (!set.isImageBased() || id > set.getMaxTileId()) {
             tile = new Tile();
             tile.setId(id);
             tile.setWidth(set.getTileWidth());
@@ -803,7 +741,7 @@ public class TmxLoader implements AssetLoader {
 
                 Material material = image.getMaterial();
                 material.setBoolean("UseTilesetImage", true);
-                material.setVector2("TileSize", new Vector2f(tile.getWidth(), tile.getHeight()));
+                material.setVector4("TileSize", new Vector4f(tile.getWidth(), tile.getHeight(), 0f, 0f));
 
                 tile.setTexture(image.getTexture());
                 tile.setMaterial(material);
@@ -1331,7 +1269,7 @@ public class TmxLoader implements AssetLoader {
                     break;
                 }
                 default: {
-                    if (PROPERTIES.equals(nodeName) || TEXT_.equals(nodeName)) {
+                    if (PROPERTIES.equals(nodeName) || TEXT_EMPTY.equals(nodeName)) {
                         // ignore
                     } else {
                         logger.warn("unknown object type:{}", nodeName);
@@ -1447,16 +1385,29 @@ public class TmxLoader implements AssetLoader {
      * @param children the children amongst which to find properties
      */
     private Properties readProperties(NodeList children) {
+        Properties props = new Properties();
+
+        Node propertiesNode = null;
         for (int i = 0; i < children.getLength(); i++) {
             Node child = children.item(i);
             if (PROPERTIES.equals(child.getNodeName())) {
-                Properties props = new Properties();
-                readProperty(child, props);
-                return props;
+                propertiesNode = child;
+                break;
             }
         }
 
-        return null;
+        if (propertiesNode == null) {
+            return props;
+        }
+
+        NodeList nodeList = propertiesNode.getChildNodes();
+        for (int i = 0; i < nodeList.getLength(); i++) {
+            Node child = nodeList.item(i);
+            if (PROPERTY.equals(child.getNodeName())) {
+                readProperty(child, props);
+            }
+        }
+        return props;
     }
 
     /**
@@ -1465,29 +1416,23 @@ public class TmxLoader implements AssetLoader {
      * @param node
      * @param props
      */
-    private void readProperty(Node node, Properties props) {
-        NodeList children = node.getChildNodes();
-        for (int i = 0; i < children.getLength(); i++) {
-            Node child = children.item(i);
-            if (PROPERTY.equals(child.getNodeName())) {
-                final String keyName = getAttributeValue(child, NAME);
-                String value = getAttributeValue(child, VALUE);
-                if (value == null) {
-                    Node grandChild = child.getFirstChild();
-                    if (grandChild != null) {
-                        value = grandChild.getNodeValue();
-                        if (value != null) {
-                            value = value.trim();
-                        }
-                    }
-                }
-
+    private void readProperty(Node child, Properties props) {
+        String keyName = getAttributeValue(child, NAME);
+        String value = getAttributeValue(child, VALUE);
+        if (value == null) {
+            Node grandChild = child.getFirstChild();
+            if (grandChild != null) {
+                value = grandChild.getNodeValue();
                 if (value != null) {
-                    final String type = getAttribute(child, TYPE, "string");
-                    Object val = convertPropertyValue(type, value);
-                    props.put(keyName, val);
+                    value = value.trim();
                 }
             }
+        }
+
+        if (value != null) {
+            final String type = getAttribute(child, TYPE, "string");
+            Object val = convertPropertyValue(type, value);
+            props.put(keyName, val);
         }
     }
 

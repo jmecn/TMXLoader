@@ -7,7 +7,9 @@ public enum FillMode {
     FillMode(String value) {
         this.value = value;
     }
-
+    public String getValue() {
+        return value;
+    }
     public static FillMode fromString(String value) {
         for (FillMode mode : FillMode.values()) {
             if (mode.value.equals(value)) {

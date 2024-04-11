@@ -7,7 +7,9 @@ public enum TileRenderSize {
     TileRenderSize(String value) {
         this.value = value;
     }
-
+    public String getValue() {
+        return value;
+    }
     public static TileRenderSize fromString(String value) {
         for (TileRenderSize size : TileRenderSize.values()) {
             if (size.value.equals(value)) {

@@ -425,9 +425,10 @@ public class Tileset extends Base implements Iterable<Tile> {
     /**
      * Returns whether the tileset is derived from a tileset image.
      *
-     * @return tileSetImage != null
+     * @link <a href="https://doc.mapeditor.org/en/stable/manual/editing-tilesets/#two-types-of-tileset">Two Types of Tileset</a>
+     * @return <code>true</code> if the tileset is image-based, <code>false</code> if it is collection of images.
      */
-    public boolean isSetFromImage() {
+    public boolean isImageBased() {
         return texture != null;
     }
 

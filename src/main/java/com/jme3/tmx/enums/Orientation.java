@@ -24,6 +24,9 @@ public enum Orientation {
     Orientation(String value) {
         this.value = value;
     }
+    public String getValue() {
+        return value;
+    }
     public static Orientation fromString(String value) {
         for (Orientation o : values()) {
             if (o.value.equals(value)) {

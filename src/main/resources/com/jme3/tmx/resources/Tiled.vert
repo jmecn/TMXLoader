@@ -6,9 +6,9 @@ attribute vec2 inTexCoord;
 attribute vec4 inColor;
 
 #ifdef USE_TILESET_IMAGE
-attribute vec2 inTexCoord2;
+attribute vec3 inTexCoord2;
 uniform vec2 m_ImageSize;
-uniform vec2 m_TileSize;
+uniform vec4 m_TileSize;
 #endif
 
 varying vec2 texCoord;
@@ -17,8 +17,9 @@ void main() {
     texCoord = inTexCoord;
 
     #ifdef USE_TILESET_IMAGE
-    vec2 tilePos = inTexCoord2;
-    vec2 uv = (texCoord * m_TileSize + tilePos) / m_ImageSize;
+    // calculate the UV coordinates for the tileset image
+    vec2 tilePos = inTexCoord2.xy;
+    vec2 uv = (texCoord * m_TileSize.xy + tilePos) / m_ImageSize.xy;
     uv.y = 1.0 - uv.y;
     texCoord = uv;
     #endif

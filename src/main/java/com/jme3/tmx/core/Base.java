@@ -24,7 +24,7 @@ public class Base extends Visual {
     protected Properties properties;
 
     public boolean hasProperties() {
-        return properties != null;
+        return properties != null && !properties.isEmpty();
     }
 
     /**

@@ -15,7 +15,9 @@ public enum ObjectAlignment {
     ObjectAlignment(String value) {
         this.value = value;
     }
-
+    public String getValue() {
+        return value;
+    }
     public static ObjectAlignment fromString(String value) {
         for (ObjectAlignment alignment : ObjectAlignment.values()) {
             if (alignment.value.equals(value)) {

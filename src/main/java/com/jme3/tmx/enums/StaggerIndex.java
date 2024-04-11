@@ -5,5 +5,13 @@ package com.jme3.tmx.enums;
  * indexes along the staggered axis are shifted. (since 0.11)
  */
 public enum StaggerIndex {
-    EVEN, ODD;
+    EVEN("even"), ODD("odd");
+    final String value;
+    StaggerIndex(String value) {
+        this.value = value;
+    }
+    public String getValue() {
+        return value;
+    }
+
 }
