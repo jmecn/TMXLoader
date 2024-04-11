@@ -87,7 +87,7 @@ public class TmxLoader implements AssetLoader {
     public static final String OBJECTGROUP = "objectgroup";
     public static final String OBJECT = "object";
     public static final String PROPERTIES = "properties";
-    public static final String _TEXT = "#text";
+    public static final String TEXT_ = "#text";
     public static final String PROPERTY = "property";
     public static final String POINT = "point";
     public static final String POLYLINE = "polyline";
@@ -374,7 +374,15 @@ public class TmxLoader implements AssetLoader {
         Properties props = readProperties(mapNode.getChildNodes());
         map.setProperties(props);
 
+        readTilesets(doc);
+
+        // Load the layers and objectgroups
+        readLayers(mapNode);
+    }
+
+    private void readTilesets(Document doc) {
         NodeList tileSets = doc.getElementsByTagName(TILESET);
+        Node item;
         for (int i = 0; (item = tileSets.item(i)) != null; i++) {
             Tileset set = readTileset(item);
             /*
@@ -383,8 +391,9 @@ public class TmxLoader implements AssetLoader {
             createVisual(set);
             map.addTileset(set);
         }
+    }
 
-        // Load the layers and objectgroups
+    private void readLayers(Node mapNode) throws IOException {
         Node child = mapNode.getFirstChild();
         while (child != null) {
             String childName = child.getNodeName();
@@ -410,7 +419,7 @@ public class TmxLoader implements AssetLoader {
                     break;
                 }
                 default: {
-                    if (TILESET.equals(childName) || PROPERTIES.equals(childName) || _TEXT.equals(childName)) {
+                    if (TILESET.equals(childName) || PROPERTIES.equals(childName) || TEXT_.equals(childName)) {
                         // Ignore, already processed
                     } else {
                         logger.warn("Unsupported map element: {}", childName);
@@ -559,9 +568,7 @@ public class TmxLoader implements AssetLoader {
             }
 
             if (hasTilesetImage) {
-
                 TileCutter cutter = new TileCutter(image.getWidth(), image.getHeight(), tileWidth, tileHeight, tileMargin, tileSpacing);
-
                 Tile tile = cutter.getNextTile();
                 while (tile != null) {
                     set.addNewTile(tile);
@@ -1320,7 +1327,7 @@ public class TmxLoader implements AssetLoader {
                     break;
                 }
                 default: {
-                    if (PROPERTIES.equals(nodeName) || _TEXT.equals(nodeName)) {
+                    if (PROPERTIES.equals(nodeName) || TEXT_.equals(nodeName)) {
                         // ignore
                     } else {
                         logger.warn("unknown object type:{}", nodeName);
@@ -1458,7 +1465,7 @@ public class TmxLoader implements AssetLoader {
         NodeList children = node.getChildNodes();
         for (int i = 0; i < children.getLength(); i++) {
             Node child = children.item(i);
-            if (PROPERTY.equalsIgnoreCase(child.getNodeName())) {
+            if (PROPERTY.equals(child.getNodeName())) {
                 final String keyName = getAttributeValue(child, NAME);
                 String value = getAttributeValue(child, VALUE);
                 if (value == null) {
@@ -1472,68 +1479,75 @@ public class TmxLoader implements AssetLoader {
                 }
 
                 if (value != null) {
-                    Object val = value;
-
-                    /*
-                     * type can be as follows:
-                     * file: stored as paths relative from the location of the map file. (since 0.17)
-                     *
-                     * object: can reference any object on the same map and are stored as an integer (the ID of
-                     * the referenced object, or 0 when no object is referenced). When used on objects in the
-                     * Tile Collision Editor, they can only refer to other objects on the same tile. (since 1.4)
-                     *
-                     * class: will have their member values stored in a nested <properties> element. Only the
-                     * actually set members are saved. When no members have been set the properties element is
-                     * left out entirely.(since 1.8)
-                     */
                     final String type = getAttribute(child, TYPE, "string");
-                    switch (type) {
-                        // string (default) (since 0.16)
-                        case "string":
-                            break;
-                        // a int value (since 0.16)
-                        case "int":
-                            val = (int) Long.parseLong(value);
-                            break;
-                        // a float value (since 0.16)
-                        case "float":
-                            val = Float.parseFloat(value);
-                            break;
-                        // has a value of either "true" or "false". (since 0.16)
-                        case "bool":
-                            val = Boolean.parseBoolean(value);
-                            break;
-                        // stored in the format #AARRGGBB. (since 0.17)
-                        case COLOR:
-                            val = ColorUtil.toColorRGBA(value);
-                            break;
-                        // stored as paths relative from the location of the map file. (since 0.17)
-                        case "file":
-                            val = toJmeAssetPath(this.key.getFolder() + value);
-                            break;
-                        // can reference any object on the same map and are stored as an integer
-                        // (the ID of the referenced object, or 0 when no object is referenced).
-                        // When used on objects in the Tile Collision Editor, they can only refer
-                        // to other objects on the same tile. (since 1.4)
-                        case OBJECT:
-                            // Don't know the usage of this type, so I just convert that value to an int
-                            val = Integer.parseInt(value);
-                            break;
-                        // will have their member values stored in a nested <properties> element.
-                        // Only the actually set members are saved. When no members have been set
-                        // the properties element is left out entirely. (since 1.8)
-                        case CLASS:
-                            // TODO not support yet. I need a example to test.
-                            break;
-                        default:
-                            logger.warn("unknown type:{}", type);
-                            break;
-                    }
-
+                    Object val = convertPropertyValue(type, value);
                     props.put(keyName, val);
                 }
             }
         }
+    }
+
+    /**
+     * type can be as follows:
+     * file: stored as paths relative from the location of the map file. (since 0.17)
+     *
+     * object: can reference any object on the same map and are stored as an integer (the ID of
+     * the referenced object, or 0 when no object is referenced). When used on objects in the
+     * Tile Collision Editor, they can only refer to other objects on the same tile. (since 1.4)
+     *
+     * class: will have their member values stored in a nested &lt;properties&gt; element. Only the
+     * actually set members are saved. When no members have been set the properties element is
+     * left out entirely.(since 1.8)
+     *
+     * @param type the type of the property
+     * @param value the value of the property
+     */
+    private Object convertPropertyValue(String type, String value) {
+        Object val = value;
+        switch (type) {
+            // string (default) (since 0.16)
+            case "string":
+                break;
+            // a int value (since 0.16)
+            case "int":
+                val = (int) Long.parseLong(value);
+                break;
+            // a float value (since 0.16)
+            case "float":
+                val = Float.parseFloat(value);
+                break;
+            // has a value of either "true" or "false". (since 0.16)
+            case "bool":
+                val = Boolean.parseBoolean(value);
+                break;
+            // stored in the format #AARRGGBB. (since 0.17)
+            case COLOR:
+                val = ColorUtil.toColorRGBA(value);
+                break;
+            // stored as paths relative from the location of the map file. (since 0.17)
+            case "file":
+                val = toJmeAssetPath(this.key.getFolder() + value);
+                break;
+            // can reference any object on the same map and are stored as an integer
+            // (the ID of the referenced object, or 0 when no object is referenced).
+            // When used on objects in the Tile Collision Editor, they can only refer
+            // to other objects on the same tile. (since 1.4)
+            case OBJECT:
+                // Don't know the usage of this type, so I just convert that value to an int
+                val = Integer.parseInt(value);
+                break;
+            // will have their member values stored in a nested <properties> element.
+            // Only the actually set members are saved. When no members have been set
+            // the properties element is left out entirely. (since 1.8)
+            case CLASS:
+                // TODO not support yet. I need a example to test.
+                break;
+            default:
+                logger.warn("unknown type:{}", type);
+                break;
+        }
+
+        return val;
     }
 
     /**
@@ -1548,7 +1562,7 @@ public class TmxLoader implements AssetLoader {
             TextureKey texKey = new TextureKey(source, true);
             texKey.setGenerateMips(false);
             tex = (Texture2D) assetManager.loadTexture(texKey);
-            tex.setWrap(WrapMode.Repeat);
+            tex.setWrap(WrapMode.EdgeClamp);
             tex.setMagFilter(MagFilter.Nearest);
         } catch (Exception e) {
             logger.error("Can't load texture {}", source, e);
@@ -1567,18 +1581,14 @@ public class TmxLoader implements AssetLoader {
             loaderClass = Class.forName("com.jme3.texture.plugins.AWTLoader");
         } catch (ClassNotFoundException e) {
             logger.info("Can't find AWTLoader.");
-
             try {
                 // then try Android Native Image Loader
-                loaderClass = Class
-                        .forName("com.jme3.texture.plugins.AndroidNativeImageLoader");
+                loaderClass = Class.forName("com.jme3.texture.plugins.AndroidNativeImageLoader");
             } catch (ClassNotFoundException e1) {
                 logger.info("Can't find AndroidNativeImageLoader.");
-
                 try {
                     // then try Android BufferImage Loader
-                    loaderClass = Class
-                            .forName("com.jme3.texture.plugins.AndroidBufferImageLoader");
+                    loaderClass = Class.forName("com.jme3.texture.plugins.AndroidBufferImageLoader");
                 } catch (ClassNotFoundException e2) {
                     logger.info("Can't find AndroidNativeImageLoader.");
                 }
@@ -1610,7 +1620,7 @@ public class TmxLoader implements AssetLoader {
             Image img = (Image) loadMethod.invoke(loaderInstance, info);
 
             tex = new Texture2D();
-            tex.setWrap(WrapMode.Repeat);
+            tex.setWrap(WrapMode.EdgeClamp);
             tex.setMagFilter(MagFilter.Nearest);
             tex.setAnisotropicFilter(texKey.getAnisotropy());
             tex.setName(texKey.getName());
