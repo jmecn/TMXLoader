@@ -6,7 +6,7 @@ You can download it here: [TmxLoader v0.3](https://github.com/jmecn/TMXLoader/re
 Or use the [source](https://github.com/jmecn/TMXLoader).
 
 [![Java CI with Gradle](https://github.com/jmecn/TMXLoader/actions/workflows/build.yml/badge.svg?branch=master)](https://github.com/jmecn/TMXLoader/actions/workflows/build.yml)
-[![Publish to GitHub Packages](https://github.com/jmecn/TMXLoader/actions/workflows/publish.yml/badge.svg?branch=master)](https://github.com/jmecn/TMXLoader/actions/workflows/publish.yml)
+[![Publish](https://github.com/jmecn/TMXLoader/actions/workflows/publish.yml/badge.svg?branch=master)](https://github.com/jmecn/TMXLoader/actions/workflows/publish.yml)
 
 # How to use
 
