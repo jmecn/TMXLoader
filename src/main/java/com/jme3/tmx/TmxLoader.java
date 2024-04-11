@@ -510,9 +510,19 @@ public class TmxLoader implements AssetLoader {
                     // case.
                     hasTilesetImage = true;
 
+                    Material material = image.getMaterial();
+                    material.setBoolean("UseTilesetImage", true);
+
                     set.setImageSource(image.getSource());
                     set.setTexture(image.getTexture());
-                    set.setMaterial(image.getMaterial());
+                    set.setMaterial(material);
+
+                    TileCutter cutter = new TileCutter(image.getWidth(), image.getHeight(), tileWidth, tileHeight, tileMargin, tileSpacing);
+                    Tile tile = cutter.getNextTile();
+                    while (tile != null) {
+                        set.addNewTile(tile);
+                        tile = cutter.getNextTile();
+                    }
                 }
             } else if ("grid".equals(nodeName)) {
                 /*
@@ -533,7 +543,7 @@ public class TmxLoader implements AssetLoader {
                         set.addTerrain(readTerrain(terrainNode));
                     }
                 }
-            } else if (nodeName.equals(TILE)) {
+            } else if (TILE.equals(nodeName)) {
                 readTile(set, child);
             } else if ("tileoffset".equals(nodeName)) {
                 /*
@@ -565,18 +575,6 @@ public class TmxLoader implements AssetLoader {
                         set.addWangSet(readWangSet(wangSetNode));
                     }
                 }
-            }
-
-            if (hasTilesetImage) {
-                TileCutter cutter = new TileCutter(image.getWidth(), image.getHeight(), tileWidth, tileHeight, tileMargin, tileSpacing);
-                Tile tile = cutter.getNextTile();
-                while (tile != null) {
-                    set.addNewTile(tile);
-                    tile = cutter.getNextTile();
-                }
-
-                Material mat = set.getMaterial();
-                mat.setBoolean("UseTilesetImage", true);
             }
         }
 
