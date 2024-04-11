@@ -610,8 +610,8 @@ public class TmxLoader implements AssetLoader {
      * @return
      */
     private Terrain readTerrain(Node node) {
-        final String name = getAttributeValue(node, "name");
-        final int tile = getAttribute(node, "tile", -1);
+        final String name = getAttributeValue(node, NAME);
+        final int tile = getAttribute(node, TILE, -1);
 
         Terrain terrain = new Terrain(name);
         terrain.setTile(tile);
@@ -1005,7 +1005,7 @@ public class TmxLoader implements AssetLoader {
         Node child = node.getFirstChild();
         while (child != null) {
             if (TILE.equalsIgnoreCase(child.getNodeName())) {
-                int tileId = getAttribute(child, "gid", -1);
+                int tileId = getAttribute(child, GID, -1);
                 map.setTileAtFromTileId(layer, x, y, tileId);
 
                 x++;
@@ -1042,12 +1042,12 @@ public class TmxLoader implements AssetLoader {
             int iy = 0;
             Node child = node.getFirstChild();
             while (child != null) {
-                if ("tile".equalsIgnoreCase(child.getNodeName())) {
+                if (TILE.equals(child.getNodeName())) {
                     // Not to be confused with the tile element inside a tileset,
                     // this element defines the value of a single tile on a tile layer.
                     // This is however the most inefficient way of storing the tile
                     // layer data, and should generally be avoided.
-                    int tileId = getAttribute(child, "gid", -1);
+                    int tileId = getAttribute(child, GID, -1);
                     // TODO need to get some samples to test this
                     Tile tile = map.getTileForTileGID(tileId);
                     chunk.setTileAt(ix, iy, tile);
@@ -1186,14 +1186,14 @@ public class TmxLoader implements AssetLoader {
      */
     private MapObject readObjectNode(Node node) {
         int id = getAttribute(node, "id", 0);
-        String name = getAttributeValue(node, "name");
-        String type = getAttributeValue(node, "type");
+        String name = getAttributeValue(node, NAME);
+        String type = getAttributeValue(node, TYPE);
         double x = getDoubleAttribute(node, "x", 0);
         double y = getDoubleAttribute(node, "y", 0);
         double width = getDoubleAttribute(node, WIDTH, 0);
         double height = getDoubleAttribute(node, HEIGHT, 0);
         double rotation = getDoubleAttribute(node, "rotation", 0);
-        String gid = getAttributeValue(node, "gid");
+        String gid = getAttributeValue(node, GID);
         int visible = getAttribute(node, "visible", 1);
         String template = getAttributeValue(node, "template");
         // TODO need some samples to figure out how template works.
