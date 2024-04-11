@@ -229,8 +229,6 @@ public class ObjectRenderer {
         float offsetX = tile.getTileset().getTileOffsetX();
         float offsetY = tile.getTileset().getTileOffsetY();
 
-        logger.info("map tile width:{}, height:{}, tile width: {}, height: {}", map.getTileWidth(), map.getTileHeight(), tw, th);
-
         // When the object has a gid set, then it is represented by
         // the image of the tile with that global ID. The image
         // alignment currently depends on the map orientation.

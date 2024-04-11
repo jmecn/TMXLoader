@@ -10,7 +10,7 @@ import com.jme3.scene.VertexBuffer;
  */
 public class TileMesh extends Mesh {
 
-    public TileMesh(int x, int y, int width, int height, int imageWidth, int imageHeight, float offsetX, float offsetY) {
+    public TileMesh(int x, int y, int width, int height, int imageWidth, int imageHeight, float offsetY) {
 
         float[] texCoords = getTexCoords(x, y, width, height, imageWidth, imageHeight);
 
@@ -29,10 +29,10 @@ public class TileMesh extends Mesh {
          * </pre>
          */
         float[] vertices = new float[]{
-                offsetX,         0, offsetY + height,
-                offsetX + width, 0, offsetY + height,
-                offsetX + width, 0, offsetY,
-                offsetX,         0, offsetY};
+                0,     0, offsetY + height,
+                width, 0, offsetY + height,
+                width, 0, offsetY,
+                0,     0, offsetY};
 
         short[] indexes = new short[]{0, 1, 2, 0, 2, 3};
 

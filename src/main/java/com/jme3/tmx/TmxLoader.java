@@ -2,14 +2,11 @@ package com.jme3.tmx;
 
 import com.jme3.asset.*;
 import com.jme3.material.Material;
-import com.jme3.material.RenderState;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector2f;
 import com.jme3.renderer.queue.RenderQueue.Bucket;
 import com.jme3.scene.Geometry;
-import com.jme3.scene.Mesh;
 import com.jme3.scene.Spatial.BatchHint;
-import com.jme3.scene.VertexBuffer.Type;
 import com.jme3.texture.Image;
 import com.jme3.texture.Texture;
 import com.jme3.texture.Texture.MagFilter;
@@ -486,7 +483,7 @@ public class TmxLoader implements AssetLoader {
             Node child = children.item(i);
 
             String nodeName = child.getNodeName();
-            if (nodeName.equalsIgnoreCase(IMAGE)) {
+            if (IMAGE.equals(nodeName)) {
                 if (hasTilesetImage) {
                     logger.warn("Ignoring illegal image element after tileset image.");
                     continue;
@@ -503,7 +500,7 @@ public class TmxLoader implements AssetLoader {
                     set.setTexture(image.texture);
                     set.setMaterial(image.createMaterial());
                 }
-            } else if (nodeName.equalsIgnoreCase("grid")) {
+            } else if ("grid".equals(nodeName)) {
                 /*
                  * This element is only used in case of isometric orientation,
                  * and determines how tile overlays for terrain and collision
@@ -514,7 +511,7 @@ public class TmxLoader implements AssetLoader {
                 int gridWidth = getAttribute(node, WIDTH, 0);
                 int gridHeight = getAttribute(node, HEIGHT, 0);
                 set.setGrid(gridOrientation, gridWidth, gridHeight);
-            } else if (nodeName.equalsIgnoreCase(TERRAINTYPES)) {
+            } else if (TERRAINTYPES.equals(nodeName)) {
                 NodeList terrainTypes = child.getChildNodes();
                 for (int k = 0; k < terrainTypes.getLength(); k++) {
                     Node terrainNode = terrainTypes.item(k);
@@ -522,9 +519,9 @@ public class TmxLoader implements AssetLoader {
                         set.addTerrain(readTerrain(terrainNode));
                     }
                 }
-            } else if (nodeName.equalsIgnoreCase(TILE)) {
+            } else if (nodeName.equals(TILE)) {
                 readTile(set, child);
-            } else if (nodeName.equalsIgnoreCase("tileoffset")) {
+            } else if ("tileoffset".equals(nodeName)) {
                 /*
                  * This element is used to specify an offset in pixels, to be
                  * applied when drawing a tile from the related tileset. When
@@ -534,7 +531,7 @@ public class TmxLoader implements AssetLoader {
                 final int tileOffsetY = getAttribute(child, "y", 0);
 
                 set.setTileOffset(tileOffsetX, tileOffsetY);
-            } else if (nodeName.equalsIgnoreCase("transformations")) {
+            } else if ("transformations".equals(nodeName)) {
                 // This element is used to describe which transformations can be applied to the tiles
                 // (e.g. to extend a Wang set by transforming existing tiles).
                 // Whether the tiles in this set can be flipped horizontally (default 0)
@@ -546,7 +543,7 @@ public class TmxLoader implements AssetLoader {
                 // Whether untransformed tiles remain preferred, otherwise transformed tiles are used to produce more variations (default 0)
                 int preferUntransformed = getAttribute(node, "preferuntransformed", 0);
                 set.setTransformations(new Transformations(hflip, vflip, rotate, preferUntransformed));
-            } else if (nodeName.equalsIgnoreCase(WANGSETS)) {
+            } else if (WANGSETS.equals(nodeName)) {
                 NodeList wangSets = child.getChildNodes();
                 for (int k = 0; k < wangSets.getLength(); k++) {
                     Node wangSetNode = wangSets.item(k);
@@ -554,6 +551,13 @@ public class TmxLoader implements AssetLoader {
                         set.addWangSet(readWangSet(wangSetNode));
                     }
                 }
+            }
+
+            if (hasTilesetImage) {
+                // add tileoffset to the material
+                Material mat = set.getMaterial();
+                Vector2f tileOffset = new Vector2f(set.getTileOffsetX(), set.getTileOffsetY());
+                mat.setVector2("TileOffset", tileOffset);
             }
         }
 
@@ -589,13 +593,13 @@ public class TmxLoader implements AssetLoader {
             sharedMat = tileset.getMaterial();
         }
 
-        int offsetX = tileset.getTileOffsetX();
-        int offsetY = tileset.getTileOffsetY();
+        int offsetX = 0;
+        int offsetY = 0;
 
         // if the tileset tilesize is larger than the map tilesize, adjust the offset
         int diffY = tileset.getTileHeight() - map.getTileHeight();
         if (diffY > 0) {
-            offsetY = offsetY - diffY;
+            offsetY = - diffY;
         }
 
         List<Tile> tiles = tileset.getTiles();
@@ -631,7 +635,7 @@ public class TmxLoader implements AssetLoader {
                 imageHeight = tile.getTexture().getImage().getHeight();
             }
 
-            TileMesh mesh = new TileMesh(x, y, width, height, imageWidth, imageHeight, offsetX, offsetY);
+            TileMesh mesh = new TileMesh(x, y, width, height, imageWidth, imageHeight, offsetY);
 
             Geometry geometry = new Geometry(name, mesh);
             geometry.setQueueBucket(Bucket.Gui);
@@ -787,7 +791,7 @@ public class TmxLoader implements AssetLoader {
 
         for (int i = 0; i < children.getLength(); i++) {
             Node child = children.item(i);
-            if (IMAGE.equalsIgnoreCase(child.getNodeName())) {
+            if (IMAGE.equals(child.getNodeName())) {
                 AnImage image = readImage(child);
                 tile.setTexture(image.texture);
                 tile.setMaterial(image.createMaterial());
