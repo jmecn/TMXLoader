@@ -267,7 +267,7 @@ public class HexGrid extends Mesh {
      * Converts tile to screen coordinates. Sub-tile return values are not
      * supported by this renderer.
      */
-    public Point tileToScreenCoords(float x, float y) {
+    private Point tileToScreenCoords(float x, float y) {
         int tileX = (int) Math.floor(x);
         int tileY = (int) Math.floor(y);
         int pixelX;
