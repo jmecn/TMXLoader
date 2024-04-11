@@ -74,9 +74,9 @@ public class AnimatedTileControl extends AbstractControl {
             Mesh mesh = geom.getMesh();
 
             Tile t = tile.getTileset().getTile(frame.getTileId());
-            Mesh tMesh = ((Geometry) t.getVisual()).getMesh();
-            FloatBuffer data = (FloatBuffer)tMesh.getBuffer(Type.TexCoord).getData();
-            mesh.setBuffer(Type.TexCoord, 2, data);
+            Mesh tMesh = t.getVisual().getMesh();
+            FloatBuffer data = (FloatBuffer)tMesh.getBuffer(Type.TexCoord2).getData();
+            mesh.setBuffer(Type.TexCoord2, 2, data);
         }
     }
 

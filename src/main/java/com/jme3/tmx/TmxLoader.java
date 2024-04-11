@@ -800,8 +800,13 @@ public class TmxLoader implements AssetLoader {
             Node child = children.item(i);
             if (IMAGE.equals(child.getNodeName())) {
                 TiledImage image = readImage(child);
+
+                Material material = image.getMaterial();
+                material.setBoolean("UseTilesetImage", true);
+                material.setVector2("TileSize", new Vector2f(tile.getWidth(), tile.getHeight()));
+
                 tile.setTexture(image.getTexture());
-                tile.setMaterial(image.getMaterial());
+                tile.setMaterial(material);
             } else if ("animation".equalsIgnoreCase(child.getNodeName())) {
                 Animation animation = new Animation(null);
                 NodeList frames = child.getChildNodes();
