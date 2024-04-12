@@ -15,6 +15,7 @@ import com.jme3.input.controls.KeyTrigger;
 import com.jme3.input.controls.MouseAxisTrigger;
 import com.jme3.input.controls.MouseButtonTrigger;
 import com.jme3.material.Material;
+import com.jme3.material.RenderState;
 import com.jme3.math.*;
 import com.jme3.renderer.Camera;
 import com.jme3.renderer.ViewPort;
@@ -63,6 +64,10 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener,
     private final Node gridVisual;// for render grid
     private Material gridMaterial;// for render grid
     private boolean isGridUpdated = true;
+
+    private Spatial gridCursor;
+    private Material cursorMaterial;
+    private boolean isCursorUpdated = true;
 
     // The mapNode
     private final Vector3f mapTranslation;
@@ -159,6 +164,9 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener,
         cam.setLocation(new Vector3f(halfWidth, halfHeight, 0));
 
         gridMaterial = createGridMaterial();
+
+        cursorMaterial = createCursorMaterial();
+
         if (this.map != null) {
             viewPort.setBackgroundColor(map.getBackgroundColor());
         }
@@ -205,9 +213,11 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener,
             spatial = mapRenderer.render();
 
             if (isGridUpdated) {
-                gridVisual.getChildren().clear();
-                mapRenderer.renderGrid(gridVisual, gridMaterial);
-                isGridUpdated = false;
+                createGird();
+            }
+
+            if (isCursorUpdated) {
+                createCursor();
             }
 
             if (isMapUpdated) {
@@ -221,8 +231,35 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener,
                 isMapUpdated = false;
             }
         }
+
+        if (gridCursor != null) {
+            spatial = gridCursor;
+            Point cursor = getCursorTileCoordinate();
+            Vector2f loc = mapRenderer.tileToScreenCoords(cursor.x, cursor.y);
+            spatial.setLocalTranslation(loc.x, 1000f, loc.y);
+        }
     }
 
+    private void createGird() {
+        gridVisual.getChildren().clear();
+        mapRenderer.renderGrid(gridVisual, gridMaterial);
+        if (gridVisual.getParent() != null) {
+            gridVisual.removeFromParent();
+            map.getVisual().attachChild(gridVisual);
+        }
+        isGridUpdated = false;
+    }
+
+    private void createCursor() {
+        // remove old cursor
+        if (gridCursor != null) {
+            gridCursor.removeFromParent();
+        }
+
+        gridCursor = mapRenderer.createTileGrid(cursorMaterial);
+        map.getVisual().attachChild(gridCursor);
+        isCursorUpdated = false;
+    }
     /**
      * Set map. It will instance a new MapRenderer and create visual parts for this map.
      * 
@@ -266,16 +303,15 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener,
         isMapUpdated = true;
 
         if (gridMaterial != null) {
-            // in case the gridMaterial is not initialized
-            gridVisual.getChildren().clear();
-            mapRenderer.renderGrid(gridVisual, gridMaterial);
-            if (gridVisual.getParent() != null) {
-                gridVisual.removeFromParent();
-                map.getVisual().attachChild(gridVisual);
-            }
-            isGridUpdated = false;
+            createGird();
         } else {
             isGridUpdated = true;
+        }
+
+        if (cursorMaterial != null) {
+            createCursor();
+        } else {
+            isCursorUpdated = true;
         }
     }
 
@@ -364,21 +400,14 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener,
         }
 
         // keyboard only WASD for movement
-        inputManager.addMapping(LEFT, new KeyTrigger(KeyInput.KEY_A),
-                new KeyTrigger(KeyInput.KEY_LEFT));
-        inputManager.addMapping(RIGHT, new KeyTrigger(KeyInput.KEY_D),
-                new KeyTrigger(KeyInput.KEY_RIGHT));
-        inputManager.addMapping(UP, new KeyTrigger(KeyInput.KEY_W),
-                new KeyTrigger(KeyInput.KEY_UP));
-        inputManager.addMapping(DOWN, new KeyTrigger(KeyInput.KEY_S),
-                new KeyTrigger(KeyInput.KEY_DOWN));
+        inputManager.addMapping(LEFT, new KeyTrigger(KeyInput.KEY_A), new KeyTrigger(KeyInput.KEY_LEFT));
+        inputManager.addMapping(RIGHT, new KeyTrigger(KeyInput.KEY_D), new KeyTrigger(KeyInput.KEY_RIGHT));
+        inputManager.addMapping(UP, new KeyTrigger(KeyInput.KEY_W), new KeyTrigger(KeyInput.KEY_UP));
+        inputManager.addMapping(DOWN, new KeyTrigger(KeyInput.KEY_S), new KeyTrigger(KeyInput.KEY_DOWN));
 
-        inputManager.addMapping(ZOOMIN, new MouseAxisTrigger(
-                MouseInput.AXIS_WHEEL, false));
-        inputManager.addMapping(ZOOMOUT, new MouseAxisTrigger(
-                MouseInput.AXIS_WHEEL, true));
-        inputManager.addMapping(DRAG, new MouseButtonTrigger(
-                MouseInput.BUTTON_LEFT));
+        inputManager.addMapping(ZOOMIN, new MouseAxisTrigger(MouseInput.AXIS_WHEEL, false));
+        inputManager.addMapping(ZOOMOUT, new MouseAxisTrigger(MouseInput.AXIS_WHEEL, true));
+        inputManager.addMapping(DRAG, new MouseButtonTrigger(MouseInput.BUTTON_LEFT));
 
         // add key mapping to show/hide grid
         inputManager.addMapping(GRID, new KeyTrigger(KeyInput.KEY_G));
@@ -609,6 +638,12 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener,
         mat.setColor("Color", ColorRGBA.Gray);
         mat.getAdditionalRenderState().setWireframe(true);
         mat.getAdditionalRenderState().setDepthTest(false);
+        return mat;
+    }
+
+    private Material createCursorMaterial() {
+        Material mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+        mat.setColor("Color", new ColorRGBA(0.7f, 0.8f, 0.9f, 0.3f));
         return mat;
     }
 }

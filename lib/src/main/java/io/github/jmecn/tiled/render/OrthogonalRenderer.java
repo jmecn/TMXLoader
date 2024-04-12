@@ -4,6 +4,7 @@ import com.jme3.material.Material;
 import com.jme3.math.Vector2f;
 import com.jme3.renderer.queue.RenderQueue.Bucket;
 import com.jme3.scene.Geometry;
+import com.jme3.scene.Mesh;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import io.github.jmecn.tiled.core.Tile;
@@ -12,6 +13,7 @@ import io.github.jmecn.tiled.core.TiledMap;
 import io.github.jmecn.tiled.enums.RenderOrder;
 import io.github.jmecn.tiled.math2d.Point;
 import io.github.jmecn.tiled.render.grid.OrthoGrid;
+import io.github.jmecn.tiled.render.shape.Rect;
 
 /**
  * Orthogonal render
@@ -23,6 +25,14 @@ public class OrthogonalRenderer extends MapRenderer {
 
     public OrthogonalRenderer(TiledMap map) {
         super(map);
+    }
+
+    @Override
+    public Spatial createTileGrid(Material material) {
+        Mesh mesh = new Rect(tileWidth, tileHeight, false);
+        Geometry geom = new Geometry("TileGrid", mesh);
+        geom.setMaterial(material);
+        return geom;
     }
 
     @Override

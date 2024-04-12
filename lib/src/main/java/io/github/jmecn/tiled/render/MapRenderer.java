@@ -4,6 +4,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
+import com.jme3.asset.AssetManager;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.FastMath;
@@ -73,6 +74,8 @@ public abstract class MapRenderer {
 
         this.mapSize = new Point(width * tileWidth, height * tileHeight);
     }
+
+    public abstract Spatial createTileGrid(Material material);
 
     /**
      * Render the tiled map

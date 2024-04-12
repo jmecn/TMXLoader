@@ -14,6 +14,7 @@ import io.github.jmecn.tiled.enums.StaggerAxis;
 import io.github.jmecn.tiled.enums.StaggerIndex;
 import io.github.jmecn.tiled.math2d.Point;
 import io.github.jmecn.tiled.render.grid.HexGrid;
+import io.github.jmecn.tiled.render.grid.Hexagon;
 import io.github.jmecn.tiled.render.shape.Rect;
 
 /**
@@ -80,6 +81,15 @@ public class HexagonalRenderer extends OrthogonalRenderer {
 
     private boolean doStaggerY(int y) {
         return !staggerX && ((y & 1) ^ staggerIndex) == 0;
+    }
+
+    @Override
+    public Spatial createTileGrid(Material material) {
+        Hexagon mesh = new Hexagon(tileWidth, tileHeight, map.getHexSideLength(), map.getStaggerAxis(), true);
+        // Rect mesh = new Rect(tileWidth, tileHeight, false);
+        Geometry geom = new Geometry("HexGrid", mesh);
+        geom.setMaterial(material);
+        return geom;
     }
 
     @Override

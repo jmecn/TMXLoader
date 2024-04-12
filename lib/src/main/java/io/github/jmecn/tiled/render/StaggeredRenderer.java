@@ -1,7 +1,11 @@
 package io.github.jmecn.tiled.render;
 
+import com.jme3.material.Material;
+import com.jme3.scene.Geometry;
+import com.jme3.scene.Spatial;
 import io.github.jmecn.tiled.core.TiledMap;
 import io.github.jmecn.tiled.math2d.Point;
+import io.github.jmecn.tiled.render.shape.Rect;
 
 /**
  * Staggered render
@@ -13,6 +17,16 @@ public class StaggeredRenderer extends HexagonalRenderer {
 
     public StaggeredRenderer(TiledMap map) {
         super(map);
+    }
+
+    @Override
+    public Spatial createTileGrid(Material material) {
+        // create a grid
+        // Diamond mesh = new Diamond(tileWidth, tileHeight, false);
+        Rect mesh = new Rect(tileWidth, tileHeight, false);
+        Geometry geom = new Geometry("TileGrid", mesh);
+        geom.setMaterial(material);
+        return geom;
     }
 
     /**
