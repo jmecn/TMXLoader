@@ -1,0 +1,25 @@
+plugins {
+    id 'tiled.java-application-conventions'
+}
+
+dependencies {
+    implementation project(':lib')
+
+    implementation 'org.jmonkeyengine:jme3-desktop'
+    implementation 'org.jmonkeyengine:jme3-lwjgl'
+    implementation 'ch.qos.logback:logback-classic'
+}
+
+application {
+    // Define the main class for the application.
+    mainClass = 'io.github.jmecn.tiled.app.TiledApp'
+}
+
+// 将 ../examples 目录添加为test resources
+sourceSets {
+    main {
+        resources {
+            srcDirs '../examples'
+        }
+    }
+}

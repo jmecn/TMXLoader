@@ -1,33 +1,3 @@
-# Introduction
-
-TMXLoader is used for loading .tmx assets created by [Tiled Map Editor](http://www.mapeditor.org/). It's a plugin for [jMonkeyEngine3](http://jmonkeyengine.org/).
-
-You can download it here: [TmxLoader v0.3](https://github.com/jmecn/TMXLoader/releases).
-Or use the [source](https://github.com/jmecn/TMXLoader).
-
-[![Java CI with Gradle](https://github.com/jmecn/TMXLoader/actions/workflows/build.yml/badge.svg?branch=master)](https://github.com/jmecn/TMXLoader/actions/workflows/build.yml)
-
-## How to use
-
-maven
-
-```xml
-<dependency>
-    <groupId>io.github.jmecn</groupId>
-    <artifactId>tmxloader</artifactId>
-    <version>0.3.0</version>
-</dependency>
-```
-
-gradle
-
-```groovy
-dependencies {
-    implementation 'io.github.jmecn:tmxloader:0.3.0'
-}
-```
-
-```java
 package io.github.jmecn.tiled.app;
 
 import com.jme3.app.SimpleApplication;
@@ -70,25 +40,5 @@ public class TmxLoaderExample extends SimpleApplication {
         app.setSettings(settings);
         app.start();
     }
+
 }
-```
-
-## Screenshots
-
-* Orthogonal Map
-
-![orthogonal03](docs/screenshots/orthogonal03.jpg)
-
-* Iso map
-
-![isometric01](docs/screenshots/isometric01.jpg)
-
-* Hex map
-
-![hexagonal01](docs/screenshots/hexagonal01.jpg)
-
-* Staggered map
-
-![staggered05](docs/screenshots/staggered05.png)
-
-![animated tile](https://cloud.githubusercontent.com/assets/5283598/21221336/f211c08e-c2f7-11e6-9de8-e3018fd65b07.gif)

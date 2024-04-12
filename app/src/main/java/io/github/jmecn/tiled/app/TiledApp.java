@@ -1,0 +1,267 @@
+package io.github.jmecn.tiled.app;
+
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Toolkit;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CountDownLatch;
+
+import javax.swing.*;
+
+import com.jme3.app.SimpleApplication;
+import com.jme3.input.MouseInput;
+import com.jme3.input.controls.ActionListener;
+import com.jme3.input.controls.MouseButtonTrigger;
+import com.jme3.system.AppSettings;
+import com.jme3.system.awt.AwtPanel;
+import com.jme3.system.awt.AwtPanelsContext;
+import com.jme3.system.awt.PaintMode;
+import io.github.jmecn.tiled.TiledMapAppState;
+import io.github.jmecn.tiled.TmxLoader;
+import io.github.jmecn.tiled.core.TiledMap;
+import io.github.jmecn.tiled.enums.ZoomMode;
+
+/**
+ * 
+ * @author yanmaoyuan
+ * 
+ */
+public class TiledApp extends SimpleApplication {
+
+    private static final String[] assets = {
+            "image.tmx",
+            "BeatBoss/forest.tmx",
+            "BeatBoss/cave.tmx",
+            "BeatBoss/tomb.tmx",
+
+            "Orthogonal/01.tmx",
+            "Orthogonal/02.tmx",
+            "Orthogonal/03.tmx",
+            "Orthogonal/04.tmx",
+            "Orthogonal/05.tmx",
+            "Orthogonal/06.tmx",
+            "Orthogonal/07.tmx",
+            "Orthogonal/orthogonal-outside.tmx",
+            "Orthogonal/perspective_walls.tmx",
+            "csvmap.tmx",
+            "sewers.tmx",
+            "Desert/desert.tmx",
+
+            "Isometric/01.tmx",
+            "Isometric/02.tmx",
+            "Isometric/03.tmx",
+            "Isometric/isometric_grass_and_water.tmx",
+
+            "Hexagonal/01.tmx",
+            "Hexagonal/02.tmx",
+            "Hexagonal/03.tmx",
+            "Hexagonal/04.tmx",
+            "Hexagonal/05.tmx",
+            "Hexagonal/hexagonal-mini.tmx",
+
+            "Staggered/01.tmx",
+            "Staggered/02.tmx",
+            "Staggered/03.tmx",
+            "Staggered/04.tmx",
+            "Staggered/05.tmx", };
+
+    final static private String[] names = {
+            "image",
+            "forest", "cave", "tomb",
+            "orthogonal_01", "orthogonal_02",
+            "orthogonal_03", "orthogonal_04", "orthogonal_05", "orthogonal_06",
+            "orthogonal_07", "orthogonal_outside", "orthogonal_perspective_walls", "orthogonal_csvmap",
+            "orthogonal_sewers", "orthogonal_desert",
+
+            "isometric_01", "isometric_02", "isometric_03", "isometric_grass_and_water",
+
+            "hexagonal_01", "hexagonal_02", "hexagonal_03", "hexagonal_04",
+            "hexagonal_05", "hexagonal_mini",
+
+            "staggered_01", "staggered_02", "staggered_03", "staggered_04",
+            "staggered_05", };
+
+    final private static CountDownLatch panelsAreReady = new CountDownLatch(1);
+    private static TiledApp app;
+    private static AwtPanel panel;
+
+    public static void main(String[] args) {
+        try {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        } catch (Exception e) {
+        }
+
+        app = new TiledApp();
+        app.setShowSettings(false);
+        AppSettings settings = new AppSettings(true);
+        settings.setCustomRenderer(AwtPanelsContext.class);
+        settings.setGammaCorrection(false);
+        settings.setFrameRate(60);
+        app.setSettings(settings);
+        app.start();
+
+        SwingUtilities.invokeLater(() -> {
+            /*
+             * Sleep 2 seconds to ensure there's no race condition. The
+             * sleep is not required for correctness.
+             */
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException exception) {
+                return;
+            }
+
+            final AwtPanelsContext ctx = (AwtPanelsContext) app.getContext();
+            panel = ctx.createPanel(PaintMode.Accelerated);
+            panel.setPreferredSize(new Dimension(800, 600));
+            ctx.setInputSource(panel);
+
+            /*
+             * create JFrame
+             */
+            final JFrame frame = new JFrame("Test JFrame");
+            frame.getContentPane().setLayout(new BorderLayout());
+            frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+            frame.getContentPane().add(panel, BorderLayout.CENTER);
+            frame.addWindowListener(new WindowAdapter() {
+                @Override
+                public void windowClosed(WindowEvent e) {
+                    app.stop();
+                }
+            });
+
+            /*
+             * create JList
+             */
+            final JList<String> list = new JList<>();
+            list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+
+            DefaultListModel<String> model = new DefaultListModel<>();
+            for (String name : names) {
+                model.addElement(name);
+            }
+
+            list.setModel(model);
+
+            frame.getContentPane().add(new JScrollPane(list),
+                    BorderLayout.WEST);
+
+            list.addMouseListener(new MouseAdapter() {
+                public void mouseClicked(MouseEvent e) {
+                    app.load(assets[list.getSelectedIndex()]);
+                }
+            });
+            list.addKeyListener(new KeyAdapter() {
+                @Override
+                public void keyTyped(KeyEvent e) {
+                    if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                        app.load(assets[list.getSelectedIndex()]);
+                    } else if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
+                        frame.dispose();
+                    }
+                }
+            });
+
+            final JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+            frame.getContentPane().add(buttonPanel, BorderLayout.PAGE_END);
+
+            final JButton gridButton = new JButton("Toggle Grid");
+            buttonPanel.add(gridButton);
+            frame.getRootPane().setDefaultButton(gridButton);
+            gridButton.addActionListener(e -> app.toggleGrid());
+
+            final JButton cancelButton = new JButton("Close");
+            cancelButton.setMnemonic('C');
+            buttonPanel.add(cancelButton);
+            cancelButton.addActionListener(e -> frame.dispose());
+
+            frame.pack();
+
+            /*
+             * center
+             */
+            Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+            Dimension frameSize = frame.getSize();
+            if (frameSize.height > screenSize.height) {
+                frameSize.height = screenSize.height;
+            }
+            if (frameSize.width > screenSize.width) {
+                frameSize.width = screenSize.width;
+            }
+            frame.setLocation((screenSize.width - frameSize.width) / 2,
+                    (screenSize.height - frameSize.height) / 2);
+
+            frame.setVisible(true);
+            /*
+             * Both panels are ready.
+             */
+            panelsAreReady.countDown();
+        });
+    }
+
+    @Override
+    public void simpleInitApp() {
+        assetManager.registerLoader(TmxLoader.class, "tmx", "tsx");
+
+        TiledMapAppState state = new TiledMapAppState();
+        state.setZoomMode(ZoomMode.CAMERA);
+        stateManager.attach(state);
+
+        /*
+         * Wait until both AWT panels are ready.
+         */
+        try {
+            panelsAreReady.await();
+        } catch (InterruptedException exception) {
+            throw new RuntimeException("Interrupted while waiting for panels", exception);
+        }
+
+        panel.attachTo(true, viewPort, guiViewPort);
+        
+        flyCam.setDragToRotate(true);
+
+        inputManager.addMapping("CLICK", new MouseButtonTrigger(MouseInput.BUTTON_LEFT));
+        inputManager.addListener((ActionListener) (name, isPressed, tpf) -> {
+            if (state.getMapRenderer() != null && isPressed) {
+                System.out.println("Click! ======");
+                System.out.println("cursor tile: " + state.getCursorTileCoordinate());
+                System.out.println("cursor pixel: " + state.getCursorPixelCoordinate());
+                System.out.println("cursor screen: " + state.getCursorScreenCoordinate());
+            }
+        }, "CLICK");
+    }
+
+    public void load(final String assetPath) {
+        enqueue((Callable<Void>) () -> {
+            TiledMap map = null;
+            try {
+                map = (TiledMap) assetManager.loadAsset(assetPath);
+            } catch (Exception e) {
+                // i don't care
+            }
+
+            if (map != null) {
+                TiledMapAppState tiledMap = stateManager.getState(TiledMapAppState.class);
+                tiledMap.setMap(map);
+                tiledMap.update(0);
+
+                // look at the center of this map
+                tiledMap.moveToTile(map.getWidth() * 0.5f, map.getHeight() * 0.5f);
+            }
+            return null;
+        });
+
+    }
+
+    public void toggleGrid() {
+        TiledMapAppState tiledMap = stateManager.getState(TiledMapAppState.class);
+        tiledMap.toggleGrid();
+    }
+}
