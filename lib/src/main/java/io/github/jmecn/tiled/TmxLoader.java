@@ -807,7 +807,7 @@ public class TmxLoader implements AssetLoader {
         image.setTexture(texture);
 
         // create material
-        Material mat = new Material(assetManager, "com/jme3/tmx/resources/Tiled.j3md");
+        Material mat = new Material(assetManager, TiledConst.TILED_J3MD);
         mat.setTexture("ColorMap", texture);
         if (trans != null) {
             ColorRGBA transparentColor = ColorUtil.toColorRGBA(trans);
@@ -1105,10 +1105,8 @@ public class TmxLoader implements AssetLoader {
         NodeList children = node.getChildNodes();
         for (int i = 0; i < children.getLength(); i++) {
             Node child = children.item(i);
-
             String nodeName = child.getNodeName();
-            if (nodeName.equalsIgnoreCase(IMAGE)) {
-
+            if (IMAGE.equals(nodeName)) {
                 TiledImage image = readImage(child);
                 if (image.getTexture() != null) {
                     layer.setSource(image.getSource());
@@ -1150,7 +1148,7 @@ public class TmxLoader implements AssetLoader {
          * This material applies to the shapes in this ObjectGroup using
          * LineMesh
          */
-        Material mat = new Material(assetManager, "com/jme3/tmx/resources/Tiled.j3md");
+        Material mat = new Material(assetManager, TiledConst.TILED_J3MD);
         mat.setColor("Color", borderColor);
         layer.setMaterial(mat);
 

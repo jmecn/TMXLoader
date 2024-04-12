@@ -6,6 +6,7 @@ import com.jme3.math.ColorRGBA;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Mesh;
 import com.jme3.system.AppSettings;
+import io.github.jmecn.tiled.TiledConst;
 import io.github.jmecn.tiled.render.shape.Rect;
 
 public class TestRectangle extends SimpleApplication {
@@ -15,7 +16,7 @@ public class TestRectangle extends SimpleApplication {
 
         Mesh mesh = new Rect(30, 22, false);
         
-        Material mat = new Material(assetManager, "com/jme3/tmx/resources/Tiled.j3md");
+        Material mat = new Material(assetManager, TiledConst.TILED_J3MD);
         mat.setColor("Color", ColorRGBA.Red);
 
         Geometry geom = new Geometry("rectangle", mesh);

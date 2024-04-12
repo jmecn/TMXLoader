@@ -10,6 +10,7 @@ import com.jme3.math.Vector2f;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Mesh;
 import com.jme3.system.AppSettings;
+import io.github.jmecn.tiled.TiledConst;
 import io.github.jmecn.tiled.render.shape.Polygon;
 
 public class TestPolygon extends SimpleApplication {
@@ -38,7 +39,7 @@ public class TestPolygon extends SimpleApplication {
         
         Mesh mesh = new Polygon(points, false);
         
-        Material mat = new Material(assetManager, "com/jme3/tmx/resources/Tiled.j3md");
+        Material mat = new Material(assetManager, TiledConst.TILED_J3MD);
         mat.setColor("Color", ColorRGBA.Red);
 
         Geometry geom = new Geometry("polygon", mesh);
