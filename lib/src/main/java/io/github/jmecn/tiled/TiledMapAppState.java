@@ -634,16 +634,17 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener,
      * @return
      */
     private Material createGridMaterial() {
-        Material mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
-        mat.setColor("Color", ColorRGBA.Gray);
+        Material mat = new Material(assetManager, TiledConst.TILED_J3MD);
+        mat.setColor("Color", ColorRGBA.DarkGray);
         mat.getAdditionalRenderState().setWireframe(true);
         mat.getAdditionalRenderState().setDepthTest(false);
         return mat;
     }
 
     private Material createCursorMaterial() {
-        Material mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
-        mat.setColor("Color", new ColorRGBA(0.7f, 0.8f, 0.9f, 0.3f));
+        Material mat = new Material(assetManager, TiledConst.TILED_J3MD);
+        mat.setColor("Color", new ColorRGBA(0.4f, 0.8f, 0.4f, 0.7f));
+        //mat.setBoolean("UseAlpha", true);
         return mat;
     }
 }

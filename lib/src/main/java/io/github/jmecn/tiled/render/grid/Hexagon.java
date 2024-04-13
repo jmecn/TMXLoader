@@ -56,7 +56,7 @@ public class Hexagon extends Polygon {
         }
         polygon.add(new Vector2f(columnWidth, tileHeight));
         if (isStaggerX) {
-            polygon.add(new Vector2f(0, tileHeight));
+            polygon.add(new Vector2f(sideOffsetX, tileHeight));
         }
 
         if (border) {

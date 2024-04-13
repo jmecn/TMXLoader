@@ -33,7 +33,7 @@ public class IsometricRenderer extends MapRenderer {
     @Override
     public Spatial createTileGrid(Material material) {
         // create a grid
-        Diamond mesh = new Diamond(tileWidth, tileHeight, true);
+        Diamond mesh = new Diamond(tileWidth, tileHeight, false);
         // Rect mesh = new Rect(tileWidth, tileHeight, false);
         Geometry geom = new Geometry("TileGrid", mesh);
         geom.setMaterial(material);

@@ -85,7 +85,7 @@ public class HexagonalRenderer extends OrthogonalRenderer {
 
     @Override
     public Spatial createTileGrid(Material material) {
-        Hexagon mesh = new Hexagon(tileWidth, tileHeight, map.getHexSideLength(), map.getStaggerAxis(), true);
+        Hexagon mesh = new Hexagon(tileWidth, tileHeight, map.getHexSideLength(), map.getStaggerAxis(), false);
         // Rect mesh = new Rect(tileWidth, tileHeight, false);
         Geometry geom = new Geometry("HexGrid", mesh);
         geom.setMaterial(material);
