@@ -3,25 +3,21 @@
 
 attribute vec3 inPosition;
 attribute vec2 inTexCoord;
-attribute vec4 inColor;
 
 #ifdef USE_TILESET_IMAGE
+// use texcoord2 as tile position
 attribute vec3 inTexCoord2;
-uniform vec2 m_ImageSize;
-uniform vec4 m_TileSize;
+// pass it to fragment shader
+varying vec2 v_TilePos;
 #endif
 
-varying vec2 texCoord;
+varying vec2 v_TexCoord;
 
 void main() {
-    texCoord = inTexCoord;
+    v_TexCoord = inTexCoord;
 
     #ifdef USE_TILESET_IMAGE
-    // calculate the UV coordinates for the tileset image
-    vec2 tilePos = inTexCoord2.xy;
-    vec2 uv = (texCoord * m_TileSize.xy + tilePos) / m_ImageSize.xy;
-    uv.y = 1.0 - uv.y;
-    texCoord = uv;
+    v_TilePos = inTexCoord2.xy;
     #endif
 
     vec3 position = inPosition;

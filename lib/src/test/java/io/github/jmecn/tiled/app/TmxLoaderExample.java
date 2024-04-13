@@ -26,7 +26,7 @@ public class TmxLoaderExample extends SimpleApplication {
 
         TiledMapAppState tiledMap = stateManager.getState(TiledMapAppState.class);
         tiledMap.setMap(map);
-        tiledMap.setViewColumn(20);
+        //tiledMap.setViewColumn(20);
     }
 
     public static void main(String[] args) {
