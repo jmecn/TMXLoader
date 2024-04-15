@@ -161,11 +161,11 @@ public class HexGrid extends Mesh {
     }
 
     private boolean doStaggerX(int x) {
-        return staggerX && ((x & 1) ^ staggerIndex) == 0;
+        return ((x & 1) ^ staggerIndex) == 0;
     }
 
     private boolean doStaggerY(int y) {
-        return !staggerX && ((y & 1) ^ staggerIndex) == 0;
+        return ((y & 1) ^ staggerIndex) == 0;
     }
 
     public List<Point> tileToScreenPolygon(int x, int y) {
@@ -267,20 +267,18 @@ public class HexGrid extends Mesh {
      * Converts tile to screen coordinates. Sub-tile return values are not
      * supported by this renderer.
      */
-    private Point tileToScreenCoords(float x, float y) {
-        int tileX = (int) Math.floor(x);
-        int tileY = (int) Math.floor(y);
+    private Point tileToScreenCoords(int tileX, int tileY) {
         int pixelX;
         int pixelY;
 
         if (staggerX) {
-            pixelY = tileY * (tileHeight + sideLengthY);
+            pixelY = tileY * tileHeight;
             if (doStaggerX(tileX)) {
                 pixelY += rowHeight;
             }
             pixelX = tileX * columnWidth;
         } else {
-            pixelX = tileX * (tileWidth + sideLengthX);
+            pixelX = tileX * tileWidth;
             if (doStaggerY(tileY)) {
                 pixelX += columnWidth;
             }

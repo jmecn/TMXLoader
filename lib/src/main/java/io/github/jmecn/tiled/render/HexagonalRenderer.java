@@ -76,17 +76,16 @@ public class HexagonalRenderer extends OrthogonalRenderer {
     }
 
     private boolean doStaggerX(int x) {
-        return staggerX && ((x & 1) ^ staggerIndex) == 0;
+        return ((x & 1) ^ staggerIndex) == 0;
     }
 
     private boolean doStaggerY(int y) {
-        return !staggerX && ((y & 1) ^ staggerIndex) == 0;
+        return ((y & 1) ^ staggerIndex) == 0;
     }
 
     @Override
     public Spatial createTileGrid(Material material) {
         Hexagon mesh = new Hexagon(tileWidth, tileHeight, map.getHexSideLength(), map.getStaggerAxis(), false);
-        // Rect mesh = new Rect(tileWidth, tileHeight, false);
         Geometry geom = new Geometry("HexGrid", mesh);
         geom.setMaterial(material);
         return geom;
@@ -226,16 +225,16 @@ public class HexagonalRenderer extends OrthogonalRenderer {
         int pixelY;
 
         if (staggerX) {
-            pixelY = tileY * (tileHeight + sideLengthY);
-            if (doStaggerX(tileX))
+            pixelY = tileY * tileHeight;
+            if (doStaggerX(tileX)) {
                 pixelY += rowHeight;
-
+            }
             pixelX = tileX * columnWidth;
         } else {
-            pixelX = tileX * (tileWidth + sideLengthX);
-            if (doStaggerY(tileY))
+            pixelX = tileX * tileWidth;
+            if (doStaggerY(tileY)) {
                 pixelX += columnWidth;
-
+            }
             pixelY = tileY * rowHeight;
         }
 
