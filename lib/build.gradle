@@ -11,19 +11,10 @@ dependencies {
     // Core
     api "org.jmonkeyengine:jme3-core"
 
-    // Test    
-    testImplementation "org.jmonkeyengine:jme3-desktop"
-    testImplementation "org.jmonkeyengine:jme3-lwjgl"
+    // Test
+    testImplementation 'org.jmonkeyengine:jme3-desktop'
+    testImplementation 'org.jmonkeyengine:jme3-lwjgl'
     testImplementation 'ch.qos.logback:logback-classic:1.2.13'
-}
-
-// 将 ../examples 目录添加为test resources
-sourceSets {
-    test {
-        resources {
-            srcDirs '../examples'
-        }
-    }
 }
 
 jar {

@@ -1,6 +1,7 @@
 package io.github.jmecn.tiled;
 
 import com.jme3.asset.plugins.ClasspathLocator;
+import com.jme3.asset.plugins.FileLocator;
 import io.github.jmecn.tiled.core.TileLayer;
 import io.github.jmecn.tiled.core.TiledMap;
 import io.github.jmecn.tiled.enums.Orientation;
@@ -47,6 +48,7 @@ class TestTMXLoader {
     @BeforeEach void initAssetManager() {
         assetManager = new DesktopAssetManager();
         assetManager.registerLocator("/", ClasspathLocator.class);
+        assetManager.registerLocator("../examples", FileLocator.class);
         assetManager.registerLoader(J3MLoader.class, "j3md");
         assetManager.registerLoader(GLSLLoader.class, "vert", "frag", "geom", "tsctrl", "tseval", "glsl", "glsllib");
         assetManager.registerLoader(AWTLoader.class, "jpg", "bmp", "gif", "png", "jpeg");

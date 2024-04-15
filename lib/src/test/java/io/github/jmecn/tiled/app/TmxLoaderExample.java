@@ -1,6 +1,7 @@
 package io.github.jmecn.tiled.app;
 
 import com.jme3.app.SimpleApplication;
+import com.jme3.asset.plugins.FileLocator;
 import com.jme3.system.AppSettings;
 import io.github.jmecn.tiled.TiledMapAppState;
 import io.github.jmecn.tiled.TmxLoader;
@@ -17,6 +18,7 @@ public class TmxLoaderExample extends SimpleApplication {
     public void simpleInitApp() {
         // register it
         assetManager.registerLoader(TmxLoader.class, "tmx", "tsx");
+        assetManager.registerLocator("examples", FileLocator.class);
 
         // load tmx with it
         TiledMap map = (TiledMap) assetManager.loadAsset("Desert/desert.tmx");

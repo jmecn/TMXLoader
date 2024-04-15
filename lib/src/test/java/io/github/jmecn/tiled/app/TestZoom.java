@@ -1,6 +1,7 @@
 package io.github.jmecn.tiled.app;
 
 import com.jme3.app.SimpleApplication;
+import com.jme3.asset.plugins.FileLocator;
 import com.jme3.input.KeyInput;
 import com.jme3.input.MouseInput;
 import com.jme3.input.controls.ActionListener;
@@ -57,6 +58,7 @@ public class TestZoom extends SimpleApplication {
     @Override
     public void simpleInitApp() {
         assetManager.registerLoader(TmxLoader.class, "tmx", "tsx");
+        assetManager.registerLocator("examples", FileLocator.class);
 
         TiledMap tiledMap = (TiledMap) assetManager.loadAsset("Isometric/01.tmx");
         assert tiledMap != null;
