@@ -15,7 +15,6 @@ import com.jme3.input.controls.KeyTrigger;
 import com.jme3.input.controls.MouseAxisTrigger;
 import com.jme3.input.controls.MouseButtonTrigger;
 import com.jme3.material.Material;
-import com.jme3.material.RenderState;
 import com.jme3.math.*;
 import com.jme3.renderer.Camera;
 import com.jme3.renderer.ViewPort;
@@ -37,8 +36,7 @@ import io.github.jmecn.tiled.render.StaggeredRenderer;
  * @author yanmaoyuan
  * 
  */
-public class TiledMapAppState extends BaseAppState implements AnalogListener,
-        ActionListener {
+public class TiledMapAppState extends BaseAppState implements AnalogListener, ActionListener {
 
     public static final String INIT_ERROR = "inputManager is null. Please initialize TiledMapAppState first.";
     public static final String LEFT = "left";
@@ -65,8 +63,11 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener,
     private Material gridMaterial;// for render grid
     private boolean isGridUpdated = true;
 
+    private Point currentTile;
     private Spatial gridCursor;
     private Material cursorMaterial;
+    private final ColorRGBA cursorColorAvailable = new ColorRGBA(0.4f, 0.8f, 0.4f, 0.7f);
+    private final ColorRGBA cursorColorUnavailable = new ColorRGBA(0.8f, 0.2f, 0.2f, 0.5f);
     private boolean isCursorUpdated = true;
 
     // The mapNode
@@ -230,13 +231,8 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener,
                 
                 isMapUpdated = false;
             }
-        }
 
-        if (gridCursor != null) {
-            spatial = gridCursor;
-            Point cursor = getCursorTileCoordinate();
-            Vector2f loc = mapRenderer.tileToScreenCoords(cursor.x, cursor.y);
-            spatial.setLocalTranslation(loc.x, 1000f, loc.y);
+            moveCursor();
         }
     }
 
@@ -256,6 +252,8 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener,
             gridCursor.removeFromParent();
         }
 
+        currentTile = null;
+        cursorMaterial.setColor("Color", cursorColorAvailable);
         gridCursor = mapRenderer.createTileGrid(cursorMaterial);
         map.getVisual().attachChild(gridCursor);
         isCursorUpdated = false;
@@ -539,6 +537,26 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener,
         map.getVisual().setLocalTranslation(mapTranslation);
     }
 
+    private void moveCursor() {
+        if (gridCursor != null) {
+            Point cursor = getCursorTileCoordinate();
+            if (currentTile == null) {
+                currentTile = cursor;
+            } else if (!currentTile.equals(cursor)) {
+                currentTile.set(cursor.x, cursor.y);
+            } else {
+                return;
+            }
+            Vector2f loc = mapRenderer.tileToScreenCoords(cursor.x, cursor.y);
+            gridCursor.setLocalTranslation(loc.x, 1000f, loc.y);
+            if (map.contains(cursor.x, cursor.y)) {
+                cursorMaterial.setColor("Color", cursorColorAvailable);
+            } else {
+                cursorMaterial.setColor("Color", cursorColorUnavailable);
+            }
+        }
+    }
+
     public void setZoomMode(ZoomMode zoomMode) {
         this.zoomMode = zoomMode;
     }
@@ -643,8 +661,7 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener,
 
     private Material createCursorMaterial() {
         Material mat = new Material(assetManager, TiledConst.TILED_J3MD);
-        mat.setColor("Color", new ColorRGBA(0.4f, 0.8f, 0.4f, 0.7f));
-        //mat.setBoolean("UseAlpha", true);
+        mat.setColor("Color", cursorColorAvailable);
         return mat;
     }
 }
