@@ -705,6 +705,24 @@ public class TmxLoader implements AssetLoader {
             tile = set.getTile(id);
         }
 
+        // since 1.9
+        int x = getAttribute(t, "x", -1);
+        int y = getAttribute(t, "y", -1);
+        int width = getAttribute(t, WIDTH, -1);
+        int height = getAttribute(t, HEIGHT, -1);
+        if (x > -1) {
+            tile.setX(x);
+        }
+        if (y > -1) {
+            tile.setY(y);
+        }
+        if (width > -1) {
+            tile.setWidth(width);
+        }
+        if (height > -1) {
+            tile.setHeight(height);
+        }
+
         // in <tileset> we need id, terrain, probability
         String terrainStr = getAttributeValue(t, TERRAIN);
         if (terrainStr != null) {
