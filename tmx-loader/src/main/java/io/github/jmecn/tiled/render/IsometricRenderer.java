@@ -9,11 +9,9 @@ import com.jme3.scene.Spatial;
 import io.github.jmecn.tiled.core.Tile;
 import io.github.jmecn.tiled.core.TileLayer;
 import io.github.jmecn.tiled.core.TiledMap;
-import io.github.jmecn.tiled.render.grid.Diamond;
-import io.github.jmecn.tiled.render.grid.Hexagon;
 import io.github.jmecn.tiled.render.grid.IsoGrid;
 import io.github.jmecn.tiled.math2d.Point;
-import io.github.jmecn.tiled.render.shape.Rect;
+import io.github.jmecn.tiled.render.grid.IsoRect;
 
 /**
  * Isometric render
@@ -33,8 +31,7 @@ public class IsometricRenderer extends MapRenderer {
     @Override
     public Spatial createTileGrid(Material material) {
         // create a grid
-        Diamond mesh = new Diamond(tileWidth, tileHeight, false);
-        // Rect mesh = new Rect(tileWidth, tileHeight, false);
+        IsoRect mesh = new IsoRect(tileWidth, tileHeight, false);
         Geometry geom = new Geometry("TileGrid", mesh);
         geom.setMaterial(material);
         return geom;

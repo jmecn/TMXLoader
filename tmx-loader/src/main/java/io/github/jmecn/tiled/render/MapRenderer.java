@@ -4,7 +4,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
-import com.jme3.asset.AssetManager;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.FastMath;
@@ -361,7 +360,11 @@ public abstract class MapRenderer {
         }
     }
 
-    public Vector2f getMapDimension() {
+    public Point getMapDimension() {
+        return new Point(mapSize.x, mapSize.y);// read only
+    }
+
+    public Vector2f getMapDimensionF() {
         return new Vector2f(mapSize.x, mapSize.y);
     }
 }

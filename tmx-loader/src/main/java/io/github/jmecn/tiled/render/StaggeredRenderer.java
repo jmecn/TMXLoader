@@ -5,6 +5,8 @@ import com.jme3.scene.Geometry;
 import com.jme3.scene.Spatial;
 import io.github.jmecn.tiled.core.TiledMap;
 import io.github.jmecn.tiled.math2d.Point;
+import io.github.jmecn.tiled.render.grid.Diamond;
+import io.github.jmecn.tiled.render.grid.Hexagon;
 import io.github.jmecn.tiled.render.shape.Rect;
 
 /**
@@ -22,8 +24,7 @@ public class StaggeredRenderer extends HexagonalRenderer {
     @Override
     public Spatial createTileGrid(Material material) {
         // create a grid
-        // Diamond mesh = new Diamond(tileWidth, tileHeight, false);
-        Rect mesh = new Rect(tileWidth, tileHeight, false);
+        Diamond mesh = new Diamond(map.getTileWidth(), map.getTileHeight(), false);
         Geometry geom = new Geometry("TileGrid", mesh);
         geom.setMaterial(material);
         return geom;
@@ -64,8 +65,8 @@ public class StaggeredRenderer extends HexagonalRenderer {
             return bottomLeft(referencePoint.x, referencePoint.y);
         } else if (sideOffsetY * 3 - yPos < rel.y) {
             return bottomRight(referencePoint.x, referencePoint.y);
-        } else {
-            return referencePoint;
         }
+
+        return referencePoint;
     }
 }

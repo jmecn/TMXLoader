@@ -66,7 +66,7 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
     private Point currentTile;
     private Spatial gridCursor;
     private Material cursorMaterial;
-    private final ColorRGBA cursorColorAvailable = new ColorRGBA(0.4f, 0.8f, 0.4f, 0.7f);
+    private final ColorRGBA cursorColorAvailable = new ColorRGBA(0.5f, 0.5f, 0.8f, 0.7f);
     private final ColorRGBA cursorColorUnavailable = new ColorRGBA(0.8f, 0.2f, 0.2f, 0.5f);
     private boolean isCursorUpdated = true;
 
@@ -223,7 +223,7 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
 
             if (isMapUpdated) {
                 // move it to the left bottom of screen space
-                mapDimension.set(mapRenderer.getMapDimension());
+                mapDimension.set(mapRenderer.getMapDimensionF());
                 mapTranslation.set(screenDimension.x * 0.5f, 0, screenDimension.y * 0.5f);
                 mapScale = getMapScale();
                 spatial.setLocalTranslation(mapTranslation);

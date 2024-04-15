@@ -1,9 +1,7 @@
 package io.github.jmecn.tiled.render.grid;
 
 import com.jme3.math.Vector2f;
-import com.jme3.scene.Mesh;
 import io.github.jmecn.tiled.render.shape.Polygon;
-import io.github.jmecn.tiled.render.shape.Polyline;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,14 +11,14 @@ import java.util.List;
  *
  * @author yanmaoyuan
  */
-public class Diamond extends Polygon {
+public class IsoRect extends Polygon {
 
-    public Diamond(int tileWidth, int tileHeight, boolean border) {
+    public IsoRect(int tileWidth, int tileHeight, boolean border) {
         List<Vector2f> polygon = new ArrayList<>(4);
-        polygon.add(new Vector2f(0, tileHeight * 0.5f));
-        polygon.add(new Vector2f(tileWidth * 0.5f, tileHeight));
-        polygon.add(new Vector2f(tileWidth, tileHeight * 0.5f));
-        polygon.add(new Vector2f(tileWidth * 0.5f, 0));
+        polygon.add(new Vector2f(-tileWidth * 0.5f, tileHeight * 0.5f));
+        polygon.add(new Vector2f(0, tileHeight));
+        polygon.add(new Vector2f(tileWidth * 0.5f, tileHeight * 0.5f));
+        polygon.add(new Vector2f(0, 0));
         if (border) {
             super.polyline(polygon, true);
         } else {

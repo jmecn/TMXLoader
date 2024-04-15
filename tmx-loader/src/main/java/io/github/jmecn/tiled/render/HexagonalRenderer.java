@@ -327,63 +327,65 @@ public class HexagonalRenderer extends OrthogonalRenderer {
     }
 
     public Point topLeft(int x, int y) {
-        if (!staggerX) {
-            if (((y & 1) ^ staggerIndex) != 0)
-                return new Point(x, y - 1);
-            else
-                return new Point(x - 1, y - 1);
-        } else {
-            if (((x & 1) ^ staggerIndex) != 0)
+        if (staggerX) {
+            if (doStaggerX(x)) {
                 return new Point(x - 1, y);
-            else
+            } else {
                 return new Point(x - 1, y - 1);
+            }
+        } else {
+            if (doStaggerY(y)) {
+                return new Point(x, y - 1);
+            } else {
+                return new Point(x - 1, y - 1);
+            }
         }
     }
 
     public Point topRight(int x, int y) {
-        if (!staggerX) {
-            if (((y & 1) ^ staggerIndex) != 0) {
-                return new Point(x + 1, y - 1);
-            } else {
-                return new Point(x, y - 1);
-            }
-        } else {
-            if (((x & 1) ^ staggerIndex) != 0) {
+        if (staggerX) {
+            if (doStaggerX(x)) {
                 return new Point(x + 1, y);
             } else {
                 return new Point(x + 1, y - 1);
+            }
+        } else {
+            if (doStaggerY(y)) {
+                return new Point(x + 1, y - 1);
+            } else {
+                return new Point(x, y - 1);
             }
         }
     }
 
     public Point bottomLeft(int x, int y) {
-        if (!staggerX) {
-            if (((y & 1) ^ staggerIndex) != 0) {
-                return new Point(x, y + 1);
-            } else {
-                return new Point(x - 1, y + 1);
-            }
-        } else {
-            if (((x & 1) ^ staggerIndex) != 0) {
+        if (staggerX) {
+            if (doStaggerX(x)) {
                 return new Point(x - 1, y + 1);
             } else {
                 return new Point(x - 1, y);
+            }
+        } else {
+            if (doStaggerY(y)) {
+                return new Point(x, y + 1);
+            } else {
+                return new Point(x - 1, y + 1);
             }
         }
     }
 
     public Point bottomRight(int x, int y) {
-        if (!staggerX) {
-            if (((y & 1) ^ staggerIndex) != 0) {
-                return new Point(x + 1, y + 1);
-            } else {
-                return new Point(x, y + 1);
-            }
-        } else {
-            if (((x & 1) ^ staggerIndex) != 0) {
+        if (staggerX) {
+            if (doStaggerX(x)) {
                 return new Point(x + 1, y + 1);
             } else {
                 return new Point(x + 1, y);
+            }
+        } else {
+            if (doStaggerY(y)) {
+                return new Point(x + 1, y + 1);
+            } else {
+                return new Point(x, y + 1);
             }
         }
     }
