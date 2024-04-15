@@ -66,7 +66,7 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
     private Point currentTile;
     private Spatial gridCursor;
     private Material cursorMaterial;
-    private final ColorRGBA cursorColorAvailable = new ColorRGBA(0.5f, 0.5f, 0.8f, 0.7f);
+    private final ColorRGBA cursorColorAvailable = new ColorRGBA(0.7f, 0.7f, 0.9f, 0.5f);
     private final ColorRGBA cursorColorUnavailable = new ColorRGBA(0.8f, 0.2f, 0.2f, 0.5f);
     private boolean isCursorUpdated = true;
 
@@ -592,6 +592,9 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
     }
 
     public void onAnalog(String name, float value, float tpf) {
+        if (mapRenderer == null) {
+            return;
+        }
         switch (name) {
             case UP:
                 move(-tpf, false);

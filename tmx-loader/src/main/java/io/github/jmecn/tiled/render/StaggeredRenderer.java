@@ -6,8 +6,6 @@ import com.jme3.scene.Spatial;
 import io.github.jmecn.tiled.core.TiledMap;
 import io.github.jmecn.tiled.math2d.Point;
 import io.github.jmecn.tiled.render.grid.Diamond;
-import io.github.jmecn.tiled.render.grid.Hexagon;
-import io.github.jmecn.tiled.render.shape.Rect;
 
 /**
  * Staggered render
@@ -38,18 +36,21 @@ public class StaggeredRenderer extends HexagonalRenderer {
      */
     @Override
     public Point screenToTileCoords(float x, float y) {
-
+        float alignedX = x;
+        float alignedY = y;
         if (staggerX) {
-            x -= staggerEven ? sideOffsetX : 0;
+            alignedX -= staggerEven ? sideOffsetX : 0;
         } else {
-            y -= staggerEven ? sideOffsetY : 0;
+            alignedY -= staggerEven ? sideOffsetY : 0;
         }
 
         // Start with the coordinates of a grid-aligned tile
-        Point referencePoint = new Point(x / tileWidth, y / tileHeight);
+        Point referencePoint = new Point(alignedX / tileWidth, alignedY / tileHeight);
 
         // Relative x and y position on the base square of the grid-aligned tile
-        Point rel = new Point(x - referencePoint.x * tileWidth, y - referencePoint.y * tileHeight);
+        Point rel = new Point(
+                alignedX - referencePoint.x * tileWidth,
+                alignedY - referencePoint.y * tileHeight);
 
         // Adjust the reference point to the correct tile coordinates
         adjustReferencePoint(referencePoint);
