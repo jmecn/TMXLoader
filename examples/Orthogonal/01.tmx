@@ -5,7 +5,7 @@
  </tileset>
  <tileset firstgid="361" name="player" tilewidth="67" tileheight="67">
   <tile id="0">
-   <image width="67" height="67" source="../goblin.png"/>
+   <image width="67" height="67" source="goblin.png"/>
   </tile>
  </tileset>
  <layer name="Ground" width="20" height="12">

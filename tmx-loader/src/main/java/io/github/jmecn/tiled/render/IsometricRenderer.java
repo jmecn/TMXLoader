@@ -73,7 +73,7 @@ public class IsometricRenderer extends MapRenderer {
 
     private void updateTile(TileLayer layer, int x, int y, int z, Tile tile) {
         if (layer.isNeedUpdateAt(x, y)) {
-            Spatial visual = tile.getVisual().clone();
+            Geometry visual = tile.getVisual().clone();
             visual.setQueueBucket(Bucket.Gui);
 
             flip(visual, tile);

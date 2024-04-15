@@ -14,12 +14,3 @@ application {
     // Define the main class for the application.
     mainClass = 'io.github.jmecn.tiled.app.Main'
 }
-
-// 将 ../examples 目录添加为test resources
-sourceSets {
-    main {
-        resources {
-            srcDirs '../examples'
-        }
-    }
-}

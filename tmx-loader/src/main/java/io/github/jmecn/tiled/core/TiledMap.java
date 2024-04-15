@@ -400,9 +400,9 @@ public class TiledMap extends Base {
      * @param y y-coordinate
      * @param tileId global id of the tile as read from the file
      */
-    public void setTileAtFromTileId(TileLayer tileLayer, int x, int y, int tileId) {
+    public void setTileAtFromTileId(TileLayer tileLayer, int x, int y, long tileId) {
         // clear the flag
-        int gid = tileId & ~Tile.FLIPPED_MASK;
+        int gid = (int)(tileId & ~Tile.FLIPPED_MASK);
 
         Tile tile = getTileForTileGID(gid);
         if (tile != null) {
@@ -430,7 +430,7 @@ public class TiledMap extends Base {
         }
 
         if (gid > 0 && tile == null) {
-            logger.warn("can find tile with gid:{}", gid);
+            logger.warn("can't find tile with gid:{}", gid);
         }
         return tile;
     }

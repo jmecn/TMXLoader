@@ -1006,7 +1006,7 @@ public class TmxLoader implements AssetLoader {
         for (int y = 0; y < layer.getHeight(); y++) {
             for (int x = 0; x < layer.getWidth(); x++) {
                 String sTileId = csvTileIds[x + y * layer.getWidth()];
-                int tileId = Integer.parseInt(sTileId);
+                long tileId = Long.parseLong(sTileId);
                 map.setTileAtFromTileId(layer, x, y, tileId);
             }
         }
@@ -1375,7 +1375,11 @@ public class TmxLoader implements AssetLoader {
                     break;
                 }
                 default: {
-                    logger.warn("unknown layer type:{}", child.getNodeName());
+                    if (PROPERTIES.equals(child.getNodeName()) || TEXT_EMPTY.equals(child.getNodeName())) {
+                        // ignore
+                    } else {
+                        logger.warn("unknown layer type:{}", child.getNodeName());
+                    }
                     break;
                 }
             }

@@ -28,12 +28,13 @@ public class Tile extends Base implements Cloneable {
     public static final int FLIPPED_HORIZONTALLY_FLAG = 0x80000000;
     public static final int FLIPPED_VERTICALLY_FLAG = 0x40000000;
     public static final int FLIPPED_DIAGONALLY_FLAG = 0x20000000;
+    public static final int ROTATED_HEXAGONAL_120_FLAG = 0x10000000;
     public static final int FLIPPED_MASK = FLIPPED_HORIZONTALLY_FLAG | FLIPPED_VERTICALLY_FLAG
-            | FLIPPED_DIAGONALLY_FLAG;
+            | FLIPPED_DIAGONALLY_FLAG | ROTATED_HEXAGONAL_120_FLAG;
 
     private Tileset tileset;
     private int id = -1;
-    private int gid = 0;
+    private long gid = 0;
 
     /**
      * position in the image
@@ -102,16 +103,16 @@ public class Tile extends Base implements Cloneable {
         this.id = id;
     }
 
-    public int getGid() {
+    public long getGid() {
         return gid;
     }
 
-    public void setGid(int gid) {
+    public void setGid(long gid) {
         this.gid = gid;
     }
 
     public int getGidNoMask() {
-        return (gid & ~FLIPPED_MASK);
+        return (int)(gid & ~FLIPPED_MASK);
     }
 
     public boolean isFlippedHorizontally() {
@@ -124,6 +125,10 @@ public class Tile extends Base implements Cloneable {
 
     public boolean isFlippedAntiDiagonally() {
         return (gid & FLIPPED_DIAGONALLY_FLAG) != 0;
+    }
+
+    public boolean isRotatedHexagonal120() {
+        return (gid & ROTATED_HEXAGONAL_120_FLAG) != 0;
     }
 
     public int getX() {

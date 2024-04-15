@@ -1,9 +1,11 @@
 package io.github.jmecn.tiled.app;
 
+import java.io.File;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 
 import com.jme3.app.SimpleApplication;
+import com.jme3.asset.plugins.FileLocator;
 import com.jme3.input.MouseInput;
 import com.jme3.input.controls.ActionListener;
 import com.jme3.input.controls.MouseButtonTrigger;
@@ -83,13 +85,31 @@ public class TiledApp extends SimpleApplication {
         }
     }
 
+    public void load(TiledMap map) {
+        enqueue((Callable<Void>)() -> {
+            if (map != null) {
+                tiledMapState.setMap(map);
+                tiledMapState.update(0);
+
+                // look at the center of this map
+                tiledMapState.moveToTile(map.getWidth() * 0.5f, map.getHeight() * 0.5f);
+
+                MapRenderer renderer = tiledMapState.getMapRenderer();
+                Point mapSize = renderer.getMapDimension();
+                String status = String.format("Map[%d,%d], Size:[%d,%d]", map.getWidth(), map.getHeight(), mapSize.x, mapSize.y);
+                wnd.setMapStatus(status);
+            }
+            return null;
+        });
+    }
+
     public void load(final String assetPath) {
         enqueue((Callable<Void>) () -> {
             TiledMap map = null;
             try {
                 map = (TiledMap) assetManager.loadAsset(assetPath);
             } catch (Exception e) {
-                // i don't care
+                log.error("Failed to load {}", assetPath, e);
             }
 
             if (map != null) {

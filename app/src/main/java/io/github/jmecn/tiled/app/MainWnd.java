@@ -1,12 +1,17 @@
 package io.github.jmecn.tiled.app;
 
+import com.jme3.asset.AssetKey;
+import com.jme3.asset.AssetManager;
+import com.jme3.asset.plugins.FileLocator;
 import com.jme3.system.awt.AwtPanel;
+import io.github.jmecn.tiled.core.TiledMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.File;
 
 /**
  * desc:
@@ -21,59 +26,7 @@ public class MainWnd extends JFrame {
 
     private JLabel mapStatus;
     private JLabel cursorStatus;
-
-    private static final String[] assets = {
-            "image.tmx",
-            "BeatBoss/forest.tmx",
-            "BeatBoss/cave.tmx",
-            "BeatBoss/tomb.tmx",
-
-            "Orthogonal/01.tmx",
-            "Orthogonal/02.tmx",
-            "Orthogonal/03.tmx",
-            "Orthogonal/04.tmx",
-            "Orthogonal/05.tmx",
-            "Orthogonal/06.tmx",
-            "Orthogonal/07.tmx",
-            "Orthogonal/orthogonal-outside.tmx",
-            "Orthogonal/perspective_walls.tmx",
-            "csvmap.tmx",
-            "sewers.tmx",
-            "Desert/desert.tmx",
-
-            "Isometric/01.tmx",
-            "Isometric/02.tmx",
-            "Isometric/03.tmx",
-            "Isometric/isometric_grass_and_water.tmx",
-
-            "Hexagonal/01.tmx",
-            "Hexagonal/02.tmx",
-            "Hexagonal/03.tmx",
-            "Hexagonal/04.tmx",
-            "Hexagonal/05.tmx",
-            "Hexagonal/hexagonal-mini.tmx",
-
-            "Staggered/01.tmx",
-            "Staggered/02.tmx",
-            "Staggered/03.tmx",
-            "Staggered/04.tmx",
-            "Staggered/05.tmx", };
-
-    private static final String[] names = {
-            "image",
-            "forest", "cave", "tomb",
-            "orthogonal_01", "orthogonal_02",
-            "orthogonal_03", "orthogonal_04", "orthogonal_05", "orthogonal_06",
-            "orthogonal_07", "orthogonal_outside", "orthogonal_perspective_walls", "orthogonal_csvmap",
-            "orthogonal_sewers", "orthogonal_desert",
-
-            "isometric_01", "isometric_02", "isometric_03", "isometric_grass_and_water",
-
-            "hexagonal_01", "hexagonal_02", "hexagonal_03", "hexagonal_04",
-            "hexagonal_05", "hexagonal_mini",
-
-            "staggered_01", "staggered_02", "staggered_03", "staggered_04",
-            "staggered_05", };
+    private JFileChooser fileChooser;
 
     public MainWnd(TiledApp app, AwtPanel awtPanel) {
         super("Tiled Map Viewer");
@@ -93,6 +46,7 @@ public class MainWnd extends JFrame {
         getContentPane().setLayout(new BorderLayout());
         getContentPane().add(awtPanel, BorderLayout.CENTER);
 
+        this.fileChooser = createFileChooser();
         // menu
         this.setJMenuBar(createMenuBar());
 
@@ -113,16 +67,16 @@ public class MainWnd extends JFrame {
         list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
         DefaultListModel<String> model = new DefaultListModel<>();
-        for (String name : names) {
-            model.addElement(name);
-        }
+//        for (String name : names) {
+//            model.addElement(name);
+//        }
 
         list.setModel(model);
 
         list.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                load(assets[list.getSelectedIndex()]);
+                // load(assets[list.getSelectedIndex()]);
             }
         });
 
@@ -150,6 +104,7 @@ public class MainWnd extends JFrame {
 
         JMenuItem openItem = new JMenuItem("Open");
         openItem.setMnemonic('O');
+        openItem.addActionListener(e -> load());
         fileMenu.add(openItem);
 
         JMenuItem saveItem = new JMenuItem("Save");
@@ -192,6 +147,26 @@ public class MainWnd extends JFrame {
         return panel;
     }
 
+    private JFileChooser createFileChooser() {
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setCurrentDirectory(new File("."));
+        fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        fileChooser.setMultiSelectionEnabled(false);
+        fileChooser.setFileFilter(new javax.swing.filechooser.FileFilter() {
+            @Override
+            public boolean accept(java.io.File f) {
+                return f.isDirectory() || f.getName().endsWith(".tmx");
+            }
+
+            @Override
+            public String getDescription() {
+                return "Tiled Map Files (*.tmx)";
+            }
+        });
+
+        return fileChooser;
+    }
+
     public void setMapStatus(String status) {
         mapStatus.setText(status);
     }
@@ -203,6 +178,36 @@ public class MainWnd extends JFrame {
     private void showLayers() {
         // TODO
     }
+
+    private void load() {
+        int result = fileChooser.showOpenDialog(this);
+        if (result == JFileChooser.APPROVE_OPTION) {
+            File file = fileChooser.getSelectedFile();
+            fileChooser.setCurrentDirectory(file.getParentFile());
+            String fileName = file.getName();
+
+            AssetManager assetManager = app.getAssetManager();
+            log.info("Load:{}", file.getAbsoluteFile());
+            TiledMap map = null;
+            try {
+                assetManager.registerLocator(file.getParent(), FileLocator.class);
+                map = (TiledMap) assetManager.loadAsset(fileName);
+                // remove from cache, in case of reload
+                assetManager.deleteFromCache(new AssetKey<>(fileName));
+            } catch (Exception e) {
+                log.error("Failed to load {}", file.getAbsoluteFile(), e);
+            } finally {
+                assetManager.unregisterLocator(file.getParent(), FileLocator.class);
+            }
+
+            if (map != null) {
+                app.load(map);
+                // update the window title
+                this.setTitle("Tiled Map Viewer - " + fileName);
+            }
+        }
+    }
+
     private void load(String assetPath) {
         app.load(assetPath);
     }

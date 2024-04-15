@@ -1,5 +1,6 @@
 package io.github.jmecn.tiled.render;
 
+import java.nio.FloatBuffer;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
@@ -9,14 +10,14 @@ import com.jme3.math.ColorRGBA;
 import com.jme3.math.FastMath;
 import com.jme3.math.Vector2f;
 import com.jme3.renderer.queue.RenderQueue.Bucket;
-import com.jme3.scene.Geometry;
-import com.jme3.scene.Mesh;
-import com.jme3.scene.Node;
-import com.jme3.scene.Spatial;
+import com.jme3.scene.*;
+import com.jme3.util.BufferUtils;
 import io.github.jmecn.tiled.core.*;
 import io.github.jmecn.tiled.enums.DrawOrder;
+import io.github.jmecn.tiled.enums.Orientation;
 import io.github.jmecn.tiled.math2d.Point;
 import io.github.jmecn.tiled.render.shape.Rect;
+import io.github.jmecn.tiled.render.shape.TileMesh;
 
 /**
  * <p>
@@ -316,27 +317,22 @@ public abstract class MapRenderer {
      * @param visual The spatial for this tile.
      * @param tile The image of this tile.
      */
-    protected void flip(Spatial visual, Tile tile) {
-        if (tile.isFlippedHorizontally()) {
-            visual.rotate(0, 0, FastMath.PI);
-            visual.move(tile.getWidth(), 0, 0);
+    protected void flip(Geometry visual, Tile tile) {
+        if (tile.getGidNoMask() == tile.getGid()) {
+            // no flip
+            return;
         }
-
-        if (tile.isFlippedVertically()) {
-            visual.rotate(FastMath.PI, 0, 0);
-            visual.move(0, 0, tile.getHeight());
-        }
-
-        /*
-         * <pre>
-         * [      *]
-         * [    *  ]
-         * [  *    ]
-         * [*      ]
-         * </pre>
-         */
-        if (tile.isFlippedAntiDiagonally()) {
-            // TODO flip diagonally
+        if (map.getOrientation() == Orientation.HEXAGONAL) {
+            // hexagonal tile can't be flipped
+            TileMesh mesh = (TileMesh) visual.getMesh();
+            TileMesh newMesh = new TileMesh(mesh, tile.isFlippedHorizontally(), tile.isFlippedVertically(),
+                    tile.isFlippedAntiDiagonally(), tile.isRotatedHexagonal120());
+            visual.setMesh(newMesh);
+        } else {
+            TileMesh mesh = (TileMesh) visual.getMesh();
+            TileMesh newMesh = new TileMesh(mesh, tile.isFlippedHorizontally(), tile.isFlippedVertically(),
+                    tile.isFlippedAntiDiagonally());
+            visual.setMesh(newMesh);
         }
     }
 

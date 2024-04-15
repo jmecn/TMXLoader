@@ -7,7 +7,7 @@
  </layer>
  <group id="3" name="Group Layer 1" locked="1" opacity="1.0" visible="1" offsetx="10" offsety="20">
   <imagelayer id="2" name="Image Layer 1">
-   <image source="Downloads/simple_natural_landscape_pixel_art_background/1.png" width="576" height="324"/>
+   <image source="1.png" width="576" height="324"/>
   </imagelayer>
  </group>
  <objectgroup color="#d83e44" id="4" name="Object Layer 1">
