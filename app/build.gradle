@@ -3,11 +3,11 @@ plugins {
 }
 
 dependencies {
-    implementation project(':lib')
+    implementation project(':tmx-loader')
 
-    implementation 'org.jmonkeyengine:jme3-desktop'
-    implementation 'org.jmonkeyengine:jme3-lwjgl'
-    implementation 'ch.qos.logback:logback-classic'
+    implementation "org.jmonkeyengine:jme3-desktop:$jme3Version"
+    implementation "org.jmonkeyengine:jme3-lwjgl:$jme3Version"
+    implementation 'ch.qos.logback:logback-classic:1.2.13'
 }
 
 application {

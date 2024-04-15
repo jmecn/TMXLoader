@@ -5,15 +5,16 @@ plugins {
 }
 
 group = 'io.github.jmecn'
-version = '0.3.1'
+version = '0.4.0-SNAPSHOT'
 
 dependencies {
     // Core
-    api "org.jmonkeyengine:jme3-core"
+    api "org.jmonkeyengine:jme3-core:$jme3Version"
+    api 'org.slf4j:slf4j-api:1.7.36'
 
     // Test
-    testImplementation 'org.jmonkeyengine:jme3-desktop'
-    testImplementation 'org.jmonkeyengine:jme3-lwjgl'
+    testImplementation "org.jmonkeyengine:jme3-desktop:$jme3Version"
+    testImplementation "org.jmonkeyengine:jme3-lwjgl:$jme3Version"
     testImplementation 'ch.qos.logback:logback-classic:1.2.13'
 }
 

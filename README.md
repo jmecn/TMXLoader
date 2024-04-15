@@ -14,8 +14,8 @@ maven
 ```xml
 <dependency>
     <groupId>io.github.jmecn</groupId>
-    <artifactId>tmxloader</artifactId>
-    <version>0.3.0</version>
+    <artifactId>tmx-loader</artifactId>
+    <version>0.4.0</version>
 </dependency>
 ```
 
@@ -23,7 +23,7 @@ gradle
 
 ```groovy
 dependencies {
-    implementation 'io.github.jmecn:tmxloader:0.3.0'
+    implementation 'io.github.jmecn:tmx-loader:0.4.0'
 }
 ```
 
