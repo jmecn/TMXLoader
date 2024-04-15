@@ -1,6 +1,6 @@
 # Introduction
 
-TMXLoader is used for loading .tmx assets created by [Tiled Map Editor](http://www.mapeditor.org/). It's a plugin for [jMonkeyEngine3](http://jmonkeyengine.org/).
+TMXLoader is used for loading .tmx assets created by [Tiled Map Editor](https://www.mapeditor.org/). It's a plugin for [jMonkeyEngine3](https://jmonkeyengine.org/).
 
 You can download it here: https://github.com/jmecn/TMXLoader/releases.
 Or use the [source](https://github.com/jmecn/TMXLoader).
@@ -22,6 +22,10 @@ maven
 gradle
 
 ```groovy
+repositories {
+    mavenCentral()
+}
+
 dependencies {
     implementation 'io.github.jmecn:tmx-loader:0.4.0'
 }
