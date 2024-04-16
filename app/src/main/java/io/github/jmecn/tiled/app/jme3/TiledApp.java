@@ -47,7 +47,7 @@ public class TiledApp extends SimpleApplication {
 
     @Override
     public void simpleInitApp() {
-        assetManager.registerLoader(TmxLoader.class, "tmx", "tsx");
+        assetManager.registerLoader(TmxLoader.class, "tmx", "tsx", "tx");
 
         TiledMapAppState state = new TiledMapAppState();
         state.setZoomMode(ZoomMode.CAMERA);

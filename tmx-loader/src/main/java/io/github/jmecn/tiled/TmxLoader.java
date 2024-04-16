@@ -50,6 +50,7 @@ public class TmxLoader implements AssetLoader {
 
     public static final String TMX_EXTENSION = "tmx";
     public static final String TSX_EXTENSION = "tsx";
+    public static final String TX_EXTENSION = "tx";
     public static final String NAME = "name";
     public static final String VALUE = "value";
     public static final String TYPE = "type";
@@ -74,6 +75,7 @@ public class TmxLoader implements AssetLoader {
     public static final String CLASS = "class";
     public static final String COLOR = "color";
     public static final String TILESET = "tileset";
+    public static final String TEMPLATE = "template";
     public static final String GID = "gid";
     public static final String TILE = "tile";
     public static final String SOURCE = "source";
@@ -120,6 +122,8 @@ public class TmxLoader implements AssetLoader {
                 return loadMap(assetInfo.openStream());
             case TSX_EXTENSION:
                 return loadTileSet(assetInfo.openStream());
+            case TX_EXTENSION:
+                return loadTemplate(assetInfo.openStream());
             default:
                 return null;
         }
@@ -218,6 +222,59 @@ public class TmxLoader implements AssetLoader {
             logger.error("Tileset {} was not loaded correctly!", source, e);
         }
 
+        return ext;
+    }
+
+
+
+    /**
+     * Load a TileSet from .tsx file.
+     *
+     * @param inputStream
+     * @return
+     */
+    private ObjectTemplate loadTemplate(final InputStream inputStream) {
+        ObjectTemplate template = null;
+        Node root;
+
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        Document doc;
+        try {
+            DocumentBuilder builder = factory.newDocumentBuilder();
+            doc = builder.parse(inputStream);
+
+            NodeList nodeList = doc.getElementsByTagName(TEMPLATE);
+
+            // There can be only one template in a .tx file.
+            root = nodeList.item(0);
+
+            if (root != null) {
+                template = readTemplate(root);
+                template.setSource(key.getName());
+            }
+        } catch (Exception e) {
+            logger.error("Failed while loading {}", key.getName(), e);
+        }
+
+        return template;
+    }
+
+    /**
+     * Load Template from a ".tx" file.
+     *
+     * @param source the source of the template
+     * @return
+     */
+    private ObjectTemplate loadTemplate(String source) {
+        String assetPath = toJmeAssetPath(source);
+
+        // load it with assetManager
+        ObjectTemplate ext = null;
+        try {
+            ext = (ObjectTemplate) assetManager.loadAsset(assetPath);
+        } catch (Exception e) {
+            logger.error("Template {} was not loaded correctly!", source, e);
+        }
         return ext;
     }
 
@@ -1224,22 +1281,36 @@ public class TmxLoader implements AssetLoader {
         double rotation = getDoubleAttribute(node, "rotation", 0);
         String gid = getAttributeValue(node, GID);
         int visible = getAttribute(node, "visible", 1);
-        String template = getAttributeValue(node, "template");
+        String templateSource = getAttributeValue(node, TEMPLATE);
         // TODO need some samples to figure out how template works.
 
-        if (template != null) {
-            logger.info("template:{}", template);
-        }
         MapObject obj = new MapObject(x, y, width, height);
         obj.setId(id);
         obj.setRotation(rotation);
-        obj.setTemplate(template);
         obj.setVisible(visible == 1);
         if (name != null) {
             obj.setName(name);
         }
         if (type != null) {
             obj.setType(type);
+        }
+
+        ObjectTemplate template;
+        if (templateSource != null) {
+            logger.info("template:{}", templateSource);
+            template = loadTemplate(templateSource);
+            if (template == null) {
+                logger.warn("template not found:{}", templateSource);
+            } else {
+                obj.setTemplate(templateSource);
+                // TODO need to dig into the template, see what exactly it should be copy.
+                template.copyTo(obj);
+
+                // merge the properties, behavior like inheritance.
+                Properties props = readProperties(node.getChildNodes());
+                obj.getProperties().putAll(props);
+                return obj;
+            }
         }
 
         Properties props = readProperties(node.getChildNodes());
@@ -1404,6 +1475,26 @@ public class TmxLoader implements AssetLoader {
         return groupLayer;
     }
 
+    private ObjectTemplate readTemplate(Node node) {
+        Tileset tileset = null;
+        MapObject obj = null;
+        // Add all objects from the objects group
+        NodeList children = node.getChildNodes();
+        for (int i = 0; i < children.getLength(); i++) {
+            Node child = children.item(i);
+            if (TILESET.equals(child.getNodeName())) {
+                tileset = readTileset(child);
+            }
+            else if (OBJECT.equals(child.getNodeName())) {
+                obj = readObjectNode(child);
+            }
+        }
+
+        ObjectTemplate template = new ObjectTemplate();
+        template.setTileset(tileset);
+        template.setObject(obj);
+        return template;
+    }
     /**
      * Reads properties from amongst the given children. When a "properties"
      * element is encountered, it recursively calls itself with the children of
@@ -1444,7 +1535,7 @@ public class TmxLoader implements AssetLoader {
     /**
      * read every property in a properties
      *
-     * @param node
+     * @param child
      * @param props
      */
     private void readProperty(Node child, Properties props) {
