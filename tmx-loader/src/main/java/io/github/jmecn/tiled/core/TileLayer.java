@@ -14,7 +14,7 @@ import io.github.jmecn.tiled.math2d.Point;
  * 
  * @author yanmaoyuan
  */
-public class TileLayer extends Layer {
+public class TileLayer extends Layer implements TileContainer {
 
     private Tile[][] tiles;
     
@@ -111,6 +111,7 @@ public class TileLayer extends Layer {
      * @param ti
      *            the tile object to place
      */
+    @Override
     public void setTileAt(int tx, int ty, Tile ti) {
         if (contains(tx, ty)) {
             tiles[ty - y][tx - x] = ti;
@@ -131,6 +132,7 @@ public class TileLayer extends Layer {
      * @return tile at position (tx, ty) or <code>null</code> when (tx, ty) is
      *         outside this layer
      */
+    @Override
     public Tile getTileAt(int tx, int ty) {
         return (contains(tx, ty)) ? tiles[ty - y][tx - x] : null;
     }

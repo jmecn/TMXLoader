@@ -125,7 +125,7 @@ public class TiledMap extends Base {
      * grow in all directions. Its layer data is stored in chunks.
      * (0 for false, 1 for true, defaults to 0)
      */
-    private int infinite;
+    private boolean infinite;
 
     private final TreeMap<Integer, Tileset> tilesetPerFirstGid;
     private final List<Tileset> tilesets;
@@ -399,12 +399,12 @@ public class TiledMap extends Base {
     /**
      * Helper method to set the tile based on its global id.
      *
-     * @param tileLayer tile layer
+     * @param tileContainer tile layer or chunk
      * @param x x-coordinate
      * @param y y-coordinate
      * @param tileId global id of the tile as read from the file
      */
-    public void setTileAtFromTileId(TileLayer tileLayer, int x, int y, int tileId) {
+    public void setTileAtFromTileId(TileContainer tileContainer, int x, int y, int tileId) {
         // clear the flag
         int gid = tileId & ~Tile.FLIPPED_MASK;
 
@@ -412,7 +412,7 @@ public class TiledMap extends Base {
         if (tile != null) {
             Tile t = tile.clone();
             t.setGid(tileId);
-            tileLayer.setTileAt(x, y, t);
+            tileContainer.setTileAt(x, y, t);
         } else if (gid > 0) {
             logger.warn("can't find tile with gid:{}", gid);
         }
@@ -637,11 +637,11 @@ public class TiledMap extends Base {
         this.nextObjectId = nextObjectId;
     }
 
-    public int getInfinite() {
+    public boolean isInfinite() {
         return infinite;
     }
 
-    public void setInfinite(int infinite) {
+    public void setInfinite(boolean infinite) {
         this.infinite = infinite;
     }
 

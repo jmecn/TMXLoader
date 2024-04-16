@@ -6,7 +6,6 @@ import com.jme3.asset.AssetManager;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector2f;
-import io.github.jmecn.tiled.TiledConst;
 import io.github.jmecn.tiled.core.*;
 import io.github.jmecn.tiled.enums.ObjectType;
 import io.github.jmecn.tiled.util.ColorUtil;
@@ -131,6 +130,7 @@ public class ObjectLayerLoader extends AbstractLayerLoader {
 
         // load it with assetManager
         try {
+            logger.info("Loading template: {}", assetPath);
             AssetInfo info = assetManager.locateAsset(new AssetKey<>(assetPath));
             objectTemplate = loadObjectTemplate(info.openStream());
             objectTemplate.setSource(assetPath);
@@ -156,13 +156,11 @@ public class ObjectLayerLoader extends AbstractLayerLoader {
                 // so it doesn't need to load tileset again here.
                 int firstGid = Utils.getAttribute(child, FIRST_GID, 1);
                 String source = Utils.getAttributeValue(child, SOURCE);
-                logger.debug("template tileset, gid:{}, source:{}", firstGid, source);
             } else if (OBJECT.equals(child.getNodeName())) {
                 obj = readObjectNode(child);
 
                 if (obj.getTile() != null) {
                     tileset = obj.getTile().getTileset();
-                    logger.debug("actual tileset, gid:{}, source:{}", tileset.getFirstGid(), tileset.getSource());
                 }
                 break;
             }
@@ -206,7 +204,6 @@ public class ObjectLayerLoader extends AbstractLayerLoader {
         ObjectTemplate template;
         String templateSource = getAttributeValue(node, TEMPLATE);
         if (templateSource != null) {
-            logger.info("template:{}", templateSource);
             template = loadObjectTemplate(templateSource);
             if (template == null) {
                 logger.warn("template not found:{}", templateSource);

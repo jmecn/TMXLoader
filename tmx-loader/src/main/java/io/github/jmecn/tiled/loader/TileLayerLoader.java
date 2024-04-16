@@ -3,6 +3,8 @@ package io.github.jmecn.tiled.loader;
 import com.jme3.asset.AssetKey;
 import com.jme3.asset.AssetManager;
 import io.github.jmecn.tiled.core.*;
+import io.github.jmecn.tiled.enums.DataCompression;
+import io.github.jmecn.tiled.enums.DataEncoding;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Node;
@@ -11,6 +13,7 @@ import org.w3c.dom.NodeList;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.util.Base64;
 import java.util.Properties;
 import java.util.zip.GZIPInputStream;
@@ -53,7 +56,7 @@ public class TileLayerLoader extends AbstractLayerLoader {
         Node child = node.getFirstChild();
         while (child != null) {
             String nodeName = child.getNodeName();
-            if (DATA.equalsIgnoreCase(nodeName)) {
+            if (DATA.equals(nodeName)) {
                 readData(layer, child);
             } else if ("tileproperties".equals(nodeName)) {
                 readTileProperties(layer, child);
@@ -65,27 +68,54 @@ public class TileLayerLoader extends AbstractLayerLoader {
     }
 
     private void readData(TileLayer layer, Node node) throws IOException {
-        String encoding = getAttributeValue(node, "encoding");
+        String enc = getAttributeValue(node, "encoding");
         String comp = getAttributeValue(node, "compression");
 
-        if ("base64".equalsIgnoreCase(encoding)) {
-            decodeBase64Data(layer, node, comp);
-        } else if ("csv".equalsIgnoreCase(encoding)) {
-            if (comp != null && !comp.isEmpty()) {
-                throw new IOException("Unrecognized compression method [" + comp + "] for map layer " + layer.getName() + " and encoding " + encoding);
-            }
-            decodeCsvData(layer, node);
+        DataEncoding encoding;
+        if (enc == null) {
+            encoding = DataEncoding.NONE;
         } else {
-            decodeTileData(layer, node);
+            encoding = DataEncoding.fromValue(enc);
+
+            if (encoding == null) {
+                logger.warn("Unsupported encoding:{}, layer:{}", enc, layer.getName());
+                throw new IllegalArgumentException("Unsupported encoding:" + enc);
+            }
         }
 
-        // read chunks
-        NodeList children = node.getChildNodes();
-        for (int i = 0; i < children.getLength(); i++) {
-            Node child = children.item(i);
-            String nodeName = child.getNodeName();
-            if ("chunk".equalsIgnoreCase(nodeName)) {
-                readChunk(layer, child);
+        DataCompression compression;
+        if (comp == null) {
+            compression = DataCompression.NONE;
+        } else {
+            compression = DataCompression.fromValue(comp);
+
+            if (compression == null) {
+                logger.warn("Unsupported compression:{}, layer:{}", comp, layer.getName());
+                throw new IllegalArgumentException("Unsupported compression:" + comp);
+            }
+        }
+
+        if (map.isInfinite()) {
+            // read chunks
+            NodeList children = node.getChildNodes();
+            for (int i = 0; i < children.getLength(); i++) {
+                Node child = children.item(i);
+                String nodeName = child.getNodeName();
+                if ("chunk".equals(nodeName)) {
+                    readChunk(layer, child, encoding, compression);
+                }
+            }
+        } else {
+            switch (encoding) {
+                case BASE64:
+                    decodeBase64Data(layer, node, compression);
+                    break;
+                case CSV:
+                    decodeCsvData(layer, node);
+                    break;
+                default:
+                    decodeTileData(layer, node);
+                    break;
             }
         }
     }
@@ -93,52 +123,59 @@ public class TileLayerLoader extends AbstractLayerLoader {
     /**
      * Get the InputStream for the data element.
      *
-     * @param layer
-     * @param compression
-     * @param decode
-     * @return
-     * @throws IOException
+     * @param len the length of the data
+     * @param compression the compression method
+     * @param decode the decoded data
+     * @return the InputStream
+     * @throws IOException if an I/O error occurs
      */
-    private InputStream getInputStream(TileLayer layer, String compression, byte[] decode) throws IOException {
+    private InputStream getInputStream(int len, DataCompression compression, byte[] decode) throws IOException {
         InputStream is;
-        if ("gzip".equalsIgnoreCase(compression)) {
-            final int len = layer.getWidth() * layer.getHeight() * 4;
-            is = new GZIPInputStream(new ByteArrayInputStream(decode), len);
-        } else if ("zlib".equalsIgnoreCase(compression)) {
-            is = new InflaterInputStream(new ByteArrayInputStream(decode));
-        } else if ("zstd".equals(compression)) {
-            throw new IOException("Unsupported compression method [" + compression + "] for map layer " + layer.getName());
-        } else if (compression != null && !compression.isEmpty()) {
-            logger.warn("Unrecognized compression method [{}] for map layer {}", compression, layer.getName());
-            throw new IOException("Unrecognized compression method [" + compression + "] for map layer " + layer.getName());
-        } else {
-            is = new ByteArrayInputStream(decode);
+        switch (compression) {
+            case GZIP: {
+                is = new GZIPInputStream(new ByteArrayInputStream(decode), len);
+                break;
+            }
+            case ZLIB: {
+                is = new InflaterInputStream(new ByteArrayInputStream(decode));
+                break;
+            }
+            case ZSTANDARD: {
+                // TODO support z-standard later
+                throw new UnsupportedEncodingException("Unsupported compression method:" + compression.getValue());
+            }
+            default: {
+                is = new ByteArrayInputStream(decode);
+                break;
+            }
         }
         return is;
     }
 
-    private void decodeBase64Data(TileLayer layer, Node node, String compression) throws IOException {
+    private void decodeBase64Data(TileContainer tileContainer, Node node, DataCompression compression) throws IOException {
         Node cdata = node.getFirstChild();
         if (cdata != null) {
-            byte[] dec = Base64.getDecoder().decode(cdata.getNodeValue().trim());
+            byte[] decodeData = Base64.getDecoder().decode(cdata.getNodeValue().trim());
+            int width = tileContainer.getWidth();
+            int height = tileContainer.getHeight();
+            int len = width * height * 4;
+            InputStream is = getInputStream(len, compression, decodeData);
 
-            InputStream is = getInputStream(layer, compression, dec);
-
-            for (int y = 0; y < layer.getHeight(); y++) {
-                for (int x = 0; x < layer.getWidth(); x++) {
+            for (int y = 0; y < height; y++) {
+                for (int x = 0; x < width; x++) {
                     int tileId = 0;
                     tileId |= is.read();
                     tileId |= is.read() << 8;
                     tileId |= is.read() << 16;
                     tileId |= is.read() << 24;
 
-                    map.setTileAtFromTileId(layer, x, y, tileId);
+                    map.setTileAtFromTileId(tileContainer, x, y, tileId);
                 }
             }
         }
     }
 
-    private void decodeCsvData(TileLayer layer, Node node) throws IOException {
+    private void decodeCsvData(TileContainer tileContainer, Node node) throws IOException {
         String csvText = node.getTextContent();
 
         /*
@@ -148,34 +185,40 @@ public class TileLayerLoader extends AbstractLayerLoader {
          */
         String[] csvTileIds = csvText.trim().split("[\\s]*,[\\s]*");
 
-        if (csvTileIds.length != layer.getHeight() * layer.getWidth()) {
+        int width = tileContainer.getWidth();
+        int height = tileContainer.getHeight();
+        int len = width * height;
+
+        if (csvTileIds.length != len) {
             throw new IOException("Number of tiles does not match the layer's width and height");
         }
 
-        for (int y = 0; y < layer.getHeight(); y++) {
-            for (int x = 0; x < layer.getWidth(); x++) {
-                String sTileId = csvTileIds[x + y * layer.getWidth()];
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                String sTileId = csvTileIds[x + y * width];
                 int tileId = (int) Long.parseLong(sTileId);
-                map.setTileAtFromTileId(layer, x, y, tileId);
+                map.setTileAtFromTileId(tileContainer, x, y, tileId);
             }
         }
     }
 
-    private void decodeTileData(TileLayer layer, Node node) {
+    private void decodeTileData(TileContainer tileContainer, Node node) {
         int x = 0;
         int y = 0;
+        int width = tileContainer.getWidth();
+        int height = tileContainer.getHeight();
         Node child = node.getFirstChild();
         while (child != null) {
-            if (TILE.equalsIgnoreCase(child.getNodeName())) {
+            if (TILE.equals(child.getNodeName())) {
                 int tileId = getAttribute(child, GID, -1);
-                map.setTileAtFromTileId(layer, x, y, tileId);
+                map.setTileAtFromTileId(tileContainer, x, y, tileId);
 
                 x++;
-                if (x == layer.getWidth()) {
+                if (x == width) {
                     x = 0;
                     y++;
                 }
-                if (y == layer.getHeight()) {
+                if (y == height) {
                     break;
                 }
             }
@@ -184,15 +227,18 @@ public class TileLayerLoader extends AbstractLayerLoader {
     }
 
     /**
-     * This is currently added only for infinite maps. The contents of a chunk element is
+     * <p>This is currently added only for infinite maps. The contents of a chunk element is
      * same as that of the data element, except it stores the data of the area specified
-     * in the attributes.
+     * in the attributes.</p>
      *
-     * Can contain any number: &lt;tile>
-     * @param layer
-     * @param node
+     * <p>Can contain any number: &lt;tile&gt;</p>
+     *
+     * @param layer the layer
+     * @param node the chunk node
+     * @param encoding
+     * @param compression
      */
-    private void readChunk(TileLayer layer, Node node) {
+    private void readChunk(TileLayer layer, Node node, DataEncoding encoding, DataCompression compression) throws IOException {
         int x = getAttribute(node, X, 0);
         int y = getAttribute(node, Y, 0);
         int width = getAttribute(node, WIDTH, 0);
@@ -201,29 +247,16 @@ public class TileLayerLoader extends AbstractLayerLoader {
         Chunk chunk = new Chunk(x, y, width, height);
 
         if (node.hasChildNodes()) {
-            int ix = 0;
-            int iy = 0;
-            Node child = node.getFirstChild();
-            while (child != null) {
-                if (TILE.equals(child.getNodeName())) {
-                    // Not to be confused with the tile element inside a tileset,
-                    // this element defines the value of a single tile on a tile layer.
-                    // This is however the most inefficient way of storing the tile
-                    // layer data, and should generally be avoided.
-                    int tileId = getAttribute(child, GID, -1);
-                    // TODO need to get some samples to test this
-                    Tile tile = map.getTileForTileGID(tileId);
-                    chunk.setTileAt(ix, iy, tile);
-                    ix++;
-                    if (ix == width) {
-                        ix = 0;
-                        iy++;
-                    }
-                    if (iy == height) {
-                        break;
-                    }
-                }
-                child = child.getNextSibling();
+            switch (encoding) {
+                case BASE64:
+                    decodeBase64Data(chunk, node, compression);
+                    break;
+                case CSV:
+                    decodeCsvData(chunk, node);
+                    break;
+                default:
+                    decodeTileData(chunk, node);
+                    break;
             }
         } else {
             for (int iy = 0; iy < height; iy++) {

@@ -103,7 +103,7 @@ public final class TiledMapLoader {
             DocumentBuilder builder = factory.newDocumentBuilder();
             builder.setEntityResolver((publicId, systemId) -> {
                 if (systemId.equals("http://mapeditor.org/dtd/1.0/map.dtd")) {
-                    return new InputSource(getClass().getResourceAsStream("resources/map.dtd"));
+                    return new InputSource(getClass().getResourceAsStream("/tiled/map.dtd"));
                 }
                 return null;
             });
@@ -162,7 +162,7 @@ public final class TiledMapLoader {
         String bgStr = getAttributeValue(mapNode, BACKGROUND_COLOR);
         int nextLayerId = getAttribute(mapNode, NEXT_LAYER_ID, 0);
         int nextObjectId = getAttribute(mapNode, NEXT_OBJECT_ID, 0);
-        int infinite = getAttribute(mapNode, INFINITE, 0);
+        boolean infinite = getAttribute(mapNode, INFINITE, 0) == 1;
 
         map.setVersion(version);
         map.setTiledVersion(tiledVersion);

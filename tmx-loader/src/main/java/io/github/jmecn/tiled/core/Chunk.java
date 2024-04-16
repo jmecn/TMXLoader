@@ -11,23 +11,23 @@ import io.github.jmecn.tiled.math2d.Point;
  *
  * @author yanmaoyuan
  */
-public class Chunk extends VisualSpatial {
+public class Chunk extends VisualSpatial implements TileContainer {
     /**
      * The x coordinate of the chunk in tiles.
      */
-    private int x;
+    private final int x;
     /**
      * The y coordinate of the chunk in tiles.
      */
-    private int y;
+    private final int y;
     /**
      * The width of the chunk in tiles.
      */
-    private int width;
+    private final int width;
     /**
      * The height of the chunk in tiles.
      */
-    private int height;
+    private final int height;
 
     /**
      * The data stored in the chunk. Format is the same as data.
@@ -46,6 +46,23 @@ public class Chunk extends VisualSpatial {
         this.needUpdateSpatial = new boolean[height][width];
     }
 
+    public int getX() {
+        return x;
+    }
+
+    public int getY() {
+        return y;
+    }
+
+    @Override
+    public int getWidth() {
+        return width;
+    }
+
+    @Override
+    public int getHeight() {
+        return height;
+    }
 
     /**
      * Removes any occurences of the given tile from this map layer. If layer is
@@ -91,6 +108,7 @@ public class Chunk extends VisualSpatial {
      * @param ti
      *            the tile object to place
      */
+    @Override
     public void setTileAt(int tx, int ty, Tile ti) {
         if (contains(tx, ty)) {
             map[ty - y][tx - x] = ti;
@@ -111,6 +129,7 @@ public class Chunk extends VisualSpatial {
      * @return tile at position (tx, ty) or <code>null</code> when (tx, ty) is
      *         outside this layer
      */
+    @Override
     public Tile getTileAt(int tx, int ty) {
         return (contains(tx, ty)) ? map[ty - y][tx - x] : null;
     }

@@ -39,7 +39,7 @@ public abstract class AbstractLayerLoader {
      * @param layer the Layer
      */
     protected void readLayerBase(Node node, Layer layer) {
-        String id = getAttributeValue(node, "id");
+        String id = getAttributeValue(node, ID);
         if (id != null) {
             layer.setId(Integer.parseInt(id));
         }
