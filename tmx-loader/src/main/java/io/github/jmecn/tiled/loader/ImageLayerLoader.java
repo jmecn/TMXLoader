@@ -20,13 +20,12 @@ import static io.github.jmecn.tiled.loader.Utils.getAttribute;
  */
 public class ImageLayerLoader extends AbstractLayerLoader {
     private static final Logger logger = LoggerFactory.getLogger(ImageLayerLoader.class);
-    private TiledMap map;
+    private final TiledMap map;
 
     public ImageLayerLoader(AssetManager assetManager, AssetKey<?> key, TiledMap map) {
         super(assetManager, key);
         this.map = map;
     }
-
 
     /**
      * read ImageLayer
@@ -37,8 +36,8 @@ public class ImageLayerLoader extends AbstractLayerLoader {
     public ImageLayer load(Node node) {
         int width = getAttribute(node, WIDTH, map.getWidth());
         int height = getAttribute(node, HEIGHT, map.getHeight());
-        boolean repeatX = getAttribute(node, "repeatx", 0) == 1;
-        boolean repeatY = getAttribute(node, "repeaty", 0) == 1;
+        boolean repeatX = getAttribute(node, REPEAT_X, 0) == 1;
+        boolean repeatY = getAttribute(node, REPEAT_Y, 0) == 1;
 
         ImageLayer layer = new ImageLayer(width, height);
         readLayerBase(node, layer);

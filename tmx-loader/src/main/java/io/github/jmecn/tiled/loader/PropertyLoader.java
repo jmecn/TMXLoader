@@ -23,14 +23,6 @@ public class PropertyLoader {
 
     private static final Logger logger = LoggerFactory.getLogger(PropertyLoader.class);
 
-    private final AssetManager assetManager;
-    private final AssetKey<?> assetKey;
-
-    public PropertyLoader(AssetManager assetManager, AssetKey<?> assetKey) {
-        this.assetManager = assetManager;
-        this.assetKey = assetKey;
-    }
-
     /**
      * Reads properties from amongst the given children. When a "properties"
      * element is encountered, it recursively calls itself with the children of
@@ -134,7 +126,6 @@ public class PropertyLoader {
                 break;
             // stored as paths relative from the location of the map file. (since 0.17)
             case "file":
-                val = toJmeAssetPath(assetManager, assetKey, assetKey.getFolder() + value);
                 break;
             // can reference any object on the same map and are stored as an integer
             // (the ID of the referenced object, or 0 when no object is referenced).
@@ -148,7 +139,6 @@ public class PropertyLoader {
             // Only the actually set members are saved. When no members have been set
             // the properties element is left out entirely. (since 1.8)
             case CLASS:
-                // TODO not support yet. I need a example to test.
                 break;
             default:
                 logger.warn("unknown type:{}", type);

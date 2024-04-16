@@ -11,7 +11,6 @@ import com.jme3.texture.Texture2D;
 public class TiledImage {
     private final String source;
     private final String trans;
-    // useless for jme3
     private final String format;
     private final int width;
     private final int height;
@@ -67,10 +66,10 @@ public class TiledImage {
     public String toString() {
         return "TiledImage{" +
                 "source='" + source + '\'' +
-                ", trans='" + trans + '\'' +
-                ", format='" + format + '\'' +
                 ", width=" + width +
                 ", height=" + height +
+                ", trans='" + trans + '\'' +
+                ", format='" + format + '\'' +
                 '}';
     }
 }

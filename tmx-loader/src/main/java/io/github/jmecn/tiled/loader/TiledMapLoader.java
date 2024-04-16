@@ -58,7 +58,7 @@ public final class TiledMapLoader {
         this.assetKey = key;
 
         this.tilesetLoader = new TilesetLoader(assetManager, key);
-        this.propertiesLoader = new PropertyLoader(assetManager, key);
+        this.propertiesLoader = new PropertyLoader();
     }
     private TileLayerLoader getTileLayerReader() {
         if (tileLayerReader == null) {
@@ -123,7 +123,7 @@ public final class TiledMapLoader {
     public TiledMap readMap(Document doc) throws IOException {
         Node mapNode = doc.getDocumentElement();
 
-        if (!"map".equals(mapNode.getNodeName())) {
+        if (!MAP.equals(mapNode.getNodeName())) {
             throw new IllegalArgumentException("Not a valid tmx map file.");
         }
 
@@ -147,14 +147,14 @@ public final class TiledMapLoader {
 
         // Load other map attributes
         String version = getAttributeValue(mapNode, VERSION);
-        String tiledVersion = getAttributeValue(mapNode, TILEDVERSION);
-        String clazz = getAttribute(mapNode, CLASS, "");
+        String tiledVersion = getAttributeValue(mapNode, TILED_VERSION);
+        String clazz = getAttribute(mapNode, CLASS, EMPTY);
         String orientation = getAttribute(mapNode, ORIENTATION, Orientation.ORTHOGONAL.getValue());
-        String renderOrder = getAttribute(mapNode, RENDERORDER, RenderOrder.RIGHT_DOWN.getValue());
-        int compressionLevel = getAttribute(mapNode, COMPRESSIONLEVEL, -1);
+        String renderOrder = getAttribute(mapNode, RENDER_ORDER, RenderOrder.RIGHT_DOWN.getValue());
+        int compressionLevel = getAttribute(mapNode, COMPRESSION_LEVEL, -1);
         int tileWidth = getAttribute(mapNode, TILE_WIDTH, 0);
         int tileHeight = getAttribute(mapNode, TILE_HEIGHT, 0);
-        int hexSideLength = getAttribute(mapNode, HEXSIDELNGTH, 0);
+        int hexSideLength = getAttribute(mapNode, HEX_SIDE_LENGTH, 0);
         String staggerAxis = getAttribute(mapNode, STAGGER_AXIS, StaggerAxis.Y.getValue());
         String staggerIndex = getAttribute(mapNode, STAGGER_INDEX, StaggerIndex.ODD.getValue());
         int parallaxOriginX = getAttribute(mapNode, PARALLAX_ORIGIN_X, 0);

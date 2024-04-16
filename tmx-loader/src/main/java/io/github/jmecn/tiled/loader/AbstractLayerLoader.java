@@ -8,8 +8,7 @@ import org.w3c.dom.Node;
 
 import java.util.Properties;
 
-import static io.github.jmecn.tiled.TiledConst.CLASS;
-import static io.github.jmecn.tiled.TiledConst.NAME;
+import static io.github.jmecn.tiled.TiledConst.*;
 import static io.github.jmecn.tiled.loader.Utils.*;
 import static io.github.jmecn.tiled.loader.Utils.getDoubleAttribute;
 
@@ -29,7 +28,7 @@ public abstract class AbstractLayerLoader {
         this.assetManager = assetManager;
         this.assetKey = key;
 
-        this.propertiesLoader = new PropertyLoader(assetManager, key);
+        this.propertiesLoader = new PropertyLoader();
         this.tiledImageLoader = new TiledImageLoader(assetManager, key);
     }
 
@@ -47,14 +46,14 @@ public abstract class AbstractLayerLoader {
 
         final String name = getAttributeValue(node, NAME);
         String clazz = getAttribute(node, CLASS, "");
-        double opacity = getDoubleAttribute(node, "opacity", 1.0);
-        boolean visible = getAttribute(node, "visible", 1) == 1;
-        boolean locked = getAttribute(node, "locked", 0) == 1;
-        String tintColor = getAttributeValue(node, "tintcolor");
-        int offsetX = getAttribute(node, "offsetx", 0);
-        int offsetY = getAttribute(node, "offsety", 0);
-        float parallaxX = (float) getDoubleAttribute(node, "parallaxx", 1.0);
-        float parallaxY = (float) getDoubleAttribute(node, "parallaxy", 1.0);
+        double opacity = getDoubleAttribute(node, OPACITY, 1.0);
+        boolean visible = getAttribute(node, VISIBLE, 1) == 1;
+        boolean locked = getAttribute(node, LOCKED, 0) == 1;
+        String tintColor = getAttributeValue(node, TINT_COLOR);
+        int offsetX = getAttribute(node, OFFSET_X, 0);
+        int offsetY = getAttribute(node, OFFSET_Y, 0);
+        float parallaxX = (float) getDoubleAttribute(node, PARALLAX_X, 1.0);
+        float parallaxY = (float) getDoubleAttribute(node, PARALLAX_Y, 1.0);
 
         layer.setName(name);
         layer.setClazz(clazz);

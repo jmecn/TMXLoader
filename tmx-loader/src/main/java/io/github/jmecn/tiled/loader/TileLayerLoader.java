@@ -193,8 +193,8 @@ public class TileLayerLoader extends AbstractLayerLoader {
      * @param node
      */
     private void readChunk(TileLayer layer, Node node) {
-        int x = getAttribute(node, "x", 0);
-        int y = getAttribute(node, "y", 0);
+        int x = getAttribute(node, X, 0);
+        int y = getAttribute(node, Y, 0);
         int width = getAttribute(node, WIDTH, 0);
         int height = getAttribute(node, HEIGHT, 0);
 
@@ -241,8 +241,8 @@ public class TileLayerLoader extends AbstractLayerLoader {
         Node child = node.getFirstChild();
         while (child != null) {
             if (TILE.equalsIgnoreCase(child.getNodeName())) {
-                int x = getAttribute(child, "x", -1);
-                int y = getAttribute(child, "y", -1);
+                int x = getAttribute(child, X, -1);
+                int y = getAttribute(child, Y, -1);
 
                 Properties tip = propertiesLoader.load(child.getChildNodes());
                 layer.setTileInstancePropertiesAt(x, y, tip);

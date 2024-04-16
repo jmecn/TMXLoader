@@ -58,11 +58,11 @@ public class ObjectLayerLoader extends AbstractLayerLoader {
         }
         layer.setColor(borderColor);
 
-        Material mat = new Material(assetManager, TiledConst.TILED_J3MD);
+        Material mat = new Material(assetManager, TILED_J3MD);
         mat.setColor("Color", borderColor);
         layer.setMaterial(mat);
 
-        final String drawOrder = getAttributeValue(node, "draworder");
+        final String drawOrder = getAttributeValue(node, DRAW_ORDER);
         if (drawOrder != null) {
             layer.setDrawOrder(drawOrder);
         }
@@ -82,10 +82,10 @@ public class ObjectLayerLoader extends AbstractLayerLoader {
 
 
     /**
-     * Load a TileSet from .tsx file.
+     * Load an ObjectTemplate from .tx file.
      *
-     * @param inputStream
-     * @return
+     * @param inputStream the input stream of the template file
+     * @return the loaded ObjectTemplate
      */
     private ObjectTemplate loadObjectTemplate(final InputStream inputStream) {
         ObjectTemplate template;
@@ -154,7 +154,7 @@ public class ObjectLayerLoader extends AbstractLayerLoader {
             if (TILESET.equals(child.getNodeName())) {
                 // The readObjectNode method will automatically set the tileset from tiled map,
                 // so it doesn't need to load tileset again here.
-                int firstGid = Utils.getAttribute(child, "firstgid", 1);
+                int firstGid = Utils.getAttribute(child, FIRST_GID, 1);
                 String source = Utils.getAttributeValue(child, SOURCE);
                 logger.debug("template tileset, gid:{}, source:{}", firstGid, source);
             } else if (OBJECT.equals(child.getNodeName())) {
@@ -181,16 +181,16 @@ public class ObjectLayerLoader extends AbstractLayerLoader {
      * @return MapObject
      */
     private MapObject readObjectNode(Node node) {
-        int id = getAttribute(node, "id", 0);
+        int id = getAttribute(node, ID, 0);
         String name = getAttributeValue(node, NAME);
         String type = getAttributeValue(node, TYPE);
-        double x = getDoubleAttribute(node, "x", 0);
-        double y = getDoubleAttribute(node, "y", 0);
+        double x = getDoubleAttribute(node, X, 0);
+        double y = getDoubleAttribute(node, Y, 0);
         double width = getDoubleAttribute(node, WIDTH, 0);
         double height = getDoubleAttribute(node, HEIGHT, 0);
-        double rotation = getDoubleAttribute(node, "rotation", 0);
+        double rotation = getDoubleAttribute(node, ROTATION, 0);
         String gid = getAttributeValue(node, GID);
-        int visible = getAttribute(node, "visible", 1);
+        int visible = getAttribute(node, VISIBLE, 1);
 
         MapObject obj = new MapObject(x, y, width, height);
         obj.setId(id);

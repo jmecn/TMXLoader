@@ -413,7 +413,7 @@ public class TiledMap extends Base {
             Tile t = tile.clone();
             t.setGid(tileId);
             tileLayer.setTileAt(x, y, t);
-        } else {
+        } else if (gid > 0) {
             logger.warn("can't find tile with gid:{}", gid);
         }
     }

@@ -10,9 +10,7 @@ import com.jme3.math.Vector2f;
 import com.jme3.texture.Image;
 import com.jme3.texture.Texture;
 import com.jme3.texture.Texture2D;
-import io.github.jmecn.tiled.TiledConst;
 import io.github.jmecn.tiled.core.TiledImage;
-import io.github.jmecn.tiled.core.TiledMap;
 import io.github.jmecn.tiled.util.ColorUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,7 +18,6 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.util.Base64;
@@ -30,7 +27,7 @@ import static io.github.jmecn.tiled.TiledConst.DATA;
 import static io.github.jmecn.tiled.loader.Utils.*;
 
 /**
- * desc:
+ * Tiled Image Loader.
  *
  * @author yanmaoyuan
  */
@@ -38,9 +35,8 @@ public final class TiledImageLoader {
 
     private static final Logger logger = LoggerFactory.getLogger(TiledImageLoader.class);
 
-    private AssetManager assetManager;
-    private AssetKey assetKey;
-    private TiledMap map;
+    private final AssetManager assetManager;
+    private final AssetKey<?> assetKey;
 
     public TiledImageLoader(AssetManager assetManager, AssetKey<?> assetKey) {
         this.assetManager = assetManager;
@@ -48,24 +44,25 @@ public final class TiledImageLoader {
     }
 
     /**
-     * load an image from file or decode from the data elements.
+     * <p>Load an image from file or decode from the data elements.</p>
      * <p>
      * Note that it is not currently possible to use Tiled to create maps with
      * embedded image data, even though the TMX format supports this. It is
      * possible to create such maps using libtiled (Qt/C++) or tmxlib (Python).
+     * </p
      *
      * @param node the node representing the "image" element
      * @return the loaded image
      */
     public TiledImage load(Node node) {
         String source = getAttributeValue(node, SOURCE);
-        String trans = getAttributeValue(node, "trans");
-        String format = getAttributeValue(node, "format");// useless for jme3
+        String trans = getAttributeValue(node, TRANS);
+        String format = getAttributeValue(node, FORMAT);
         int width = getAttribute(node, WIDTH, 0);
         int height = getAttribute(node, HEIGHT, 0);
 
         Texture2D texture = null;
-        // load a image from file or decode from the CDATA.
+        // load an image from file or decode from the CDATA.
         if (source != null) {
             String assetPath = toJmeAssetPath(assetManager, assetKey, assetKey.getFolder() + source);
             source = assetPath;
@@ -77,9 +74,8 @@ public final class TiledImageLoader {
                 if (DATA.equals(item.getNodeName())) {
                     Node cdata = item.getFirstChild();
                     if (cdata != null) {
-                        String sdata = cdata.getNodeValue();
-                        byte[] imageData = Base64.getDecoder().decode(sdata.trim());
-
+                        String encodedData = cdata.getNodeValue();
+                        byte[] imageData = Base64.getDecoder().decode(encodedData.trim());
                         texture = loadTexture2D(imageData);
                     }
                     break;
@@ -97,7 +93,7 @@ public final class TiledImageLoader {
         image.setTexture(texture);
 
         // create material
-        Material mat = new Material(assetManager, TiledConst.TILED_J3MD);
+        Material mat = new Material(assetManager, TILED_J3MD);
         mat.setTexture("ColorMap", texture);
         if (trans != null) {
             ColorRGBA transparentColor = ColorUtil.toColorRGBA(trans);
@@ -114,8 +110,8 @@ public final class TiledImageLoader {
     /**
      * Load a Texture from source
      *
-     * @param source
-     * @return
+     * @param source the source path
+     * @return the loaded texture
      */
     private Texture2D loadTexture2D(final String source) {
         Texture2D tex = null;

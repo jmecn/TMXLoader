@@ -54,8 +54,8 @@ public final class TilesetLoader {
         this.assetManager = assetManager;
         this.assetKey = assetKey;
 
-        tiledImageLoader = new TiledImageLoader(assetManager, assetKey);
-        propertiesLoader = new PropertyLoader(assetManager, assetKey);
+        this.tiledImageLoader = new TiledImageLoader(assetManager, assetKey);
+        this.propertiesLoader = new PropertyLoader();
     }
 
 
@@ -132,7 +132,7 @@ public final class TilesetLoader {
     public Tileset readTileset(Node node, TiledMap map) {
 
         String source = getAttributeValue(node, SOURCE);
-        int firstGid = getAttribute(node, "firstgid", 1);
+        int firstGid = getAttribute(node, FIRST_GID, 1);
 
         if (source != null) {
             Tileset set = load(assetKey.getFolder() + source);
@@ -140,19 +140,19 @@ public final class TilesetLoader {
             return set;
         }
 
-        final int tileWidth = getAttribute(node, TILE_WIDTH, map != null ? map.getTileWidth() : 0);
-        final int tileHeight = getAttribute(node, TILE_HEIGHT, map != null ? map.getTileHeight() : 0);
-        final int tileSpacing = getAttribute(node, SPACING, 0);
-        final int tileMargin = getAttribute(node, MARGIN, 0);
+        int tileWidth = getAttribute(node, TILE_WIDTH, map != null ? map.getTileWidth() : 0);
+        int tileHeight = getAttribute(node, TILE_HEIGHT, map != null ? map.getTileHeight() : 0);
+        int tileSpacing = getAttribute(node, SPACING, 0);
+        int tileMargin = getAttribute(node, MARGIN, 0);
 
         Tileset set = new Tileset(tileWidth, tileHeight, tileSpacing, tileMargin);
         set.setFirstGid(firstGid);
 
-        final String name = getAttributeValue(node, NAME);
+        String name = getAttributeValue(node, NAME);
         String clazz = getAttribute(node, CLASS, "");
-        String objectAlignment = getAttribute(node, "objectalignment", ObjectAlignment.UNSPECIFIED.getValue());
-        String tileRenderSize = getAttribute(node, "tilerendersize", TileRenderSize.TILE.getValue());
-        String fillMode = getAttribute(node, "fillmode", FillMode.STRETCH.getValue());
+        String objectAlignment = getAttribute(node, OBJECT_ALIGNMENT, ObjectAlignment.UNSPECIFIED.getValue());
+        String tileRenderSize = getAttribute(node, TILE_RENDER_SIZE, TileRenderSize.TILE.getValue());
+        String fillMode = getAttribute(node, FILL_MODE, FillMode.STRETCH.getValue());
 
         set.setName(name);
         set.setClazz(clazz);
@@ -207,14 +207,14 @@ public final class TilesetLoader {
                      * and determines how tile overlays for terrain and collision
                      * information are rendered.
                      */
-                    String orientation = getAttribute(node, ORIENTATION, "orthogonal");
+                    String orientation = getAttribute(node, ORIENTATION, Orientation.ORTHOGONAL.getValue());
                     Orientation gridOrientation = Orientation.fromString(orientation);
                     int gridWidth = getAttribute(node, WIDTH, 0);
                     int gridHeight = getAttribute(node, HEIGHT, 0);
                     set.setGrid(gridOrientation, gridWidth, gridHeight);
                     break;
                 }
-                case TERRAINTYPES: {
+                case TERRAIN_TYPES: {
                     NodeList terrainTypes = child.getChildNodes();
                     for (int k = 0; k < terrainTypes.getLength(); k++) {
                         Node terrainNode = terrainTypes.item(k);
@@ -227,30 +227,30 @@ public final class TilesetLoader {
                 case TILE:
                     readTile(set, child);
                     break;
-                case "tileoffset": {
+                case TILE_OFFSET: {
                     /*
                      * This element is used to specify an offset in pixels, to be
                      * applied when drawing a tile from the related tileset. When
                      * not present, no offset is applied.
                      */
-                    final int tileOffsetX = getAttribute(child, "x", 0);
-                    final int tileOffsetY = getAttribute(child, "y", 0);
+                    final int tileOffsetX = getAttribute(child, X, 0);
+                    final int tileOffsetY = getAttribute(child, Y, 0);
 
                     set.setTileOffset(tileOffsetX, tileOffsetY);
                     break;
                 }
-                case "transformations": {
+                case TRANSFORMATIONS: {
                     // This element is used to describe which transformations can be applied to the tiles
                     // (e.g. to extend a Wang set by transforming existing tiles).
                     // Whether the tiles in this set can be flipped horizontally (default 0)
-                    int hflip = getAttribute(node, "hflip", 0);
+                    int hFlip = getAttribute(node, H_FLIP, 0);
                     // Whether the tiles in this set can be flipped vertically (default 0)
-                    int vflip = getAttribute(node, "vflip", 0);
+                    int vFlip = getAttribute(node, V_FLIP, 0);
                     // Whether the tiles in this set can be rotated in 90 degree increments (default 0)
-                    int rotate = getAttribute(node, "rotate", 0);
+                    int rotate = getAttribute(node, ROTATE, 0);
                     // Whether untransformed tiles remain preferred, otherwise transformed tiles are used to produce more variations (default 0)
-                    int preferUntransformed = getAttribute(node, "preferuntransformed", 0);
-                    set.setTransformations(new Transformations(hflip, vflip, rotate, preferUntransformed));
+                    int preferUntransformed = getAttribute(node, PREFER_UNTRANSFORMED, 0);
+                    set.setTransformations(new Transformations(hFlip, vFlip, rotate, preferUntransformed));
                     break;
                 }
                 case WANGSETS: {
@@ -345,7 +345,7 @@ public final class TilesetLoader {
      */
     private WangSet readWangSet(Node node) {
         String name = getAttributeValue(node, NAME);
-        String clazz = getAttribute(node, TYPE, "");
+        String clazz = getAttribute(node, TYPE, EMPTY);
         int tile = getAttribute(node, TILE, -1);
 
         WangSet wangSet = new WangSet(name);
@@ -371,10 +371,10 @@ public final class TilesetLoader {
 
     private WangColor readWangColor(Node node) {
         String name = getAttributeValue(node, NAME);
-        String clazz = getAttribute(node, CLASS, "");
+        String clazz = getAttribute(node, CLASS, EMPTY);
         String color = getAttributeValue(node, COLOR);
         int tile = getAttribute(node, TILE, -1);
-        float probability = (float) getDoubleAttribute(node, "probability", 0.0);
+        float probability = (float) getDoubleAttribute(node, PROBABILITY, 0.0);
 
         WangColor wangColor = new WangColor();
         wangColor.setName(name);
@@ -391,8 +391,8 @@ public final class TilesetLoader {
     }
 
     private WangTile readWangTile(Node node) {
-        int tileId = getAttribute(node, "tileid", -1);
-        String wangId = getAttribute(node, "wangid", "");
+        int tileId = getAttribute(node, TILE_ID, -1);
+        String wangId = getAttribute(node, WANGID, EMPTY);
         return new WangTile(tileId, wangId);
     }
 
@@ -412,14 +412,12 @@ public final class TilesetLoader {
 
         Tile tile;
 
-        int id = getAttribute(t, "id", -1);
+        int id = getAttribute(t, ID, -1);
 
         if (!set.isImageBased() || id > set.getMaxTileId()) {
             tile = new Tile();
             tile.setId(id);
             tile.setGid(id + set.getFirstGid());
-            tile.setWidth(set.getTileWidth());
-            tile.setHeight(set.getTileHeight());
 
             set.addTile(tile);
         } else {
@@ -427,8 +425,8 @@ public final class TilesetLoader {
         }
 
         // since 1.9
-        int x = getAttribute(t, "x", -1);
-        int y = getAttribute(t, "y", -1);
+        int x = getAttribute(t, X, -1);
+        int y = getAttribute(t, Y, -1);
         int width = getAttribute(t, WIDTH, -1);
         int height = getAttribute(t, HEIGHT, -1);
         if (x > -1) {
@@ -460,7 +458,7 @@ public final class TilesetLoader {
             tile.setTerrain(terrain);
         }
 
-        float probability = (float) getDoubleAttribute(t, "probability", 0.0);
+        float probability = (float) getDoubleAttribute(t, PROBABILITY, 0.0);
         tile.setProbability(probability);
 
         NodeList children = t.getChildNodes();
@@ -473,8 +471,11 @@ public final class TilesetLoader {
             if (IMAGE.equals(child.getNodeName())) {
                 TiledImage image = tiledImageLoader.load(child);
                 tile.setImage(image);
-                tile.setWidth(image.getWidth());
-                tile.setHeight(image.getHeight());
+                // use the tile image size as tile size by default
+                if (tile.getWidth() <= 0 && tile.getHeight() <= 0) {
+                    tile.setWidth(image.getWidth());
+                    tile.setHeight(image.getHeight());
+                }
 
                 Material material = image.getMaterial();
                 material.setBoolean("UseTilesetImage", true);
@@ -482,14 +483,14 @@ public final class TilesetLoader {
 
                 tile.setTexture(image.getTexture());
                 tile.setMaterial(material);
-            } else if ("animation".equalsIgnoreCase(child.getNodeName())) {
+            } else if (ANIMATION.equals(child.getNodeName())) {
                 Animation animation = new Animation(null);
                 NodeList frames = child.getChildNodes();
                 for (int k = 0; k < frames.getLength(); k++) {
                     Node frameNode = frames.item(k);
-                    if (frameNode.getNodeName().equalsIgnoreCase("frame")) {
-                        int tileId = getAttribute(frameNode, "tileid", 0);
-                        int duration = getAttribute(frameNode, "duration", 0);
+                    if (frameNode.getNodeName().equals(FRAME)) {
+                        int tileId = getAttribute(frameNode, TILE_ID, 0);
+                        int duration = getAttribute(frameNode, DURATION, 0);
                         animation.addFrame(new Frame(tileId, duration));
                     }
                 }
