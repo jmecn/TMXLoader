@@ -132,6 +132,8 @@ public class TiledMap extends Base {
     private final Map<String, Tileset> tilesetMap;
     private List<Layer> layers;
     private Map<String, Layer> layerMap;
+    private List<ObjectTemplate> templates;
+    private Map<String, ObjectTemplate> templateMap;
 
     /**
      * <p>
@@ -155,6 +157,8 @@ public class TiledMap extends Base {
         this.tilesetMap = new HashMap<>();
         this.layers = new ArrayList<>();
         this.layerMap = new HashMap<>();
+        this.templates = new ArrayList<>();
+        this.templateMap = new HashMap<>();
 
         // Load tilesets first, in case order is munged
         this.tilesetPerFirstGid = new TreeMap<>();
@@ -435,6 +439,15 @@ public class TiledMap extends Base {
             logger.warn("can't find tile with gid:{}", gid);
         }
         return tile;
+    }
+
+    public void addObjectTemplate(ObjectTemplate objectTemplate) {
+        templates.add(objectTemplate);
+        templateMap.put(objectTemplate.getSource(), objectTemplate);
+    }
+
+    public ObjectTemplate getObjectTemplate(String source) {
+        return templateMap.get(source);
     }
 
     /**
