@@ -49,7 +49,7 @@ public final class TiledImageLoader {
      * Note that it is not currently possible to use Tiled to create maps with
      * embedded image data, even though the TMX format supports this. It is
      * possible to create such maps using libtiled (Qt/C++) or tmxlib (Python).
-     * </p
+     * </p>
      *
      * @param node the node representing the "image" element
      * @return the loaded image
