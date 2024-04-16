@@ -62,4 +62,15 @@ public class TiledImage {
     public void setMaterial(Material material) {
         this.material = material;
     }
+
+    @Override
+    public String toString() {
+        return "TiledImage{" +
+                "source='" + source + '\'' +
+                ", trans='" + trans + '\'' +
+                ", format='" + format + '\'' +
+                ", width=" + width +
+                ", height=" + height +
+                '}';
+    }
 }

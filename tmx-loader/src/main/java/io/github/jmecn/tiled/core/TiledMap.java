@@ -400,15 +400,17 @@ public class TiledMap extends Base {
      * @param y y-coordinate
      * @param tileId global id of the tile as read from the file
      */
-    public void setTileAtFromTileId(TileLayer tileLayer, int x, int y, long tileId) {
+    public void setTileAtFromTileId(TileLayer tileLayer, int x, int y, int tileId) {
         // clear the flag
-        int gid = (int)(tileId & ~Tile.FLIPPED_MASK);
+        int gid = tileId & ~Tile.FLIPPED_MASK;
 
         Tile tile = getTileForTileGID(gid);
         if (tile != null) {
             Tile t = tile.clone();
             t.setGid(tileId);
             tileLayer.setTileAt(x, y, t);
+        } else {
+            logger.warn("can't find tile with gid:{}", gid);
         }
     }
 

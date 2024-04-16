@@ -1,8 +1,6 @@
 package io.github.jmecn.tiled.core;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.logging.Logger;
 
 import com.jme3.material.Material;
@@ -153,6 +151,7 @@ public class Tileset extends Base implements Iterable<Tile> {
     private List<WangSet> wangSets = new ArrayList<>();
 
     private List<Tile> tiles = new ArrayList<>();
+    private final Map<Integer, Tile> idTile = new TreeMap<>();
 
     /**
      * Default constructor
@@ -338,6 +337,7 @@ public class Tileset extends Base implements Iterable<Tile> {
         tiles.add(t);
         t.setTileset(this);
 
+        idTile.put(t.getId(), t);
         return t.getId();
     }
 
@@ -364,6 +364,7 @@ public class Tileset extends Base implements Iterable<Tile> {
      */
     public void removeTile(int i) {
         tiles.set(i, null);
+        idTile.remove(i);
     }
 
     /**
@@ -395,7 +396,7 @@ public class Tileset extends Base implements Iterable<Tile> {
      */
     public Tile getTile(int i) {
         try {
-            return tiles.get(i);
+            return idTile.get(i);
         } catch (IndexOutOfBoundsException a) {
             logger.warning("Tileset.getTile(): No tile with id " + i + " exists.");
         }

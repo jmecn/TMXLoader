@@ -4,6 +4,8 @@ import com.jme3.system.AppSettings;
 import com.jme3.system.awt.AwtPanel;
 import com.jme3.system.awt.AwtPanelsContext;
 import com.jme3.system.awt.PaintMode;
+import io.github.jmecn.tiled.app.jme3.TiledApp;
+import io.github.jmecn.tiled.app.swing.MainWnd;
 
 import javax.swing.*;
 import java.awt.*;

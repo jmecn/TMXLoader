@@ -34,7 +34,7 @@ public class Tile extends Base implements Cloneable {
 
     private Tileset tileset;
     private int id = -1;
-    private long gid = 0;
+    private int gid = 0;
 
     /**
      * position in the image
@@ -44,7 +44,7 @@ public class Tile extends Base implements Cloneable {
     private int width;
     private int height;
 
-    private String imgSource;
+    private TiledImage image;
 
     private Texture texture;
 
@@ -103,16 +103,16 @@ public class Tile extends Base implements Cloneable {
         this.id = id;
     }
 
-    public long getGid() {
+    public int getGid() {
         return gid;
     }
 
-    public void setGid(long gid) {
+    public void setGid(int gid) {
         this.gid = gid;
     }
 
     public int getGidNoMask() {
-        return (int)(gid & ~FLIPPED_MASK);
+        return gid & ~FLIPPED_MASK;
     }
 
     public boolean isFlippedHorizontally() {
@@ -163,12 +163,12 @@ public class Tile extends Base implements Cloneable {
         this.height = height;
     }
 
-    public String getImgSource() {
-        return imgSource;
+    public TiledImage getImage() {
+        return image;
     }
 
-    public void setImgSource(String imgSource) {
-        this.imgSource = imgSource;
+    public void setImage(TiledImage image) {
+        this.image = image;
     }
 
     /*
@@ -309,7 +309,7 @@ public class Tile extends Base implements Cloneable {
         tile.id = id;
         tile.gid = gid;
         tile.tileset = tileset;// share the tileset
-        tile.imgSource = imgSource;
+        tile.image = image;
 
         // jme3 visual
         tile.texture = texture;
@@ -326,4 +326,24 @@ public class Tile extends Base implements Cloneable {
         return tile;
     }
 
+    @Override
+    public String toString() {
+        return "Tile{" +
+                "id=" + id +
+                ", gid=" + gid +
+                ", x=" + x +
+                ", y=" + y +
+                ", width=" + width +
+                ", height=" + height +
+                ", image=" + image +
+                ", terrain=" + terrain +
+                ", probability=" + probability +
+                ", gidNoMask=" + getGidNoMask() +
+                ", H=" + isFlippedHorizontally() +
+                ", V=" + isFlippedVertically() +
+                ", AD=" + isFlippedAntiDiagonally() +
+                ", Rot120=" + isRotatedHexagonal120() +
+                ", animated=" + isAnimated() +
+                '}';
+    }
 }

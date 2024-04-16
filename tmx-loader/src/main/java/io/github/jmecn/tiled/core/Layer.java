@@ -273,4 +273,9 @@ public class Layer extends Base {
         }
         return null;
     }
+
+    @Override
+    public String toString() {
+        return name;
+    }
 }

@@ -1,9 +1,10 @@
-package io.github.jmecn.tiled.app;
+package io.github.jmecn.tiled.app.swing;
 
 import com.jme3.asset.AssetKey;
 import com.jme3.asset.AssetManager;
 import com.jme3.asset.plugins.FileLocator;
 import com.jme3.system.awt.AwtPanel;
+import io.github.jmecn.tiled.app.jme3.TiledApp;
 import io.github.jmecn.tiled.core.TiledMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,7 +12,8 @@ import org.slf4j.LoggerFactory;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.io.File;
+import java.io.*;
+import java.util.Properties;
 
 /**
  * desc:
@@ -20,16 +22,27 @@ import java.io.File;
  */
 public class MainWnd extends JFrame {
 
+    public static final String APP_NAME = "Tiled Map Viewer";
+    public static final String CONFIG_FILE = ".config";
+
     static Logger log = LoggerFactory.getLogger(MainWnd.class.getName());
 
     private final transient TiledApp app;
 
+    private Properties properties;
+    private File config;
+
     private JLabel mapStatus;
     private JLabel cursorStatus;
-    private JFileChooser fileChooser;
+    private final JFileChooser fileChooser;
+
+    private LayerView layerView;
 
     public MainWnd(TiledApp app, AwtPanel awtPanel) {
-        super("Tiled Map Viewer");
+        super(APP_NAME);
+
+        // load properties
+        readProperties();
 
         this.app = app;
 
@@ -47,11 +60,10 @@ public class MainWnd extends JFrame {
         getContentPane().add(awtPanel, BorderLayout.CENTER);
 
         this.fileChooser = createFileChooser();
-        // menu
+        this.layerView = createLayerView();
+
         this.setJMenuBar(createMenuBar());
-
-        this.getContentPane().add(new JScrollPane(createList()), BorderLayout.WEST);
-
+        this.getContentPane().add(new JScrollPane(layerView), BorderLayout.WEST);
         this.getContentPane().add(createStatusBar(), BorderLayout.PAGE_END);
 
         this.pack();
@@ -62,25 +74,29 @@ public class MainWnd extends JFrame {
         center();
     }
 
-    private JList<String> createList() {
-        JList<String> list = new JList<>();
-        list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-
-        DefaultListModel<String> model = new DefaultListModel<>();
-//        for (String name : names) {
-//            model.addElement(name);
-//        }
-
-        list.setModel(model);
-
-        list.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                // load(assets[list.getSelectedIndex()]);
+    private void readProperties() {
+        config = new File(CONFIG_FILE);
+        properties = new Properties();
+        if (config.exists()) {
+            try (FileInputStream in = new FileInputStream(config)) {
+                properties.load(new BufferedInputStream(in, 4096));
+            } catch (Exception e) {
+                log.error("Failed to load properties.", e);
             }
-        });
+        }
+    }
 
-        return list;
+    private void writeProperties() {
+        try (FileOutputStream out = new FileOutputStream(config, false)) {
+            properties.store(new BufferedOutputStream(out, 4096), "Tiled Map Viewer Properties");
+        } catch (Exception e) {
+            log.error("Failed to save properties.", e);
+        }
+    }
+
+    private LayerView createLayerView() {
+        layerView = new LayerView();
+        return layerView;
     }
 
     private void center() {
@@ -114,7 +130,10 @@ public class MainWnd extends JFrame {
 
         JMenuItem exitItem = new JMenuItem("Exit");
         exitItem.setMnemonic('X');
-        exitItem.addActionListener(e -> dispose());
+        exitItem.addActionListener(e -> {
+            app.stop();
+            dispose();
+        });
         fileMenu.add(exitItem);
 
         JMenu viewMenu = new JMenu("View");
@@ -149,9 +168,16 @@ public class MainWnd extends JFrame {
 
     private JFileChooser createFileChooser() {
         JFileChooser fileChooser = new JFileChooser();
-        fileChooser.setCurrentDirectory(new File("."));
         fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
         fileChooser.setMultiSelectionEnabled(false);
+
+        // restore last directory
+        String dir = properties.getProperty("lastDir", ".");
+        File lastDir = new File(dir);
+        if (lastDir.isDirectory() && lastDir.exists()) {
+            fileChooser.setCurrentDirectory(lastDir);
+        }
+
         fileChooser.setFileFilter(new javax.swing.filechooser.FileFilter() {
             @Override
             public boolean accept(java.io.File f) {
@@ -183,8 +209,13 @@ public class MainWnd extends JFrame {
         int result = fileChooser.showOpenDialog(this);
         if (result == JFileChooser.APPROVE_OPTION) {
             File file = fileChooser.getSelectedFile();
-            fileChooser.setCurrentDirectory(file.getParentFile());
             String fileName = file.getName();
+
+            // save last directory
+            properties.setProperty("lastDir", file.getParent());
+            writeProperties();
+            fileChooser.setCurrentDirectory(file.getParentFile());
+
 
             AssetManager assetManager = app.getAssetManager();
             log.info("Load:{}", file.getAbsoluteFile());
@@ -201,14 +232,11 @@ public class MainWnd extends JFrame {
             }
 
             if (map != null) {
+                layerView.setTiledMap(map);
                 app.load(map);
                 // update the window title
-                this.setTitle("Tiled Map Viewer - " + fileName);
+                this.setTitle(APP_NAME + " - " + fileName);
             }
         }
-    }
-
-    private void load(String assetPath) {
-        app.load(assetPath);
     }
 }

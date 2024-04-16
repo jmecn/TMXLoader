@@ -406,9 +406,7 @@ public class TmxLoader implements AssetLoader {
                     break;
                 }
                 default: {
-                    if (TILESET.equals(childName) || PROPERTIES.equals(childName) || TEXT_EMPTY.equals(childName)) {
-                        // Ignore, already processed
-                    } else {
+                    if (!TILESET.equals(childName) && !PROPERTIES.equals(childName) && !TEXT_EMPTY.equals(childName)) {
                         logger.warn("Unsupported map element: {}", childName);
                     }
                     break;
@@ -463,93 +461,114 @@ public class TmxLoader implements AssetLoader {
         set.setFillMode(fillMode);
 
         boolean hasTilesetImage = false;
-        TiledImage image = null;
+        TiledImage image;
         NodeList children = node.getChildNodes();
         for (int i = 0; i < children.getLength(); i++) {
             Node child = children.item(i);
 
             String nodeName = child.getNodeName();
-            if (IMAGE.equals(nodeName)) {
-                if (hasTilesetImage) {
-                    logger.warn("Ignoring illegal image element after tileset image.");
-                    continue;
-                }
-
-                image = readImage(child);
-                if (image.getTexture() != null) {
-                    // Not a shared image, but an entire set in one image
-                    // file. There should be only one image element in this
-                    // case.
-                    hasTilesetImage = true;
-
-                    Material material = image.getMaterial();
-                    material.setBoolean("UseTilesetImage", true);
-                    material.setVector4("TileSize", new Vector4f(tileWidth, tileHeight, tileMargin, tileSpacing));
-
-                    set.setImageSource(image.getSource());
-                    set.setTexture(image.getTexture());
-                    set.setMaterial(material);
-
-                    TileCutter cutter = new TileCutter(image.getWidth(), image.getHeight(), tileWidth, tileHeight, tileMargin, tileSpacing);
-                    set.setColumns(cutter.getColumns());
-                    set.setTileCount(cutter.getTileCount());
-
-                    Tile tile = cutter.getNextTile();
-                    while (tile != null) {
-                        set.addNewTile(tile);
-                        tile = cutter.getNextTile();
+            switch (nodeName) {
+                case IMAGE: {
+                    if (hasTilesetImage) {
+                        logger.warn("Ignoring illegal image element after tileset image.");
+                        continue;
                     }
-                }
-            } else if ("grid".equals(nodeName)) {
-                /*
-                 * This element is only used in case of isometric orientation,
-                 * and determines how tile overlays for terrain and collision
-                 * information are rendered.
-                 */
-                String orientation = getAttribute(node, ORIENTATION, "orthogonal");
-                Orientation gridOrientation = Orientation.fromString(orientation);
-                int gridWidth = getAttribute(node, WIDTH, 0);
-                int gridHeight = getAttribute(node, HEIGHT, 0);
-                set.setGrid(gridOrientation, gridWidth, gridHeight);
-            } else if (TERRAINTYPES.equals(nodeName)) {
-                NodeList terrainTypes = child.getChildNodes();
-                for (int k = 0; k < terrainTypes.getLength(); k++) {
-                    Node terrainNode = terrainTypes.item(k);
-                    if (terrainNode.getNodeName().equalsIgnoreCase(TERRAIN)) {
-                        set.addTerrain(readTerrain(terrainNode));
-                    }
-                }
-            } else if (TILE.equals(nodeName)) {
-                readTile(set, child);
-            } else if ("tileoffset".equals(nodeName)) {
-                /*
-                 * This element is used to specify an offset in pixels, to be
-                 * applied when drawing a tile from the related tileset. When
-                 * not present, no offset is applied.
-                 */
-                final int tileOffsetX = getAttribute(child, "x", 0);
-                final int tileOffsetY = getAttribute(child, "y", 0);
 
-                set.setTileOffset(tileOffsetX, tileOffsetY);
-            } else if ("transformations".equals(nodeName)) {
-                // This element is used to describe which transformations can be applied to the tiles
-                // (e.g. to extend a Wang set by transforming existing tiles).
-                // Whether the tiles in this set can be flipped horizontally (default 0)
-                int hflip = getAttribute(node, "hflip", 0);
-                // Whether the tiles in this set can be flipped vertically (default 0)
-                int vflip = getAttribute(node, "vflip", 0);
-                // Whether the tiles in this set can be rotated in 90 degree increments (default 0)
-                int rotate = getAttribute(node, "rotate", 0);
-                // Whether untransformed tiles remain preferred, otherwise transformed tiles are used to produce more variations (default 0)
-                int preferUntransformed = getAttribute(node, "preferuntransformed", 0);
-                set.setTransformations(new Transformations(hflip, vflip, rotate, preferUntransformed));
-            } else if (WANGSETS.equals(nodeName)) {
-                NodeList wangSets = child.getChildNodes();
-                for (int k = 0; k < wangSets.getLength(); k++) {
-                    Node wangSetNode = wangSets.item(k);
-                    if (wangSetNode.getNodeName().equalsIgnoreCase(WANGSET)) {
-                        set.addWangSet(readWangSet(wangSetNode));
+                    image = readImage(child);
+                    if (image.getTexture() != null) {
+                        // Not a shared image, but an entire set in one image
+                        // file. There should be only one image element in this
+                        // case.
+                        hasTilesetImage = true;
+
+                        Material material = image.getMaterial();
+                        material.setBoolean("UseTilesetImage", true);
+                        material.setVector4("TileSize", new Vector4f(tileWidth, tileHeight, tileMargin, tileSpacing));
+
+                        set.setImageSource(image.getSource());
+                        set.setTexture(image.getTexture());
+                        set.setMaterial(material);
+
+                        TileCutter cutter = new TileCutter(image.getWidth(), image.getHeight(), tileWidth, tileHeight, tileMargin, tileSpacing);
+                        set.setColumns(cutter.getColumns());
+                        set.setTileCount(cutter.getTileCount());
+
+                        Tile tile = cutter.getNextTile();
+                        while (tile != null) {
+                            set.addNewTile(tile);
+                            tile = cutter.getNextTile();
+                        }
                     }
+                    break;
+                }
+                case "grid": {
+                    /*
+                     * This element is only used in case of isometric orientation,
+                     * and determines how tile overlays for terrain and collision
+                     * information are rendered.
+                     */
+                    String orientation = getAttribute(node, ORIENTATION, "orthogonal");
+                    Orientation gridOrientation = Orientation.fromString(orientation);
+                    int gridWidth = getAttribute(node, WIDTH, 0);
+                    int gridHeight = getAttribute(node, HEIGHT, 0);
+                    set.setGrid(gridOrientation, gridWidth, gridHeight);
+                    break;
+                }
+                case TERRAINTYPES: {
+                    NodeList terrainTypes = child.getChildNodes();
+                    for (int k = 0; k < terrainTypes.getLength(); k++) {
+                        Node terrainNode = terrainTypes.item(k);
+                        if (terrainNode.getNodeName().equalsIgnoreCase(TERRAIN)) {
+                            set.addTerrain(readTerrain(terrainNode));
+                        }
+                    }
+                    break;
+                }
+                case TILE:
+                    readTile(set, child);
+                    break;
+                case "tileoffset": {
+                    /*
+                     * This element is used to specify an offset in pixels, to be
+                     * applied when drawing a tile from the related tileset. When
+                     * not present, no offset is applied.
+                     */
+                    final int tileOffsetX = getAttribute(child, "x", 0);
+                    final int tileOffsetY = getAttribute(child, "y", 0);
+
+                    set.setTileOffset(tileOffsetX, tileOffsetY);
+                    break;
+                }
+                case "transformations": {
+                    // This element is used to describe which transformations can be applied to the tiles
+                    // (e.g. to extend a Wang set by transforming existing tiles).
+                    // Whether the tiles in this set can be flipped horizontally (default 0)
+                    int hflip = getAttribute(node, "hflip", 0);
+                    // Whether the tiles in this set can be flipped vertically (default 0)
+                    int vflip = getAttribute(node, "vflip", 0);
+                    // Whether the tiles in this set can be rotated in 90 degree increments (default 0)
+                    int rotate = getAttribute(node, "rotate", 0);
+                    // Whether untransformed tiles remain preferred, otherwise transformed tiles are used to produce more variations (default 0)
+                    int preferUntransformed = getAttribute(node, "preferuntransformed", 0);
+                    set.setTransformations(new Transformations(hflip, vflip, rotate, preferUntransformed));
+                    break;
+                }
+                case WANGSETS: {
+                    NodeList wangSets = child.getChildNodes();
+                    for (int k = 0; k < wangSets.getLength(); k++) {
+                        Node wangSetNode = wangSets.item(k);
+                        if (wangSetNode.getNodeName().equalsIgnoreCase(WANGSET)) {
+                            set.addWangSet(readWangSet(wangSetNode));
+                        }
+                    }
+                    break;
+                }
+                default: {
+                    if (!PROPERTIES.equals(nodeName) && !TEXT_EMPTY.equals(nodeName)) {
+                        logger.warn("Unsupported tileset element: {}", nodeName);
+                    }
+                    break;
+
                 }
             }
         }
@@ -697,6 +716,7 @@ public class TmxLoader implements AssetLoader {
         if (!set.isImageBased() || id > set.getMaxTileId()) {
             tile = new Tile();
             tile.setId(id);
+            tile.setGid(id + set.getFirstGid());
             tile.setWidth(set.getTileWidth());
             tile.setHeight(set.getTileHeight());
 
@@ -751,6 +771,9 @@ public class TmxLoader implements AssetLoader {
             Node child = children.item(i);
             if (IMAGE.equals(child.getNodeName())) {
                 TiledImage image = readImage(child);
+                tile.setImage(image);
+                tile.setWidth(image.getWidth());
+                tile.setHeight(image.getHeight());
 
                 Material material = image.getMaterial();
                 material.setBoolean("UseTilesetImage", true);
@@ -1006,7 +1029,7 @@ public class TmxLoader implements AssetLoader {
         for (int y = 0; y < layer.getHeight(); y++) {
             for (int x = 0; x < layer.getWidth(); x++) {
                 String sTileId = csvTileIds[x + y * layer.getWidth()];
-                long tileId = Long.parseLong(sTileId);
+                int tileId = (int) Long.parseLong(sTileId);
                 map.setTileAtFromTileId(layer, x, y, tileId);
             }
         }
@@ -1162,10 +1185,6 @@ public class TmxLoader implements AssetLoader {
         }
         layer.setColor(borderColor);
 
-        /**
-         * This material applies to the shapes in this ObjectGroup using
-         * LineMesh
-         */
         Material mat = new Material(assetManager, TiledConst.TILED_J3MD);
         mat.setColor("Color", borderColor);
         layer.setMaterial(mat);
@@ -1179,7 +1198,7 @@ public class TmxLoader implements AssetLoader {
         NodeList children = node.getChildNodes();
         for (int i = 0; i < children.getLength(); i++) {
             Node child = children.item(i);
-            if (OBJECT.equalsIgnoreCase(child.getNodeName())) {
+            if (OBJECT.equals(child.getNodeName())) {
                 MapObject obj = readObjectNode(child);
                 layer.add(obj);
             }
@@ -1191,9 +1210,8 @@ public class TmxLoader implements AssetLoader {
     /**
      * Read an object of the ObjectGroup.
      *
-     * @param node
-     * @return
-     * @throws Exception
+     * @param node the node containing the object
+     * @return MapObject
      */
     private MapObject readObjectNode(Node node) {
         int id = getAttribute(node, "id", 0);
@@ -1209,6 +1227,9 @@ public class TmxLoader implements AssetLoader {
         String template = getAttributeValue(node, "template");
         // TODO need some samples to figure out how template works.
 
+        if (template != null) {
+            logger.info("template:{}", template);
+        }
         MapObject obj = new MapObject(x, y, width, height);
         obj.setId(id);
         obj.setRotation(rotation);
@@ -1233,9 +1254,9 @@ public class TmxLoader implements AssetLoader {
             int gidValue = (int) Long.parseLong(gid);
 
             // clear the flag
-            gidValue = gidValue & 0x1FFFFFFF;
+            int tileId = gidValue & ~Tile.FLIPPED_MASK;
 
-            Tile tile = map.getTileForTileGID(gidValue);
+            Tile tile = map.getTileForTileGID(tileId);
 
             Tile t = tile.clone();
             t.setGid(gidValue);
@@ -1246,7 +1267,6 @@ public class TmxLoader implements AssetLoader {
         for (int i = 0; i < children.getLength(); i++) {
             Node child = children.item(i);
             String nodeName = child.getNodeName();
-            // 把if-else 改写成 switch-case
             switch (nodeName) {
                 case ELLIPSE: {
                     obj.setShape(ObjectType.ELLIPSE);
@@ -1280,9 +1300,7 @@ public class TmxLoader implements AssetLoader {
                     break;
                 }
                 default: {
-                    if (PROPERTIES.equals(nodeName) || TEXT_EMPTY.equals(nodeName)) {
-                        // ignore
-                    } else {
+                    if (!PROPERTIES.equals(nodeName) && !TEXT_EMPTY.equals(nodeName)) {
                         logger.warn("unknown object type:{}", nodeName);
                     }
                     break;
@@ -1375,9 +1393,7 @@ public class TmxLoader implements AssetLoader {
                     break;
                 }
                 default: {
-                    if (PROPERTIES.equals(child.getNodeName()) || TEXT_EMPTY.equals(child.getNodeName())) {
-                        // ignore
-                    } else {
+                    if (!PROPERTIES.equals(child.getNodeName()) && !TEXT_EMPTY.equals(child.getNodeName())) {
                         logger.warn("unknown layer type:{}", child.getNodeName());
                     }
                     break;

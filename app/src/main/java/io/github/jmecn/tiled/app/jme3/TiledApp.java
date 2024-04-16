@@ -1,19 +1,15 @@
-package io.github.jmecn.tiled.app;
+package io.github.jmecn.tiled.app.jme3;
 
-import java.io.File;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 
 import com.jme3.app.SimpleApplication;
-import com.jme3.asset.plugins.FileLocator;
-import com.jme3.input.MouseInput;
-import com.jme3.input.controls.ActionListener;
-import com.jme3.input.controls.MouseButtonTrigger;
 import com.jme3.math.Vector2f;
 import com.jme3.system.awt.AwtPanel;
 
 import io.github.jmecn.tiled.TiledMapAppState;
 import io.github.jmecn.tiled.TmxLoader;
+import io.github.jmecn.tiled.app.swing.MainWnd;
 import io.github.jmecn.tiled.core.TiledMap;
 import io.github.jmecn.tiled.enums.ZoomMode;
 
@@ -101,37 +97,6 @@ public class TiledApp extends SimpleApplication {
             }
             return null;
         });
-    }
-
-    public void load(final String assetPath) {
-        enqueue((Callable<Void>) () -> {
-            TiledMap map = null;
-            try {
-                map = (TiledMap) assetManager.loadAsset(assetPath);
-            } catch (Exception e) {
-                log.error("Failed to load {}", assetPath, e);
-            }
-
-            if (map != null) {
-                tiledMapState.setMap(map);
-                tiledMapState.update(0);
-
-                // look at the center of this map
-                tiledMapState.moveToTile(map.getWidth() * 0.5f, map.getHeight() * 0.5f);
-
-                // update the window title
-                wnd.setTitle("Tiled Map Viewer - " + assetPath);
-
-                MapRenderer renderer = tiledMapState.getMapRenderer();
-                Point mapSize = renderer.getMapDimension();
-                String status = String.format("Map[%d,%d], Size:[%d,%d]", map.getWidth(), map.getHeight(), mapSize.x, mapSize.y);
-                wnd.setMapStatus(status);
-            } else {
-                wnd.setTitle("Failed to load " + assetPath);
-            }
-            return null;
-        });
-
     }
 
     public void toggleGrid() {

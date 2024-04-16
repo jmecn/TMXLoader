@@ -36,4 +36,12 @@ public class GroupLayer extends Layer {
     public Node getVisual() {
         return (Node) visual;
     }
+
+    public Layer getLayer(int i) {
+        return layers.get(i);
+    }
+
+    public int getLayerCount() {
+        return layers.size();
+    }
 }
