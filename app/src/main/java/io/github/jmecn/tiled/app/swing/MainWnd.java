@@ -56,15 +56,14 @@ public class MainWnd extends JFrame {
             }
         });
 
-        getContentPane().setLayout(new BorderLayout());
-        getContentPane().add(awtPanel, BorderLayout.CENTER);
 
         this.fileChooser = createFileChooser();
         this.layerView = createLayerView();
-
         this.setJMenuBar(createMenuBar());
-        this.getContentPane().add(new JScrollPane(layerView), BorderLayout.WEST);
-        this.getContentPane().add(createStatusBar(), BorderLayout.PAGE_END);
+
+        JPanel panel = createContentPanel();
+        panel.add(awtPanel, BorderLayout.CENTER);
+        this.setContentPane(panel);
 
         this.pack();
 
@@ -92,11 +91,6 @@ public class MainWnd extends JFrame {
         } catch (Exception e) {
             log.error("Failed to save properties.", e);
         }
-    }
-
-    private LayerView createLayerView() {
-        layerView = new LayerView();
-        return layerView;
     }
 
     private void center() {
@@ -151,6 +145,22 @@ public class MainWnd extends JFrame {
         viewMenu.add(gridItem);
 
         return menuBar;
+    }
+
+    private JPanel createContentPanel() {
+        JPanel panel = new JPanel(new BorderLayout());
+
+        JTabbedPane tabbedPane = new JTabbedPane();
+        panel.add(tabbedPane, BorderLayout.WEST);
+        tabbedPane.addTab("Layers", new JScrollPane(layerView));
+
+        panel.add(createStatusBar(), BorderLayout.PAGE_END);
+        return panel;
+    }
+
+    private LayerView createLayerView() {
+        layerView = new LayerView();
+        return layerView;
     }
 
     private JPanel createStatusBar() {

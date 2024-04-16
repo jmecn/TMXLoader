@@ -102,7 +102,9 @@ public class TileLayerLoader extends AbstractLayerLoader {
                 Node child = children.item(i);
                 String nodeName = child.getNodeName();
                 if ("chunk".equals(nodeName)) {
-                    readChunk(layer, child, encoding, compression);
+                    Chunk chunk = readChunk(layer, child, encoding, compression);
+                    layer.addChunk(chunk);
+                    mergeChunk(layer, chunk);// TODO experimental
                 }
             }
         } else {
@@ -120,6 +122,20 @@ public class TileLayerLoader extends AbstractLayerLoader {
         }
     }
 
+    private void mergeChunk(TileLayer layer, Chunk chunk) {
+        int x = chunk.getX();
+        int y = chunk.getY();
+        int width = chunk.getWidth();
+        int height = chunk.getHeight();
+
+        // set chunk to layer
+        for (int cy = 0; cy < height; cy++) {
+            for (int cx = 0; cx < width; cx++) {
+                Tile tile = chunk.getTileAt(cx, cy);
+                layer.setTileAt(x + cx, y + cy, tile);
+            }
+        }
+    }
     /**
      * Get the InputStream for the data element.
      *
@@ -235,10 +251,11 @@ public class TileLayerLoader extends AbstractLayerLoader {
      *
      * @param layer the layer
      * @param node the chunk node
-     * @param encoding
-     * @param compression
+     * @param encoding the encoding
+     * @param compression the compression
+     * @return the chunk
      */
-    private void readChunk(TileLayer layer, Node node, DataEncoding encoding, DataCompression compression) throws IOException {
+    private Chunk readChunk(TileLayer layer, Node node, DataEncoding encoding, DataCompression compression) throws IOException {
         int x = getAttribute(node, X, 0);
         int y = getAttribute(node, Y, 0);
         int width = getAttribute(node, WIDTH, 0);
@@ -259,15 +276,11 @@ public class TileLayerLoader extends AbstractLayerLoader {
                     break;
             }
         } else {
-            for (int iy = 0; iy < height; iy++) {
-                for (int ix = 0; ix < width; ix++) {
-                    Tile tile = layer.getTileAt(x + ix, y + iy);
-                    chunk.setTileAt(ix, iy, tile);
-                }
-            }
+            logger.warn("Chunk has no child nodes, layer:{}", layer.getName());
+            throw new IllegalArgumentException("Chunk has no child nodes");
         }
 
-        layer.addChunk(chunk);
+        return chunk;
     }
 
     private void readTileProperties(TileLayer layer, Node node) {
