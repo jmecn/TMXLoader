@@ -135,7 +135,7 @@ public class HexagonalRenderer extends OrthogonalRenderer {
 
                 if (layer.isNeedUpdateAt(rowX, y)) {
 
-                    Geometry visual = tile.getVisual().clone();
+                    Geometry visual = copySprite(tile);
 
                     flip(visual, tile);
 
@@ -178,7 +178,7 @@ public class HexagonalRenderer extends OrthogonalRenderer {
 
                 if (layer.isNeedUpdateAt(rowX, rowY)) {
 
-                    Geometry visual = tile.getVisual().clone();
+                    Geometry visual = copySprite(tile);
 
                     flip(visual, tile);
 

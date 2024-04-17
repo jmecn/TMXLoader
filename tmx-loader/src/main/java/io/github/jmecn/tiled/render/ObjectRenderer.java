@@ -3,11 +3,14 @@ package io.github.jmecn.tiled.render;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.FastMath;
+import com.jme3.math.Vector2f;
 import com.jme3.renderer.queue.RenderQueue;
 import com.jme3.scene.*;
+import io.github.jmecn.tiled.animation.AnimatedTileControl;
 import io.github.jmecn.tiled.core.*;
 import io.github.jmecn.tiled.enums.FillMode;
 import io.github.jmecn.tiled.enums.Orientation;
+import io.github.jmecn.tiled.math2d.Point;
 import io.github.jmecn.tiled.render.shape.*;
 import io.github.jmecn.tiled.util.ObjectMesh;
 
@@ -212,81 +215,57 @@ public class ObjectRenderer {
     }
 
     private void tile(MapObject obj) {
-        // The tile
+        Geometry geometry = new Geometry(obj.getName(), getTileMesh(obj));
+        geometry.setQueueBucket(RenderQueue.Bucket.Gui);
+
         Tile tile = obj.getTile();
+        if (tile.getMaterial() != null) {
+            geometry.setMaterial(tile.getMaterial());
+        } else {
+            geometry.setMaterial(tile.getTileset().getMaterial());
+        }
 
-        Geometry visual = tile.getVisual().clone();
-        visual.setName(obj.getName());
-        visual.setQueueBucket(RenderQueue.Bucket.Gui);
+        if (tile.isAnimated()) {
+            geometry.setBatchHint(Spatial.BatchHint.Never);
+            AnimatedTileControl control = new AnimatedTileControl(tile);
+            geometry.addControl(control);
+        }
 
-        float th = tile.getHeight();
+        obj.setVisual(geometry);
+    }
+
+    private TileMesh getTileMesh(MapObject obj) {
+        Tile tile = obj.getTile();
         float tw = tile.getWidth();
+
+        Point coord = new Point(tile.getX(), tile.getY());
+        Point size = new Point(tile.getWidth(), tile.getHeight());
+        Point offset;
+        if (tile.getTileset() != null) {
+            Tileset tileset = tile.getTileset();
+            offset = tileset.getTileOffset();
+            // scale the tile
+            if (tileset.getFillMode() == FillMode.STRETCH) {
+                size.set((int) obj.getWidth(), (int) obj.getHeight());
+            }
+        } else {
+            offset = new Point(0, 0);
+        }
+
+        Vector2f origin = new Vector2f(0, 0);// In orthogonal, it's aligned to the bottom-left
+        if (map.getOrientation() == Orientation.ISOMETRIC) {
+            origin.set(-tw * 0.5f, 0);// In isometric, it's aligned to the bottom-center.
+        }
 
         // When the object has a gid set, then it is represented by
         // the image of the tile with that global ID. The image
         // alignment currently depends on the map orientation.
-
-        // In orthogonal, it's aligned to the bottom-left
-        float[] vertices = new float[]{
-                0,  0, -th,
-                tw, 0, -th,
-                tw, 0, 0,
-                0,  0, 0};
-
-        // In isometric, it's aligned to the bottom-center.
-        if (map.getOrientation() == Orientation.ISOMETRIC) {
-            for (int i = 0; i < vertices.length; i += 3) {
-                vertices[i] -= tw * 0.5f;
-            }
-        }
-
-        Mesh mesh = visual.getMesh();
-        mesh.setBuffer(VertexBuffer.Type.Position, 3, vertices);
-
-        flip(visual, obj.getTile());
-
-        // scale the tile
-        if (tile.getTileset().getFillMode() == FillMode.STRETCH) {
-            visual.setLocalScale((float) obj.getWidth() / tile.getWidth(), 1, (float) obj.getHeight() / tile.getHeight());
-        }
-
-        obj.setVisual(visual);
+        return new TileMesh(coord, size, offset, origin, tile.getGid(), map.getOrientation());
     }
 
     private void text(MapObject obj) {
         // TODO render text
         ObjectText objectText = obj.getTextData();
-    }
-
-
-    /**
-     * Flip the tile
-     *
-     * @param visual The spatial for this tile.
-     * @param tile The image of this tile.
-     */
-    protected void flip(Spatial visual, Tile tile) {
-        if (tile.isFlippedHorizontally()) {
-            visual.rotate(0, 0, FastMath.PI);
-            visual.move(tile.getWidth(), 0, 0);
-        }
-
-        if (tile.isFlippedVertically()) {
-            visual.rotate(FastMath.PI, 0, 0);
-            visual.move(0, 0, tile.getHeight());
-        }
-
-        /*
-         * <pre>
-         * [      *]
-         * [    *  ]
-         * [  *    ]
-         * [*      ]
-         * </pre>
-         */
-        if (tile.isFlippedAntiDiagonally()) {
-            // TODO flip diagonally
-        }
     }
 
 }

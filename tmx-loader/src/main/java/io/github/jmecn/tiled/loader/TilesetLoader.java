@@ -4,6 +4,7 @@ import com.jme3.asset.AssetInfo;
 import com.jme3.asset.AssetKey;
 import com.jme3.asset.AssetManager;
 import com.jme3.material.Material;
+import com.jme3.math.Vector2f;
 import com.jme3.math.Vector4f;
 import com.jme3.renderer.queue.RenderQueue;
 import com.jme3.scene.Geometry;
@@ -469,7 +470,7 @@ public final class TilesetLoader {
     public void createVisual(Tileset tileset, TiledMap map) {
 
         Point offset = tileset.getTileOffset();
-        Point origin = new Point(0, map.getTileHeight());
+        Vector2f origin = new Vector2f(0, map.getTileHeight());
 
         List<Tile> tiles = tileset.getTiles();
         for (Tile tile : tiles) {

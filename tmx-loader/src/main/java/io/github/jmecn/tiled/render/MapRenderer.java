@@ -308,6 +308,10 @@ public abstract class MapRenderer {
      */
     public abstract Point screenToTileCoords(float x, float y);
 
+    protected Geometry copySprite(Tile tile) {
+        return tile.getVisual().clone(false);
+    }
+
     /**
      * Flip the tile
      *
@@ -319,18 +323,9 @@ public abstract class MapRenderer {
             // no flip
             return;
         }
-        if (map.getOrientation() == Orientation.HEXAGONAL) {
-            // hexagonal tile can't be flipped
-            TileMesh mesh = (TileMesh) visual.getMesh();
-            TileMesh newMesh = new TileMesh(mesh, tile.isFlippedHorizontally(), tile.isFlippedVertically(),
-                    tile.isFlippedAntiDiagonally(), tile.isRotatedHexagonal120());
-            visual.setMesh(newMesh);
-        } else {
-            TileMesh mesh = (TileMesh) visual.getMesh();
-            TileMesh newMesh = new TileMesh(mesh, tile.isFlippedHorizontally(), tile.isFlippedVertically(),
-                    tile.isFlippedAntiDiagonally());
-            visual.setMesh(newMesh);
-        }
+        TileMesh mesh = (TileMesh) visual.getMesh();
+        TileMesh newMesh = new TileMesh(mesh.getCoord(), mesh.getSize(), mesh.getOffset(), mesh.getOrigin(), tile.getGid(), map.getOrientation());
+        visual.setMesh(newMesh);
     }
 
     private static final class CompareTopdown implements Comparator<MapObject> {

@@ -102,7 +102,7 @@ public class OrthogonalRenderer extends MapRenderer {
                 }
 
                 if (layer.isNeedUpdateAt(x, y)) {
-                    Geometry visual = tile.getVisual().clone();
+                    Geometry visual = copySprite(tile);
                     flip(visual, tile);
                     Vector2f pixelCoord = tileToScreenCoords(x, y);
                     visual.move(pixelCoord.x, tileZIndex, pixelCoord.y);
