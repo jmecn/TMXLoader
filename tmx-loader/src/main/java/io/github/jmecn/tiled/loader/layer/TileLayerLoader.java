@@ -73,24 +73,18 @@ public class TileLayerLoader extends LayerLoader {
         String enc = getAttributeValue(node, "encoding");
         String comp = getAttributeValue(node, "compression");
 
-        DataEncoding encoding;
-        if (enc == null) {
-            encoding = DataEncoding.NONE;
-        } else {
+        DataEncoding encoding = DataEncoding.NONE;
+        if (enc != null) {
             encoding = DataEncoding.fromValue(enc);
-
             if (encoding == null) {
                 logger.warn("Unsupported encoding:{}, layer:{}", enc, layer.getName());
                 throw new IllegalArgumentException("Unsupported encoding:" + enc);
             }
         }
 
-        DataCompression compression;
-        if (comp == null) {
-            compression = DataCompression.NONE;
-        } else {
+        DataCompression compression = DataCompression.NONE;
+        if (comp != null) {
             compression = DataCompression.fromValue(comp);
-
             if (compression == null) {
                 logger.warn("Unsupported compression:{}, layer:{}", comp, layer.getName());
                 throw new IllegalArgumentException("Unsupported compression:" + comp);
@@ -106,7 +100,7 @@ public class TileLayerLoader extends LayerLoader {
                 if ("chunk".equals(nodeName)) {
                     Chunk chunk = readChunk(layer, child, encoding, compression);
                     layer.addChunk(chunk);
-                    mergeChunk(layer, chunk);// TODO experimental
+                    mergeChunk(layer, chunk);// FIXME experimental
                 }
             }
         } else {

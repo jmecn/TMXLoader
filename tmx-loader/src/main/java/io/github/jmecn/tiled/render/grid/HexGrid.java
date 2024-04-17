@@ -211,6 +211,31 @@ public class HexGrid extends Mesh {
         Point rel = new Point(x - referencePoint.x * columnWidth * 2, y - referencePoint.y * rowHeight * 2);
 
         // Adjust the reference point to the correct tile coordinates
+        adjustReferencePoint(referencePoint);
+
+        // Determine the nearest hexagon tile by the distance to the center
+        Point[] centers = getNearestTile();
+
+        int nearest = 0;
+        float minDist = Float.MAX_VALUE;
+
+        for (int i = 0; i < 4; i++) {
+            float dc = centers[i].distanceSquared(rel);
+            if (dc < minDist) {
+                minDist = dc;
+                nearest = i;
+            }
+        }
+
+        Point[] offsetsStaggerX = { new Point(0, 0), new Point(1, -1), new Point(1, 0), new Point(2, 0) };
+
+        Point[] offsetsStaggerY = { new Point(0, 0), new Point(-1, 1), new Point(0, 1), new Point(0, 2) };
+
+        final Point[] offsets = staggerX ? offsetsStaggerX : offsetsStaggerY;
+        return referencePoint.add(offsets[nearest]);
+    }
+
+    private void adjustReferencePoint(Point referencePoint) {
         if (staggerX) {
             referencePoint.x *= 2;
             if (staggerEven)
@@ -220,8 +245,9 @@ public class HexGrid extends Mesh {
             if (staggerEven)
                 referencePoint.y++;
         }
+    }
 
-        // Determine the nearest hexagon tile by the distance to the center
+    private Point[] getNearestTile() {
         Point[] centers = new Point[4];
 
         if (staggerX) {
@@ -243,24 +269,7 @@ public class HexGrid extends Mesh {
             centers[2] = new Point(centerX + columnWidth, centerY);
             centers[3] = new Point(centerX, centerY + rowHeight);
         }
-
-        int nearest = 0;
-        float minDist = Float.MAX_VALUE;
-
-        for (int i = 0; i < 4; i++) {
-            float dc = centers[i].distanceSquared(rel);
-            if (dc < minDist) {
-                minDist = dc;
-                nearest = i;
-            }
-        }
-
-        Point[] offsetsStaggerX = { new Point(0, 0), new Point(1, -1), new Point(1, 0), new Point(2, 0) };
-
-        Point[] offsetsStaggerY = { new Point(0, 0), new Point(-1, 1), new Point(0, 1), new Point(0, 2) };
-
-        final Point[] offsets = staggerX ? offsetsStaggerX : offsetsStaggerY;
-        return referencePoint.add(offsets[nearest]);
+        return centers;
     }
 
     /**

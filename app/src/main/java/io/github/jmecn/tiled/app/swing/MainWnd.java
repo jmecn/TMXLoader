@@ -13,7 +13,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
-import java.util.Properties;
+import java.util.*;
 
 /**
  * desc:
@@ -24,6 +24,9 @@ public class MainWnd extends JFrame {
 
     public static final String APP_NAME = "Tiled Map Viewer";
     public static final String CONFIG_FILE = ".config";
+    public static final String LAST_DIR = "lastDir";
+    public static final String RECENT_FILES = "recentFiles";
+    public static final int RECENT_FILE_MAX = 50;
 
     static Logger log = LoggerFactory.getLogger(MainWnd.class.getName());
 
@@ -32,17 +35,21 @@ public class MainWnd extends JFrame {
     private Properties properties;
     private File config;
 
+    private final LinkedList<RecentFile> recentFiles = new LinkedList<>();
+
     private JLabel mapStatus;
     private JLabel cursorStatus;
     private final JFileChooser fileChooser;
-
     private LayerView layerView;
+    private JMenu recentFilesMenu;
 
     public MainWnd(TiledApp app, AwtPanel awtPanel) {
         super(APP_NAME);
 
         // load properties
         readProperties();
+        // load recent files
+        readRecentFiles();
 
         this.app = app;
 
@@ -55,7 +62,6 @@ public class MainWnd extends JFrame {
                 app.stop();
             }
         });
-
 
         this.fileChooser = createFileChooser();
         this.layerView = createLayerView();
@@ -117,10 +123,11 @@ public class MainWnd extends JFrame {
         openItem.addActionListener(e -> load());
         fileMenu.add(openItem);
 
-        JMenuItem saveItem = new JMenuItem("Save");
-        saveItem.setMnemonic('S');
-        saveItem.setEnabled(false);
-        fileMenu.add(saveItem);
+        recentFilesMenu = new JMenu("Recent Files");
+        updateRecentFileMenu();
+        fileMenu.add(recentFilesMenu);
+
+        fileMenu.addSeparator();
 
         JMenuItem exitItem = new JMenuItem("Exit");
         exitItem.setMnemonic('X');
@@ -182,7 +189,7 @@ public class MainWnd extends JFrame {
         chooser.setMultiSelectionEnabled(false);
 
         // restore last directory
-        String dir = properties.getProperty("lastDir", ".");
+        String dir = properties.getProperty(LAST_DIR, ".");
         File lastDir = new File(dir);
         if (lastDir.isDirectory() && lastDir.exists()) {
             chooser.setCurrentDirectory(lastDir);
@@ -215,6 +222,30 @@ public class MainWnd extends JFrame {
         // TODO
     }
 
+    private void load(RecentFile file) {
+
+        AssetManager assetManager = app.getAssetManager();
+        log.info("Load:{}", file.getAbsolutePath());
+        TiledMap map = null;
+        try {
+            assetManager.registerLocator(file.getFolder(), MyFileLocator.class);
+            map = (TiledMap) assetManager.loadAsset(file.getName());
+            // remove from cache, in case of reload
+            assetManager.deleteFromCache(new AssetKey<>(file.getName()));
+        } catch (Exception e) {
+            log.error("Failed to load {}", file.getAbsolutePath(), e);
+        } finally {
+            assetManager.unregisterLocator(file.getFolder(), MyFileLocator.class);
+        }
+
+        if (map != null) {
+            layerView.setTiledMap(map);
+            app.load(map);
+            // update the window title
+            this.setTitle(APP_NAME + " - " + file.getName());
+        }
+    }
+
     private void load() {
         int result = fileChooser.showOpenDialog(this);
         if (result == JFileChooser.APPROVE_OPTION) {
@@ -222,10 +253,9 @@ public class MainWnd extends JFrame {
             String fileName = file.getName();
 
             // save last directory
-            properties.setProperty("lastDir", file.getParent());
+            properties.setProperty(LAST_DIR, file.getParent());
             writeProperties();
             fileChooser.setCurrentDirectory(file.getParentFile());
-
 
             AssetManager assetManager = app.getAssetManager();
             log.info("Load:{}", file.getAbsoluteFile());
@@ -246,7 +276,90 @@ public class MainWnd extends JFrame {
                 app.load(map);
                 // update the window title
                 this.setTitle(APP_NAME + " - " + fileName);
+                this.saveRecentFile(file);
             }
         }
+    }
+
+    private void saveRecentFile(File file) {
+        String path = file.getAbsolutePath();
+        for (RecentFile recentFile : recentFiles) {
+            if (recentFile.getAbsolutePath().equals(path)) {
+                recentFiles.remove(recentFile);
+                break;
+            }
+        }
+
+        recentFiles.addFirst(new RecentFile(path));
+        if (recentFiles.size() > RECENT_FILE_MAX) {
+            recentFiles.removeLast();
+        }
+
+        StringBuilder sb = new StringBuilder();
+        for (RecentFile recentFile : recentFiles) {
+            sb.append(recentFile.getAbsolutePath()).append(";");
+        }
+
+        properties.setProperty(RECENT_FILES, sb.toString());
+        writeProperties();
+
+        updateRecentFileMenu();
+    }
+
+    private void readRecentFiles() {
+        String files = properties.getProperty(RECENT_FILES);
+        if (files != null) {
+            String[] paths = files.split(";");
+            for (String path : paths) {
+                if (new File(path).exists()) {
+                    recentFiles.add(new RecentFile(path));
+                }
+            }
+        }
+    }
+
+    private void updateRecentFileMenu() {
+        recentFilesMenu.removeAll();
+        for (RecentFile recentFile : recentFiles) {
+            JMenuItem item = new JMenuItem(recentFile.getName());
+            item.addActionListener(e1 -> {
+                File file = new File(recentFile.getAbsolutePath());
+                if (file.exists()) {
+                    load(recentFile);
+                } else {
+                    recentFiles.remove(recentFile);
+                    saveRecentFile(file);
+                }
+            });
+            recentFilesMenu.add(item);
+        }
+
+        if (recentFiles.isEmpty()) {
+            JMenuItem item = new JMenuItem("No recent files");
+            item.setEnabled(false);
+            recentFilesMenu.add(item);
+        } else {
+            recentFilesMenu.addSeparator();
+            JMenuItem item = getClearRecentFilesItem();
+            recentFilesMenu.add(item);
+        }
+    }
+
+    private JMenuItem getClearRecentFilesItem() {
+        JMenuItem item = new JMenuItem("Clear");
+        item.addActionListener(e -> {
+            // Yes or No
+            int ret = JOptionPane.showConfirmDialog(this, "Are you sure to clear all recent files?", "Clear Recent Files",
+                    JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE);
+
+            if (ret != JOptionPane.YES_OPTION) {
+                return;
+            }
+            recentFiles.clear();
+            properties.remove(RECENT_FILES);
+            writeProperties();
+            updateRecentFileMenu();
+        });
+        return item;
     }
 }

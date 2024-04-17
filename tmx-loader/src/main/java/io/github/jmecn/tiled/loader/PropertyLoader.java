@@ -9,7 +9,6 @@ import org.w3c.dom.NodeList;
 import java.util.Properties;
 
 import static io.github.jmecn.tiled.TiledConst.*;
-import static io.github.jmecn.tiled.TiledConst.CLASS;
 import static io.github.jmecn.tiled.loader.Utils.*;
 
 /**
@@ -51,9 +50,6 @@ public class PropertyLoader {
             if (PROPERTY.equals(child.getNodeName())) {
                 readProperty(child, props);
             }
-        }
-        if (!props.isEmpty()) {
-            logger.debug("properties:{}", props);
         }
         return props;
     }
