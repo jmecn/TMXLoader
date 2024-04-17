@@ -9,6 +9,7 @@ import io.github.jmecn.tiled.enums.FillMode;
 import io.github.jmecn.tiled.enums.ObjectAlignment;
 import io.github.jmecn.tiled.enums.Orientation;
 import io.github.jmecn.tiled.enums.TileRenderSize;
+import io.github.jmecn.tiled.math2d.Point;
 
 /**
  * If there are multiple &lt;tileset&gt; elements, they are in ascending order of
@@ -65,13 +66,13 @@ public class Tileset extends Base implements Iterable<Tile> {
      * The spacing in pixels between the tiles in this tileset (applies to the
      * tileset image, defaults to 0). Irrelevant for image collection tilesets.
      */
-    private int tileSpacing;
+    private int spacing;
 
     /**
      * The margin around the tiles in this tileset (applies to the tileset
      * image, defaults to 0). Irrelevant for image collection tilesets.
      */
-    private int tileMargin;
+    private int margin;
 
     /**
      * The number of tiles in this tileset (since 0.13). Note that there can
@@ -110,32 +111,12 @@ public class Tileset extends Base implements Iterable<Tile> {
      */
     private FillMode fillMode;
 
-    private boolean hasGrid = false;
+    // This element is used to specify an offset in pixels, to be applied when drawing a tile from the related tileset. When not present, no offset is applied.
+    private final Point tileOffset = new Point(0, 0);
 
-    /**
-     * Orientation of the grid for the tiles in this tileset (orthogonal or isometric, defaults to orthogonal)
-     */
-    private Orientation orientation = Orientation.ORTHOGONAL;
+    private TilesetGrid grid;
 
-    /**
-     * Width of a grid cell
-     */
-    private int gridWidth;
-
-    /**
-     * Height of a grid cell
-     */
-    private int gridHeight;
-
-    /**
-     * Horizontal offset in pixels.
-     */
-    private int tileOffsetX = 0;
-    /**
-     * Vertical offset in pixels (positive is down)
-     */
-    private int tileOffsetY = 0;
-
+    // tileset image, in case image-based tileset
     private TiledImage image;
     private String imageSource;
     private Texture texture;
@@ -160,15 +141,15 @@ public class Tileset extends Base implements Iterable<Tile> {
     public Tileset() {
         this.tileWidth = 32;
         this.tileHeight = 32;
-        this.tileSpacing = 0;
-        this.tileMargin = 0;
+        this.spacing = 0;
+        this.margin = 0;
     }
 
     public Tileset(int width, int height, int space, int margin) {
         this.tileWidth = width;
         this.tileHeight = height;
-        this.tileSpacing = space;
-        this.tileMargin = margin;
+        this.spacing = space;
+        this.margin = margin;
     }
 
     public int getFirstGid() {
@@ -211,20 +192,20 @@ public class Tileset extends Base implements Iterable<Tile> {
         this.tileHeight = tileHeight;
     }
 
-    public int getTileSpacing() {
-        return tileSpacing;
+    public int getSpacing() {
+        return spacing;
     }
 
-    public void setTileSpacing(int tileSpacing) {
-        this.tileSpacing = tileSpacing;
+    public void setSpacing(int spacing) {
+        this.spacing = spacing;
     }
 
-    public int getTileMargin() {
-        return tileMargin;
+    public int getMargin() {
+        return margin;
     }
 
-    public void setTileMargin(int tileMargin) {
-        this.tileMargin = tileMargin;
+    public void setMargin(int margin) {
+        this.margin = margin;
     }
 
     public int getTileCount() {
@@ -368,8 +349,7 @@ public class Tileset extends Base implements Iterable<Tile> {
      * Removal is simply setting the reference at the specified index to
      * <b>null</b>.
      *
-     * @param i
-     *            the index to remove
+     * @param i the index to remove
      */
     public void removeTile(int i) {
         tiles.set(i, null);
@@ -442,23 +422,33 @@ public class Tileset extends Base implements Iterable<Tile> {
         return tiles.iterator();
     }
 
-    public void setTileOffset(int tileOffsetX, int tileOffsetY) {
-        this.tileOffsetX = tileOffsetX;
-        this.tileOffsetY = tileOffsetY;
+    /**
+     * Set the tile offset for the tiles in this tileset.
+     *
+     * @param x Horizontal offset in pixels. (defaults to 0)
+     * @param y Vertical offset in pixels (positive is down, defaults to 0)
+     */
+    public void setTileOffset(int x, int y) {
+        this.tileOffset.set(x, y);
     }
 
-    public int getTileOffsetX() {
-        return tileOffsetX;
+    /**
+     * @return Horizontal offset in pixels. (defaults to 0)
+     */
+    public Point getTileOffset() {
+        return tileOffset;
     }
 
-    public int getTileOffsetY() {
-        return tileOffsetY;
-    }
-
+    /**
+     * @return The class of this tileset (since 1.9, defaults to “”).
+     */
     public String getClazz() {
         return clazz;
     }
 
+    /**
+     * @param clazz The class of this tileset (since 1.9, defaults to “”).
+     */
     public void setClazz(String clazz) {
         this.clazz = clazz;
     }
@@ -500,26 +490,23 @@ public class Tileset extends Base implements Iterable<Tile> {
     }
 
     public boolean hasGrid() {
-        return hasGrid;
+        return this.grid != null;
     }
 
-    public Orientation getOrientation() {
-        return orientation;
+    /**
+     * Set the grid for the tiles in this tileset.
+     * @param grid The grid for the tiles in this tileset.
+     */
+    public void setGrid(TilesetGrid grid) {
+        this.grid = grid;
     }
 
-    public int getGridWidth() {
-        return gridWidth;
-    }
-
-    public int getGridHeight() {
-        return gridHeight;
-    }
-
-    public void setGrid(Orientation orientation, int width, int height) {
-        this.orientation = orientation;
-        this.gridWidth = width;
-        this.gridHeight = height;
-        this.hasGrid = true;
+    /**
+     * Get the grid for the tiles in this tileset.
+     * @return The grid for the tiles in this tileset.
+     */
+    public TilesetGrid getGrid() {
+        return this.grid;
     }
 
     public Transformations getTransformations() {

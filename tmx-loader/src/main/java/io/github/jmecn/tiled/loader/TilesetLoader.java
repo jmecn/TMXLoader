@@ -48,13 +48,14 @@ public final class TilesetLoader {
     private final AssetManager assetManager;
     private final AssetKey<?> assetKey;
 
-    private final TiledImageLoader tiledImageLoader;
+    private final ImageLoader imageLoader;
     private final PropertyLoader propertiesLoader;
+
     public TilesetLoader(AssetManager assetManager, AssetKey<?> assetKey) {
         this.assetManager = assetManager;
         this.assetKey = assetKey;
 
-        this.tiledImageLoader = new TiledImageLoader(assetManager, assetKey);
+        this.imageLoader = new ImageLoader(assetManager, assetKey);
         this.propertiesLoader = new PropertyLoader();
     }
 
@@ -83,14 +84,15 @@ public final class TilesetLoader {
             root = nodeList.item(0);
 
             if (root != null) {
-                set = readTileset(root, null);
+                set = readTileset(root);
                 if (set.getSource() != null) {
                     logger.warn("Recursive external tilesets are not supported.{}", set.getSource());
+                } else {
+                    set.setSource(assetKey.getName());
                 }
-                set.setSource(assetKey.getName());
             }
         } catch (Exception e) {
-            logger.error("Failed while loading {}", assetKey.getName(), e);
+            logger.error("Failed loading tileset", e);
         }
 
         return set;
@@ -102,7 +104,7 @@ public final class TilesetLoader {
      * @param source the path to the tileset file
      * @return the loaded tileset
      */
-    private Tileset load(String source) {
+    public Tileset load(String source) {
         String assetPath = toJmeAssetPath(assetManager, assetKey, source);
 
         // load it with assetManager
@@ -127,36 +129,30 @@ public final class TilesetLoader {
      *   &lt;tile&gt;
      *
      * @param node node
-     * @param map the TiledMap. Can be null when load a sperated tileset.
      * @return Tileset
      */
-    public Tileset readTileset(Node node, TiledMap map) {
-
-        String source = getAttributeValue(node, SOURCE);
+    public Tileset readTileset(Node node) {
         int firstGid = getAttribute(node, FIRST_GID, 1);
-
-        if (source != null) {
-            Tileset set = load(assetKey.getFolder() + source);
-            set.setFirstGid(firstGid);
-            return set;
-        }
-
-        int tileWidth = getAttribute(node, TILE_WIDTH, map != null ? map.getTileWidth() : 0);
-        int tileHeight = getAttribute(node, TILE_HEIGHT, map != null ? map.getTileHeight() : 0);
+        String source = getAttributeValue(node, SOURCE);
+        String name = getAttributeValue(node, NAME);
+        String clazz = getAttribute(node, CLASS, EMPTY);
+        int tileWidth = getAttribute(node, TILE_WIDTH, 0);
+        int tileHeight = getAttribute(node, TILE_HEIGHT, 0);
         int tileSpacing = getAttribute(node, SPACING, 0);
         int tileMargin = getAttribute(node, MARGIN, 0);
-
-        Tileset tileset = new Tileset(tileWidth, tileHeight, tileSpacing, tileMargin);
-        tileset.setFirstGid(firstGid);
-
-        String name = getAttributeValue(node, NAME);
-        String clazz = getAttribute(node, CLASS, "");
+        int tileCount = getAttribute(node, TILE_COUNT, 0);
+        int columns = getAttribute(node, COLUMNS, 0);
         String objectAlignment = getAttribute(node, OBJECT_ALIGNMENT, ObjectAlignment.UNSPECIFIED.getValue());
         String tileRenderSize = getAttribute(node, TILE_RENDER_SIZE, TileRenderSize.TILE.getValue());
         String fillMode = getAttribute(node, FILL_MODE, FillMode.STRETCH.getValue());
 
+        Tileset tileset = new Tileset(tileWidth, tileHeight, tileSpacing, tileMargin);
+        tileset.setFirstGid(firstGid);
+        tileset.setSource(source);
         tileset.setName(name);
         tileset.setClazz(clazz);
+        tileset.setTileCount(tileCount);
+        tileset.setColumns(columns);
         tileset.setObjectAlignment(objectAlignment);
         tileset.setTileRenderSize(tileRenderSize);
         tileset.setFillMode(fillMode);
@@ -171,17 +167,8 @@ public final class TilesetLoader {
                     readImage(tileset, child);
                     break;
                 }
-                case "grid": {
-                    /*
-                     * This element is only used in case of isometric orientation,
-                     * and determines how tile overlays for terrain and collision
-                     * information are rendered.
-                     */
-                    String orientation = getAttribute(node, ORIENTATION, Orientation.ORTHOGONAL.getValue());
-                    Orientation gridOrientation = Orientation.fromString(orientation);
-                    int gridWidth = getAttribute(node, WIDTH, 0);
-                    int gridHeight = getAttribute(node, HEIGHT, 0);
-                    tileset.setGrid(gridOrientation, gridWidth, gridHeight);
+                case GRID: {
+                    tileset.setGrid(readGrid(child));
                     break;
                 }
                 case TERRAIN_TYPES: {
@@ -195,19 +182,13 @@ public final class TilesetLoader {
                     readTile(tileset, child);
                     break;
                 case TILE_OFFSET: {
-                    /*
-                     * This element is used to specify an offset in pixels, to be
-                     * applied when drawing a tile from the related tileset. When
-                     * not present, no offset is applied.
-                     */
                     int tileOffsetX = getAttribute(child, X, 0);
                     int tileOffsetY = getAttribute(child, Y, 0);
                     tileset.setTileOffset(tileOffsetX, tileOffsetY);
                     break;
                 }
                 case TRANSFORMATIONS: {
-                    Transformations transformations = readTransformation(child);
-                    tileset.setTransformations(transformations);
+                    tileset.setTransformations(readTransformation(child));
                     break;
                 }
                 case WANGSETS: {
@@ -236,13 +217,13 @@ public final class TilesetLoader {
             return;
         }
 
-        TiledImage image = tiledImageLoader.load(node);
+        TiledImage image = imageLoader.load(node);
         tileset.setImage(image);
 
         int tileWidth = tileset.getTileWidth();
         int tileHeight = tileset.getTileHeight();
-        int tileMargin = tileset.getTileMargin();
-        int tileSpacing = tileset.getTileSpacing();
+        int tileMargin = tileset.getMargin();
+        int tileSpacing = tileset.getSpacing();
 
         Material material = image.getMaterial();
         material.setBoolean("UseTilesetImage", true);
@@ -262,6 +243,14 @@ public final class TilesetLoader {
             tile = cutter.getNextTile();
         }
     }
+
+    private TilesetGrid readGrid(Node node) {
+        String orientation = getAttribute(node, ORIENTATION, Orientation.ORTHOGONAL.getValue());
+        int width = getAttribute(node, WIDTH, 0);
+        int height = getAttribute(node, HEIGHT, 0);
+        return new TilesetGrid(Orientation.fromString(orientation), width, height);
+    }
+
     /**
      * read terrain.
      *
@@ -304,7 +293,7 @@ public final class TilesetLoader {
      */
     private WangSet readWangSet(Node node) {
         String name = getAttributeValue(node, NAME);
-        String clazz = getAttribute(node, TYPE, EMPTY);
+        String clazz = getAttribute(node, CLASS, EMPTY);
         int tile = getAttribute(node, TILE, -1);
 
         WangSet wangSet = new WangSet(name);
@@ -319,9 +308,9 @@ public final class TilesetLoader {
         for (int i = 0; i < children.getLength(); i++) {
             Node child = children.item(i);
             String nodeName = child.getNodeName();
-            if (nodeName.equalsIgnoreCase(WANGCOLOR)) {
+            if (WANGCOLOR.equals(nodeName)) {
                 wangSet.addWangColor(readWangColor(child));
-            } else if (nodeName.equalsIgnoreCase(WANGTILE)) {
+            } else if (WANGTILE.equals(nodeName)) {
                 wangSet.addWangTile(readWangTile(child));
             }
         }
@@ -386,6 +375,9 @@ public final class TilesetLoader {
         int y = getAttribute(node, Y, -1);
         int width = getAttribute(node, WIDTH, -1);
         int height = getAttribute(node, HEIGHT, -1);
+        String clazz = getAttribute(node, TYPE, getAttribute(node, CLASS, EMPTY));// compatibility with 1.8 or earlier
+        tile.setClazz(clazz);
+
         if (x > -1) {
             tile.setX(x);
         }
@@ -431,7 +423,7 @@ public final class TilesetLoader {
             return;
         }
 
-        TiledImage image = tiledImageLoader.load(node);
+        TiledImage image = imageLoader.load(node);
         tile.setImage(image);
         // use the tile image size as tile size by default
         if (tile.getWidth() <= 0 && tile.getHeight() <= 0) {
@@ -474,7 +466,7 @@ public final class TilesetLoader {
      */
     public void createVisual(Tileset tileset, TiledMap map) {
 
-        Point offset = new Point(tileset.getTileOffsetX(), tileset.getTileOffsetY());
+        Point offset = tileset.getTileOffset();
         Point origin = new Point(0, map.getTileHeight());
 
         List<Tile> tiles = tileset.getTiles();

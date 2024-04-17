@@ -45,7 +45,7 @@ public class ObjectTemplate {
 
     public void copyTo(MapObject obj) {
         obj.setName(object.getName());
-        obj.setType(object.getType());
+        obj.setClazz(object.getClazz());
         obj.setShape(object.getShape());
         obj.setWidth(object.getWidth());
         obj.setHeight(object.getHeight());

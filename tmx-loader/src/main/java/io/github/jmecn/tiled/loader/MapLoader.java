@@ -9,7 +9,6 @@ import io.github.jmecn.tiled.enums.RenderOrder;
 import io.github.jmecn.tiled.enums.StaggerAxis;
 import io.github.jmecn.tiled.enums.StaggerIndex;
 import io.github.jmecn.tiled.loader.layer.LayerLoaders;
-import io.github.jmecn.tiled.math2d.Point;
 import io.github.jmecn.tiled.util.ColorUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,9 +33,9 @@ import static io.github.jmecn.tiled.loader.Utils.*;
  *
  * @author yanmaoyuan
  */
-public final class TiledMapLoader {
+public final class MapLoader {
 
-    private static final Logger logger = LoggerFactory.getLogger(TiledMapLoader.class);
+    private static final Logger logger = LoggerFactory.getLogger(MapLoader.class);
 
     private final AssetManager assetManager;
 
@@ -47,7 +46,7 @@ public final class TiledMapLoader {
     private final TilesetLoader tilesetLoader;
     private final PropertyLoader propertiesLoader;
 
-    public TiledMapLoader(AssetManager assetManager, AssetKey<?> key) {
+    public MapLoader(AssetManager assetManager, AssetKey<?> key) {
         this.assetManager = assetManager;
         this.assetKey = key;
 
@@ -96,24 +95,6 @@ public final class TiledMapLoader {
             throw new IllegalArgumentException("Not a valid tmx map file.");
         }
 
-        // Get the map dimensions and create the map
-        int mapWidth = getAttribute(mapNode, WIDTH, 0);
-        int mapHeight = getAttribute(mapNode, HEIGHT, 0);
-
-        if (mapWidth <= 0 || mapHeight <= 0) {
-            // Maybe this map is still using the dimensions element
-            Point mapSize = readDimensions(doc);
-            mapWidth = mapSize.x;
-            mapHeight = mapSize.y;
-        }
-
-        if (mapWidth > 0 && mapHeight > 0) {
-            map = new TiledMap(mapWidth, mapHeight);
-        } else {
-            logger.warn("Couldn't locate map dimensions.");
-            throw new IllegalArgumentException("Couldn't locate map dimensions.");
-        }
-
         // Load other map attributes
         String version = getAttributeValue(mapNode, VERSION);
         String tiledVersion = getAttributeValue(mapNode, TILED_VERSION);
@@ -121,6 +102,8 @@ public final class TiledMapLoader {
         String orientation = getAttribute(mapNode, ORIENTATION, Orientation.ORTHOGONAL.getValue());
         String renderOrder = getAttribute(mapNode, RENDER_ORDER, RenderOrder.RIGHT_DOWN.getValue());
         int compressionLevel = getAttribute(mapNode, COMPRESSION_LEVEL, -1);
+        int width = getAttribute(mapNode, WIDTH, 0);
+        int height = getAttribute(mapNode, HEIGHT, 0);
         int tileWidth = getAttribute(mapNode, TILE_WIDTH, 0);
         int tileHeight = getAttribute(mapNode, TILE_HEIGHT, 0);
         int hexSideLength = getAttribute(mapNode, HEX_SIDE_LENGTH, 0);
@@ -128,45 +111,39 @@ public final class TiledMapLoader {
         String staggerIndex = getAttribute(mapNode, STAGGER_INDEX, StaggerIndex.ODD.getValue());
         int parallaxOriginX = getAttribute(mapNode, PARALLAX_ORIGIN_X, 0);
         int parallaxOriginY = getAttribute(mapNode, PARALLAX_ORIGIN_Y, 0);
-        String bgStr = getAttributeValue(mapNode, BACKGROUND_COLOR);
+        String backgroundColorStr = getAttributeValue(mapNode, BACKGROUND_COLOR);
         int nextLayerId = getAttribute(mapNode, NEXT_LAYER_ID, 0);
         int nextObjectId = getAttribute(mapNode, NEXT_OBJECT_ID, 0);
         boolean infinite = getAttribute(mapNode, INFINITE, 0) == 1;
 
+        if (width <= 0 || height <= 0) {
+            logger.warn("Couldn't locate map dimensions.");
+            throw new IllegalArgumentException("Couldn't locate map dimensions.");
+        }
+
+        map = new TiledMap(width, height);
         map.setVersion(version);
         map.setTiledVersion(tiledVersion);
         map.setClazz(clazz);
         map.setOrientation(orientation);
         map.setRenderOrder(renderOrder.toLowerCase());
         map.setCompressionLevel(compressionLevel);
-
-        if (tileWidth > 0) {
-            map.setTileWidth(tileWidth);
-        }
-        if (tileHeight > 0) {
-            map.setTileHeight(tileHeight);
-        }
-        if (hexSideLength > 0) {
-            map.setHexSideLength(hexSideLength);
-        }
-
+        map.setTileWidth(tileWidth);
+        map.setTileHeight(tileHeight);
+        map.setHexSideLength(hexSideLength);
         map.setStaggerAxis(staggerAxis);
         map.setStaggerIndex(staggerIndex);
         map.setParallaxOriginX(parallaxOriginX);
         map.setParallaxOriginY(parallaxOriginY);
 
         ColorRGBA backgroundColor;
-        if (bgStr != null) {
-            backgroundColor = ColorUtil.toColorRGBA(bgStr);
+        if (backgroundColorStr != null) {
+            backgroundColor = ColorUtil.toColorRGBA(backgroundColorStr);
             map.setBackgroundColor(backgroundColor);
         }
 
-        if (nextLayerId > 0) {
-            map.setNextLayerId(nextLayerId);
-        }
-        if (nextObjectId > 0) {
-            map.setNextObjectId(nextObjectId);
-        }
+        map.setNextLayerId(nextLayerId);
+        map.setNextObjectId(nextObjectId);
         map.setInfinite(infinite);
 
         // Load properties
@@ -182,31 +159,36 @@ public final class TiledMapLoader {
         return map;
     }
 
-    private Point readDimensions(Document doc) {
-        Point mapSize = new Point(0, 0);
-        // Maybe this map is still using the dimensions element
-        NodeList l = doc.getElementsByTagName("dimensions");
-        Node item;
-        Node mapNode = doc.getDocumentElement();
-        for (int i = 0; (item = l.item(i)) != null; i++) {
-            if (item.getParentNode() == mapNode) {
-                int mapWidth = getAttribute(item, WIDTH, 0);
-                int mapHeight = getAttribute(item, HEIGHT, 0);
-
-                mapSize.set(mapWidth, mapHeight);
-            }
-        }
-
-        return mapSize;
-    }
-
     public void readTilesets(Document doc) {
         NodeList tileSets = doc.getElementsByTagName(TILESET);
-        Node item;
-        for (int i = 0; (item = tileSets.item(i)) != null; i++) {
-            Tileset set = tilesetLoader.readTileset(item, map);
-            tilesetLoader.createVisual(set, map);
-            map.addTileset(set);
+        for (int i = 0; i < tileSets.getLength(); i++) {
+            Node node = tileSets.item(i);
+
+            String source = getAttributeValue(node, SOURCE);
+            int firstGid = getAttribute(node, FIRST_GID, 1);
+
+            Tileset tileset;
+            if (source != null) {
+                logger.info("Loading external tileset: {}", source);
+                tileset = (Tileset) assetManager.loadAsset(assetKey.getFolder() + source);
+                tileset.setFirstGid(firstGid);
+                tileset.setSource(source);
+            } else {
+                tileset = tilesetLoader.readTileset(node);
+            }
+
+            // Set tile width and height if not set
+            if (tileset.getTileWidth() <= 0) {
+                tileset.setTileWidth(map.getTileWidth());
+                logger.debug("Tileset {} has no tile width. Using map tile width: {}", tileset.getName(), map.getTileWidth());
+            }
+            if (tileset.getTileHeight() <= 0) {
+                tileset.setTileHeight(map.getTileHeight());
+                logger.debug("Tileset {} has no tile height. Using map tile height: {}", tileset.getName(), map.getTileHeight());
+            }
+
+            tilesetLoader.createVisual(tileset, map);
+            map.addTileset(tileset);
         }
     }
 

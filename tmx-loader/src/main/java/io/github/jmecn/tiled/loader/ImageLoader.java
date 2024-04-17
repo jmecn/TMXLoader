@@ -29,14 +29,14 @@ import static io.github.jmecn.tiled.loader.Utils.*;
  *
  * @author yanmaoyuan
  */
-public final class TiledImageLoader {
+public final class ImageLoader {
 
-    private static final Logger logger = LoggerFactory.getLogger(TiledImageLoader.class);
+    private static final Logger logger = LoggerFactory.getLogger(ImageLoader.class);
 
     private final AssetManager assetManager;
     private final AssetKey<?> assetKey;
 
-    public TiledImageLoader(AssetManager assetManager, AssetKey<?> assetKey) {
+    public ImageLoader(AssetManager assetManager, AssetKey<?> assetKey) {
         this.assetManager = assetManager;
         this.assetKey = assetKey;
     }
@@ -82,7 +82,7 @@ public final class TiledImageLoader {
         }
 
         if (width == 0 || height == 0) {
-            logger.warn("Image size is not specified, using the texture size.");
+            logger.info("Image size is not specified, using the texture size.");
             width = texture.getImage().getWidth();
             height = texture.getImage().getHeight();
         }
@@ -183,8 +183,6 @@ public final class TiledImageLoader {
         } catch (Exception e) {
             logger.error("Can't load texture from byte array", e);
         }
-
         return tex;
-
     }
 }

@@ -23,14 +23,14 @@ public abstract class LayerLoader {
     protected AssetManager assetManager;
     protected AssetKey<?> assetKey;
     protected PropertyLoader propertiesLoader;
-    protected TiledImageLoader tiledImageLoader;
+    protected ImageLoader imageLoader;
 
     protected LayerLoader(AssetManager assetManager, AssetKey<?> key) {
         this.assetManager = assetManager;
         this.assetKey = key;
 
         this.propertiesLoader = new PropertyLoader();
-        this.tiledImageLoader = new TiledImageLoader(assetManager, key);
+        this.imageLoader = new ImageLoader(assetManager, key);
     }
 
     /**
@@ -54,7 +54,7 @@ public abstract class LayerLoader {
         }
 
         final String name = getAttributeValue(node, NAME);
-        String clazz = getAttribute(node, CLASS, "");
+        String clazz = getAttribute(node, CLASS, EMPTY);
         double opacity = getDoubleAttribute(node, OPACITY, 1.0);
         boolean visible = getAttribute(node, VISIBLE, 1) == 1;
         boolean locked = getAttribute(node, LOCKED, 0) == 1;

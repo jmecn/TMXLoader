@@ -62,6 +62,10 @@ public class PropertyLoader {
      */
     private void readProperty(Node node, Properties props) {
         String keyName = getAttributeValue(node, NAME);
+        String type = getAttribute(node, TYPE, "string");
+        // TODO support custom property type
+        // @see https://doc.mapeditor.org/en/stable/manual/custom-properties/#custom-property-types
+        String propertyType = getAttributeValue(node, PROPERTY_TYPE);
         String value = getAttributeValue(node, VALUE);
         if (value == null) {
             Node grandChild = node.getFirstChild();
@@ -74,7 +78,6 @@ public class PropertyLoader {
         }
 
         if (value != null) {
-            final String type = getAttribute(node, TYPE, "string");
             Object val = convertPropertyValue(type, value);
             props.put(keyName, val);
         }

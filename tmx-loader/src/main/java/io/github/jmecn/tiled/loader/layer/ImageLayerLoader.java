@@ -52,7 +52,7 @@ public class ImageLayerLoader extends LayerLoader {
             Node child = children.item(i);
             String nodeName = child.getNodeName();
             if (IMAGE.equals(nodeName)) {
-                TiledImage image = tiledImageLoader.load(child);
+                TiledImage image = imageLoader.load(child);
                 if (image.getTexture() != null) {
                     layer.setSource(image.getSource());
                     layer.setTexture(image.getTexture());

@@ -4,7 +4,7 @@ import com.jme3.asset.AssetInfo;
 import com.jme3.asset.AssetKey;
 import com.jme3.asset.AssetLoader;
 import com.jme3.asset.AssetManager;
-import io.github.jmecn.tiled.loader.TiledMapLoader;
+import io.github.jmecn.tiled.loader.MapLoader;
 import io.github.jmecn.tiled.loader.TilesetLoader;
 
 import java.io.IOException;
@@ -25,8 +25,8 @@ public class TmxLoader implements AssetLoader {
 
         switch (extension) {
             case TiledConst.TMX_EXTENSION:
-                TiledMapLoader tiledMapLoader = new TiledMapLoader(assetManager, key);
-                return tiledMapLoader.load(assetInfo.openStream());
+                MapLoader mapLoader = new MapLoader(assetManager, key);
+                return mapLoader.load(assetInfo.openStream());
             case TiledConst.TSX_EXTENSION:
                 TilesetLoader tilesetLoader = new TilesetLoader(assetManager, key);
                 return tilesetLoader.load(assetInfo.openStream());

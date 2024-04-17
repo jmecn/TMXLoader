@@ -23,6 +23,8 @@ public final class TiledConst {
     public static final String TILE_HEIGHT = "tileheight";
     public static final String MARGIN = "margin";
     public static final String SPACING = "spacing";
+    public static final String TILE_COUNT = "tilecount";
+    public static final String COLUMNS = "columns";
     public static final String HEX_SIDE_LENGTH = "hexsidelength";
     public static final String STAGGER_AXIS = "staggeraxis";
     public static final String STAGGER_INDEX = "staggerindex";
@@ -48,6 +50,7 @@ public final class TiledConst {
     public static final String TRANS = "trans";
     public static final String FORMAT = "format";
     public static final String TILE_OFFSET = "tileoffset";
+    public static final String GRID = "grid";
     // tileset-transformations
     public static final String TRANSFORMATIONS = "transformations";
     public static final String H_FLIP = "hvlip";
@@ -77,6 +80,7 @@ public final class TiledConst {
     // properties
     public static final String PROPERTIES = "properties";
     public static final String PROPERTY = "property";
+    public static final String PROPERTY_TYPE = "propertytype";
     public static final String LAYER = "layer";
     public static final String IMAGELAYER = "imagelayer";
     public static final String REPEAT_X = "repeatx";

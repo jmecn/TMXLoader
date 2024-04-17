@@ -147,29 +147,27 @@ public class ObjectLayerLoader extends LayerLoader {
 
     private ObjectTemplate readObjectTemplate(Node node) {
         Tileset tileset = null;
-        MapObject obj = null;
 
         int firstGid = 0;
         String source = null;
 
-        // Add all objects from the objects group
-        NodeList children = node.getChildNodes();
-        for (int i = 0; i < children.getLength(); i++) {
-            Node child = children.item(i);
+        Node tilesetNode = getChildByTag(node, TILESET);// not null if the object is a tile object.
+        if (tilesetNode != null) {
+            // The readObjectNode method will automatically set the tileset from tiled map,
+            // so it doesn't need to load tileset again here.
+            firstGid = Utils.getAttribute(tilesetNode, FIRST_GID, 1);
+            source = Utils.getAttributeValue(tilesetNode, SOURCE);
+        }
 
-            if (TILESET.equals(child.getNodeName())) {
-                // The readObjectNode method will automatically set the tileset from tiled map,
-                // so it doesn't need to load tileset again here.
-                firstGid = Utils.getAttribute(child, FIRST_GID, 1);
-                source = Utils.getAttributeValue(child, SOURCE);
-            } else if (OBJECT.equals(child.getNodeName())) {
-                obj = readObjectNode(child);
+        Node objectNode = getChildByTag(node, OBJECT);
+        if (objectNode == null) {
+            logger.error("Template must have an object node.");
+            throw new IllegalArgumentException("Template must have an object node.");
+        }
 
-                if (obj.getTile() != null) {
-                    tileset = obj.getTile().getTileset();
-                }
-                break;
-            }
+        MapObject obj = readObjectNode(objectNode);
+        if (obj.getTile() != null) {
+            tileset = obj.getTile().getTileset();
         }
 
         // for debug, in case the tileset is different from the tileset in the map.
@@ -192,7 +190,7 @@ public class ObjectLayerLoader extends LayerLoader {
     private MapObject readObjectNode(Node node) {
         int id = getAttribute(node, ID, 0);
         String name = getAttributeValue(node, NAME);
-        String type = getAttributeValue(node, TYPE);
+        String clazz = getAttribute(node, TYPE, getAttribute(node, CLASS, EMPTY));// compatibility with 1.8 or earlier
         double x = getDoubleAttribute(node, X, 0);
         double y = getDoubleAttribute(node, Y, 0);
         double width = getDoubleAttribute(node, WIDTH, 0);
@@ -208,8 +206,8 @@ public class ObjectLayerLoader extends LayerLoader {
         if (name != null) {
             obj.setName(name);
         }
-        if (type != null) {
-            obj.setType(type);
+        if (clazz != null) {
+            obj.setClazz(clazz);
         }
 
         ObjectTemplate template;
@@ -302,7 +300,7 @@ public class ObjectLayerLoader extends LayerLoader {
                     }
                     case IMAGE: {
                         obj.setShape(ObjectType.IMAGE);
-                        TiledImage image = tiledImageLoader.load(child);
+                        TiledImage image = imageLoader.load(child);
                         obj.setImageSource(image.getSource());
                         obj.setTexture(image.getTexture());
                         obj.setMaterial(image.getMaterial());

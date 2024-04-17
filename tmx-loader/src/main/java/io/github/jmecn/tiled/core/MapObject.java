@@ -49,9 +49,9 @@ public class MapObject extends Base {
     private String name;
 
     /**
-     * The type of the object. An arbitrary string.
+     * The class of the object. An arbitrary string.
      */
-    private String type;
+    private String clazz;
     private ObjectType shape = ObjectType.RECTANGLE;
 
     /**
@@ -139,12 +139,12 @@ public class MapObject extends Base {
         this.name = name;
     }
 
-    public String getType() {
-        return type;
+    public String getClazz() {
+        return clazz;
     }
 
-    public void setType(String type) {
-        this.type = type;
+    public void setClazz(String clazz) {
+        this.clazz = clazz;
     }
 
     public ObjectType getShape() {
@@ -274,7 +274,7 @@ public class MapObject extends Base {
 
     @Override
     public String toString() {
-        return "MapObject [id=" + id + ", name=" + name + ", type=" + type
+        return "MapObject [id=" + id + ", name=" + name + ", clazz=" + clazz
                 + ", shape=" + shape + ", x=" + x + ", y=" + y
                 + ", width=" + width + ", height=" + height + "]";
     }

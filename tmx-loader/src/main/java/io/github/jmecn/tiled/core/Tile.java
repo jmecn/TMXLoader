@@ -35,6 +35,7 @@ public class Tile extends Base implements Cloneable {
     private Tileset tileset;
     private int id = -1;
     private int gid = 0;
+    private String clazz;
 
     /**
      * position in the image
@@ -113,6 +114,14 @@ public class Tile extends Base implements Cloneable {
 
     public int getGidNoMask() {
         return gid & ~FLIPPED_MASK;
+    }
+
+    public void setClazz(String clazz) {
+        this.clazz = clazz;
+    }
+
+    public String getClazz() {
+        return clazz;
     }
 
     public boolean isFlippedHorizontally() {
