@@ -2,8 +2,8 @@ package io.github.jmecn.tiled.app.swing;
 
 import com.jme3.asset.AssetKey;
 import com.jme3.asset.AssetManager;
-import com.jme3.asset.plugins.FileLocator;
 import com.jme3.system.awt.AwtPanel;
+import io.github.jmecn.tiled.app.jme3.MyFileLocator;
 import io.github.jmecn.tiled.app.jme3.TiledApp;
 import io.github.jmecn.tiled.core.TiledMap;
 import org.slf4j.Logger;
@@ -231,14 +231,14 @@ public class MainWnd extends JFrame {
             log.info("Load:{}", file.getAbsoluteFile());
             TiledMap map = null;
             try {
-                assetManager.registerLocator(file.getParent(), FileLocator.class);
+                assetManager.registerLocator(file.getParent(), MyFileLocator.class);
                 map = (TiledMap) assetManager.loadAsset(fileName);
                 // remove from cache, in case of reload
                 assetManager.deleteFromCache(new AssetKey<>(fileName));
             } catch (Exception e) {
                 log.error("Failed to load {}", file.getAbsoluteFile(), e);
             } finally {
-                assetManager.unregisterLocator(file.getParent(), FileLocator.class);
+                assetManager.unregisterLocator(file.getParent(), MyFileLocator.class);
             }
 
             if (map != null) {
