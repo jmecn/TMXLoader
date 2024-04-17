@@ -88,7 +88,7 @@ public abstract class LayerLoader {
         layer.setLocked(locked);
 
         // read properties
-        Properties props = propertiesLoader.load(node.getChildNodes());
+        Properties props = propertiesLoader.readProperties(node);
         layer.setProperties(props);
     }
 

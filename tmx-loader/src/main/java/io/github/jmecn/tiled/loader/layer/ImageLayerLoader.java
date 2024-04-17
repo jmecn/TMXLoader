@@ -1,10 +1,11 @@
-package io.github.jmecn.tiled.loader;
+package io.github.jmecn.tiled.loader.layer;
 
 import com.jme3.asset.AssetKey;
 import com.jme3.asset.AssetManager;
 import io.github.jmecn.tiled.core.ImageLayer;
 import io.github.jmecn.tiled.core.TiledImage;
 import io.github.jmecn.tiled.core.TiledMap;
+import io.github.jmecn.tiled.loader.LayerLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Node;

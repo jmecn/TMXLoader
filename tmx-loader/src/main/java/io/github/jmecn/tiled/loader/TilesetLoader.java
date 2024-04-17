@@ -58,7 +58,6 @@ public final class TilesetLoader {
         this.propertiesLoader = new PropertyLoader();
     }
 
-
     /**
      * Load a TileSet from .tsx file.
      *
@@ -331,7 +330,7 @@ public final class TilesetLoader {
         terrain.setTile(tile);
 
         // read properties
-        Properties props = propertiesLoader.load(node.getChildNodes());
+        Properties props = propertiesLoader.readProperties(node);
         terrain.setProperties(props);
 
         return terrain;
@@ -353,7 +352,7 @@ public final class TilesetLoader {
         wangSet.setTile(tile);
 
         // read properties
-        Properties props = propertiesLoader.load(node.getChildNodes());
+        Properties props = propertiesLoader.readProperties(node);
         wangSet.setProperties(props);
 
         NodeList children = node.getChildNodes();
@@ -384,7 +383,7 @@ public final class TilesetLoader {
         wangColor.setProbability(probability);
 
         // read properties
-        Properties props = propertiesLoader.load(node.getChildNodes());
+        Properties props = propertiesLoader.readProperties(node);
         wangColor.setProperties(props);
 
         return wangColor;
@@ -463,7 +462,7 @@ public final class TilesetLoader {
 
         NodeList children = t.getChildNodes();
 
-        Properties props = propertiesLoader.load(children);
+        Properties props = propertiesLoader.readProperties(t);
         tile.setProperties(props);
 
         for (int i = 0; i < children.getLength(); i++) {

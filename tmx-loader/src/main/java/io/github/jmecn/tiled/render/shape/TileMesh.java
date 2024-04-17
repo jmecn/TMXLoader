@@ -8,8 +8,6 @@ import com.jme3.scene.VertexBuffer;
 import com.jme3.util.TempVars;
 import io.github.jmecn.tiled.math2d.Point;
 
-import java.nio.FloatBuffer;
-
 /**
  * This is the mesh of a tile.
  *

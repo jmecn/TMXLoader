@@ -132,8 +132,8 @@ public class TiledMap extends Base {
     private final Map<String, Tileset> tilesetMap;
     private List<Layer> layers;
     private Map<String, Layer> layerMap;
-    private List<ObjectTemplate> templates;
-    private Map<String, ObjectTemplate> templateMap;
+    private final List<ObjectTemplate> templates;
+    private final Map<String, ObjectTemplate> templateMap;
 
     /**
      * <p>

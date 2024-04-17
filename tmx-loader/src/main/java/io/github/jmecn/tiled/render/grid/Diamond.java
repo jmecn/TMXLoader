@@ -1,9 +1,7 @@
 package io.github.jmecn.tiled.render.grid;
 
 import com.jme3.math.Vector2f;
-import com.jme3.scene.Mesh;
 import io.github.jmecn.tiled.render.shape.Polygon;
-import io.github.jmecn.tiled.render.shape.Polyline;
 
 import java.util.ArrayList;
 import java.util.List;

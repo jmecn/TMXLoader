@@ -32,9 +32,9 @@ public class Chunk extends VisualSpatial implements TileContainer {
     /**
      * The data stored in the chunk. Format is the same as data.
      */
-    private Tile[][] map;
-    private Spatial[][] spatials;
-    private boolean[][] needUpdateSpatial;
+    private final Tile[][] map;
+    private final Spatial[][] spatials;
+    private final boolean[][] needUpdateSpatial;
 
     public Chunk(int x, int y, int width, int height) {
         this.x = x;
@@ -72,11 +72,11 @@ public class Chunk extends VisualSpatial implements TileContainer {
      *            the Tile to be removed
      */
     public void removeTile(Tile tile) {
-        for (int y = 0; y < this.height; y++) {
-            for (int x = 0; x < this.width; x++) {
-                if (map[y][x] == tile) {
-                    setTileAt(x + this.x, y + this.y, null);
-                    setSpatialAt(x + this.x, y + this.y, null);
+        for (int row = 0; row < this.height; row++) {
+            for (int col = 0; col < this.width; col++) {
+                if (map[row][col] == tile) {
+                    setTileAt(col + this.x, row + this.y, null);
+                    setSpatialAt(col + this.x, row + this.y, null);
                 }
             }
         }
@@ -144,10 +144,10 @@ public class Chunk extends VisualSpatial implements TileContainer {
      *         of t, or <code>null</code> if it is not found
      */
     public Point locationOf(Tile t) {
-        for (int y = this.y; y < this.height + this.y; y++) {
-            for (int x = this.x; x < this.width + this.x; x++) {
-                if (getTileAt(x, y) == t) {
-                    return new Point(x, y);
+        for (int row = this.y; row < this.height + this.y; row++) {
+            for (int col = this.x; col < this.width + this.x; col++) {
+                if (getTileAt(col, row) == t) {
+                    return new Point(col, row);
                 }
             }
         }
@@ -164,10 +164,10 @@ public class Chunk extends VisualSpatial implements TileContainer {
      *            the replacement tile
      */
     public void replaceTile(Tile find, Tile replace) {
-        for (int y = this.y; y < this.y + this.height; y++) {
-            for (int x = this.x; x < this.x + this.width; x++) {
-                if (getTileAt(x, y) == find) {
-                    setTileAt(x, y, replace);
+        for (int row = this.y; row < this.y + this.height; row++) {
+            for (int col = this.x; col < this.x + this.width; col++) {
+                if (getTileAt(col, row) == find) {
+                    setTileAt(col, row, replace);
                 }
             }
         }

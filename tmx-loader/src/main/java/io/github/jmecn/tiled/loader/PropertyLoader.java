@@ -1,7 +1,5 @@
 package io.github.jmecn.tiled.loader;
 
-import com.jme3.asset.AssetKey;
-import com.jme3.asset.AssetManager;
 import io.github.jmecn.tiled.util.ColorUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,21 +30,17 @@ public class PropertyLoader {
      * Support for reading property values stored as character data was added in
      * Tiled 0.7.0 (tmx version 0.99c).
      *
-     * @param children the children amongst which to find properties
+     * @param node the node which contains properties
      * @return the properties
      */
-    public Properties load(NodeList children) {
+    public Properties readProperties(Node node) {
         Properties props = new Properties();
 
-        Node propertiesNode = null;
-        for (int i = 0; i < children.getLength(); i++) {
-            Node child = children.item(i);
-            if (PROPERTIES.equals(child.getNodeName())) {
-                propertiesNode = child;
-                break;
-            }
+        if (node == null) {
+            return props;
         }
 
+        Node propertiesNode = getChildByTag(node, PROPERTIES);
         if (propertiesNode == null) {
             return props;
         }
@@ -64,14 +58,14 @@ public class PropertyLoader {
     /**
      * read every property in a properties
      *
-     * @param child
-     * @param props
+     * @param node the node which contains property
+     * @param props the properties to store the property
      */
-    private void readProperty(Node child, Properties props) {
-        String keyName = getAttributeValue(child, NAME);
-        String value = getAttributeValue(child, VALUE);
+    private void readProperty(Node node, Properties props) {
+        String keyName = getAttributeValue(node, NAME);
+        String value = getAttributeValue(node, VALUE);
         if (value == null) {
-            Node grandChild = child.getFirstChild();
+            Node grandChild = node.getFirstChild();
             if (grandChild != null) {
                 value = grandChild.getNodeValue();
                 if (value != null) {
@@ -81,23 +75,29 @@ public class PropertyLoader {
         }
 
         if (value != null) {
-            final String type = getAttribute(child, TYPE, "string");
+            final String type = getAttribute(node, TYPE, "string");
             Object val = convertPropertyValue(type, value);
             props.put(keyName, val);
         }
     }
 
     /**
-     * type can be as follows:
+     * <p>type can be as follows:</p>
+     * <ul>
+     * <li>
      * file: stored as paths relative from the location of the map file. (since 0.17)
-     *
+     * </li>
+     * <li>
      * object: can reference any object on the same map and are stored as an integer (the ID of
      * the referenced object, or 0 when no object is referenced). When used on objects in the
      * Tile Collision Editor, they can only refer to other objects on the same tile. (since 1.4)
-     *
+     * </li>
+     * <li>
      * class: will have their member values stored in a nested &lt;properties&gt; element. Only the
      * actually set members are saved. When no members have been set the properties element is
      * left out entirely.(since 1.8)
+     * </li>
+     * </ul>
      *
      * @param type the type of the property
      * @param value the value of the property

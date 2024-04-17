@@ -1,8 +1,9 @@
-package io.github.jmecn.tiled.loader;
+package io.github.jmecn.tiled.loader.layer;
 
 import com.jme3.asset.AssetKey;
 import com.jme3.asset.AssetManager;
 import io.github.jmecn.tiled.core.TiledMap;
+import io.github.jmecn.tiled.loader.LayerLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,7 +22,7 @@ public class LayerLoaders {
 
     private final TiledMap map;
 
-    LayerLoaders(AssetManager assetManager, AssetKey<?> assetKey, TiledMap map) {
+    public LayerLoaders(AssetManager assetManager, AssetKey<?> assetKey, TiledMap map) {
         this.assetManager = assetManager;
         this.assetKey = assetKey;
         this.map = map;

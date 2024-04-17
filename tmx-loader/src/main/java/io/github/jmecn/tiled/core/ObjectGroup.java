@@ -174,7 +174,7 @@ public class ObjectGroup extends Layer {
     
     @Override
     public Node getVisual() {
-        return (Node)visual;
+        return (Node) visual;
     }
     
 }

@@ -8,14 +8,16 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * desc: GroupLayer
+ * GroupLayer
  *
  * @author yanmaoyuan
  */
 public class GroupLayer extends Layer {
 
     private final List<Layer> layers;
+
     private final Map<String, Layer> layerMap;
+
     public GroupLayer( ) {
         layers = new ArrayList<>();
         layerMap = new HashMap<>();

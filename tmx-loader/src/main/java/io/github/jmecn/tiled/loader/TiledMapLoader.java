@@ -8,6 +8,7 @@ import io.github.jmecn.tiled.enums.Orientation;
 import io.github.jmecn.tiled.enums.RenderOrder;
 import io.github.jmecn.tiled.enums.StaggerAxis;
 import io.github.jmecn.tiled.enums.StaggerIndex;
+import io.github.jmecn.tiled.loader.layer.LayerLoaders;
 import io.github.jmecn.tiled.math2d.Point;
 import io.github.jmecn.tiled.util.ColorUtil;
 import org.slf4j.Logger;
@@ -26,8 +27,7 @@ import java.io.InputStream;
 import java.util.Properties;
 
 import static io.github.jmecn.tiled.TiledConst.*;
-import static io.github.jmecn.tiled.loader.Utils.getAttribute;
-import static io.github.jmecn.tiled.loader.Utils.getAttributeValue;
+import static io.github.jmecn.tiled.loader.Utils.*;
 
 /**
  * desc:
@@ -170,8 +170,9 @@ public final class TiledMapLoader {
         map.setInfinite(infinite);
 
         // Load properties
-        Properties props = propertiesLoader.load(mapNode.getChildNodes());
+        Properties props = propertiesLoader.readProperties(mapNode);
         map.setProperties(props);
+        logger.debug("map properties:{}", props);
 
         // read tilesets
         readTilesets(doc);

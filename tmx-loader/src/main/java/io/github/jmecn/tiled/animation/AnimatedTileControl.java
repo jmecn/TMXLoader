@@ -82,6 +82,7 @@ public class AnimatedTileControl extends AbstractControl {
 
     @Override
     protected void controlRender(RenderManager rm, ViewPort vp) {
+        // ignore
     }
 
     public Object clone() {

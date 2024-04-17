@@ -1,10 +1,11 @@
-package io.github.jmecn.tiled.loader;
+package io.github.jmecn.tiled.loader.layer;
 
 import com.jme3.asset.AssetKey;
 import com.jme3.asset.AssetManager;
 import io.github.jmecn.tiled.core.*;
 import io.github.jmecn.tiled.enums.DataCompression;
 import io.github.jmecn.tiled.enums.DataEncoding;
+import io.github.jmecn.tiled.loader.LayerLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Node;
@@ -291,7 +292,7 @@ public class TileLayerLoader extends LayerLoader {
                 int x = getAttribute(child, X, -1);
                 int y = getAttribute(child, Y, -1);
 
-                Properties tip = propertiesLoader.load(child.getChildNodes());
+                Properties tip = propertiesLoader.readProperties(child);
                 layer.setTileInstancePropertiesAt(x, y, tip);
             }
             child = child.getNextSibling();

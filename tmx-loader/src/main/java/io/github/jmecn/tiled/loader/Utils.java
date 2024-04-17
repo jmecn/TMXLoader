@@ -4,6 +4,10 @@ import com.jme3.asset.AssetKey;
 import com.jme3.asset.AssetManager;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * desc:
@@ -23,7 +27,6 @@ public final class Utils {
      * @return the corrected asset path
      */
     public static String toJmeAssetPath(AssetManager assetManager, AssetKey<?> key, String src) {
-
         /*
          * 1st: try to locate it with assetManager. No need to handle the src
          * path unless assetManager can't locate it.
@@ -53,6 +56,29 @@ public final class Utils {
         } else {
             throw new IllegalArgumentException("Can't locate asset: " + src);
         }
+    }
+
+    public static Node getChildByTag(Node node, String tag) {
+        NodeList nodeList = node.getChildNodes();
+        for (int i = 0; i < nodeList.getLength(); i++) {
+            Node child = nodeList.item(i);
+            if (tag.equals(child.getNodeName())) {
+                return child;
+            }
+        }
+        return null;
+    }
+
+    public static List<Node> getChildrenByTag(Node node, String tag) {
+        List<Node> children = new ArrayList<>();
+        NodeList nodeList = node.getChildNodes();
+        for (int i = 0; i < nodeList.getLength(); i++) {
+            Node child = nodeList.item(i);
+            if (tag.equals(child.getNodeName())) {
+                children.add(child);
+            }
+        }
+        return children;
     }
 
     public static String getAttributeValue(Node node, String attributeName) {

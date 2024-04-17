@@ -1,4 +1,4 @@
-package io.github.jmecn.tiled.loader;
+package io.github.jmecn.tiled.loader.layer;
 
 import com.jme3.asset.AssetInfo;
 import com.jme3.asset.AssetKey;
@@ -8,6 +8,8 @@ import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector2f;
 import io.github.jmecn.tiled.core.*;
 import io.github.jmecn.tiled.enums.ObjectType;
+import io.github.jmecn.tiled.loader.LayerLoader;
+import io.github.jmecn.tiled.loader.Utils;
 import io.github.jmecn.tiled.util.ColorUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -213,13 +215,13 @@ public class ObjectLayerLoader extends LayerLoader {
                 template.copyTo(obj);
 
                 // merge the properties, behavior like inheritance.
-                Properties props = propertiesLoader.load(node.getChildNodes());
+                Properties props = propertiesLoader.readProperties(node);
                 obj.getProperties().putAll(props);
                 return obj;
             }
         }
 
-        Properties props = propertiesLoader.load(node.getChildNodes());
+        Properties props = propertiesLoader.readProperties(node);
         obj.setProperties(props);
 
         /*

@@ -9,23 +9,26 @@ import io.github.jmecn.tiled.enums.ObjectType;
 
 /**
  * An object occupying an {@link ObjectGroup}.
- * 
+ * <p>
  * While tile layers are very suitable for anything repetitive aligned to the
  * tile grid, sometimes you want to annotate your map with other information,
  * not necessarily aligned to the grid. Hence the objects have their coordinates
  * and size in pixels, but you can still easily align that to the grid when you
  * want to.
- * 
+ * </p>
+ * <p>
  * You generally use objects to add custom information to your tile map, such as
  * spawn points, warps, exits, etc.
- * 
+ * </p>
+ * <p>
  * When the object has a gid set, then it is represented by the image of the
  * tile with that global ID. The image alignment currently depends on the map
  * orientation. In orthogonal orientation it's aligned to the bottom-left while
  * in isometric it's aligned to the bottom-center.
- * 
+ * </p>
+ * <p>
  * Can contain: properties, ellipse (since 0.9), polygon, polyline, image
- * 
+ * </p>
  * @author yanmaoyuan
  * 
  */
