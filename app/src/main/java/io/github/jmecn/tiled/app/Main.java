@@ -19,6 +19,8 @@ import java.util.concurrent.CountDownLatch;
 public class Main {
 
     public static void main(String[] args) {
+        // use macos menu bar
+        System.setProperty("apple.laf.useScreenMenuBar", "true");
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (Exception ignored) {

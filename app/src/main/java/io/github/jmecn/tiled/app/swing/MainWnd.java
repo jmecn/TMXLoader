@@ -129,14 +129,6 @@ public class MainWnd extends JFrame {
 
         fileMenu.addSeparator();
 
-        JMenuItem exitItem = new JMenuItem("Exit");
-        exitItem.setMnemonic('X');
-        exitItem.addActionListener(e -> {
-            app.stop();
-            dispose();
-        });
-        fileMenu.add(exitItem);
-
         JMenu viewMenu = new JMenu("View");
         viewMenu.setMnemonic('V');
         menuBar.add(viewMenu);
