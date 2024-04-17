@@ -21,6 +21,8 @@ import com.jme3.renderer.ViewPort;
 import com.jme3.renderer.queue.RenderQueue.Bucket;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
+import io.github.jmecn.tiled.core.GroupLayer;
+import io.github.jmecn.tiled.core.Layer;
 import io.github.jmecn.tiled.math2d.Point;
 import io.github.jmecn.tiled.core.TiledMap;
 import io.github.jmecn.tiled.enums.ZoomMode;
@@ -47,8 +49,9 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
     public static final String ZOOMIN = "zoomin";
     public static final String ZOOMOUT = "zoomout";
     public static final String GRID = "grid";
+    public static final String PARALLAX = "parallax";
 
-    private static final String[] MAPPINGS = new String[] { LEFT, RIGHT, UP, DOWN, DRAG, ZOOMIN, ZOOMOUT, GRID };
+    private static final String[] MAPPINGS = new String[] { LEFT, RIGHT, UP, DOWN, DRAG, ZOOMIN, ZOOMOUT, GRID, PARALLAX };
 
     // Tiled Map
     private TiledMap map;
@@ -69,6 +72,11 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
     private final ColorRGBA cursorColorAvailable = new ColorRGBA(0.7f, 0.7f, 0.9f, 0.5f);
     private final ColorRGBA cursorColorUnavailable = new ColorRGBA(0.8f, 0.2f, 0.2f, 0.5f);
     private boolean isCursorUpdated = true;
+
+    // The parallax
+    private boolean isParallaxEnabled = true;
+    private Vector2f parallaxOrigin = new Vector2f(0, 0);
+    private Vector2f parallaxDistance = new Vector2f(0, 0);
 
     // The mapNode
     private final Vector3f mapTranslation;
@@ -228,6 +236,7 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
                 mapScale = getMapScale();
                 spatial.setLocalTranslation(mapTranslation);
                 spatial.setLocalScale(mapScale, 1f, mapScale);
+                calculateMapParallax();
                 
                 isMapUpdated = false;
             }
@@ -273,7 +282,7 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
         if (viewPort != null) {
             viewPort.setBackgroundColor(map.getBackgroundColor());
         }
-        
+
         if (this.map != map) {
             this.map = map;
         }
@@ -296,7 +305,7 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
                 mapRenderer = new OrthogonalRenderer(map);
         }
 
-        Vector2f loc = mapRenderer.tileToScreenCoords(0, 0);
+        Vector2f loc = mapRenderer.pixelToScreenCoords(map.getParallaxOriginX(), map.getParallaxOriginY());
         mapTranslation.set(loc.x, 0, loc.y);
         isMapUpdated = true;
 
@@ -343,7 +352,53 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
     }
 
     private void moveMapVisual() {
-        map.getVisual().setLocalTranslation((float) Math.floor(mapTranslation.x), (float) Math.floor(mapTranslation.y), (float)Math.floor(mapTranslation.z));
+        float x = (float) Math.floor(mapTranslation.x);
+        float y = (float) Math.floor(mapTranslation.y);
+        float z = (float) Math.floor(mapTranslation.z);
+        map.getVisual().setLocalTranslation(x, y, z);
+
+        calculateMapParallax();
+    }
+
+    private void calculateMapParallax() {
+        if (isParallaxEnabled) {
+            // record the parallax origin
+            parallaxOrigin.set(map.getParallaxOriginX(), map.getParallaxOriginY());
+            Vector2f current = getCameraPixelCoordinate();
+            current.subtract(parallaxOrigin, parallaxDistance);
+        } else {
+            parallaxDistance.set(0, 0);
+        }
+
+        applyParallax(parallaxDistance);
+    }
+
+    private void applyParallax(Vector2f distance) {
+        for (Layer layer : map.getLayers()) {
+            if (!layer.isVisible()) {
+                continue;
+            }
+            applyParallax(layer, distance);
+        }
+    }
+
+    private void applyParallax(Layer layer, Vector2f distance) {
+        if (!layer.isVisible()) {
+            return;
+        }
+
+        if (layer instanceof GroupLayer) {
+            for (Layer child : ((GroupLayer) layer).getLayers()) {
+                applyParallax(child, distance);
+            }
+        } else {
+            // When the camera moves, the layer moves in relation to the camera by a factor of the parallax scrolling factor.
+            // As move mapVisual means move the map, so we need to move the layer in the opposite direction, 1.0-parallaxFactor
+            float x = (1f - layer.getParallaxX()) * distance.x;
+            float y = layer.getVisual().getLocalTranslation().y;
+            float z = (1f - layer.getParallaxY()) * distance.y;
+            layer.getVisual().setLocalTranslation(x, y, z);
+        }
     }
 
     public float getMapScale() {
@@ -534,7 +589,7 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
 
         // move camera
         mapTranslation.set(startLoc.add(stopPos.x, 0, -stopPos.y));
-        map.getVisual().setLocalTranslation(mapTranslation);
+        moveMapVisual();
     }
 
     private void moveCursor() {
