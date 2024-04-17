@@ -3,12 +3,15 @@
 #ifdef HAS_TRANS_COLOR
 uniform vec4 m_TransColor;
 #endif
-#ifdef HAS_TINT_COLOR
+
+#if defined(USE_TINT_COLOR) && defined(HAS_TINT_COLOR)
 uniform vec4 m_TintColor;
 #endif
+
 #ifdef HAS_COLOR
 uniform vec4 m_Color;
 #endif
+
 #ifdef HAS_COLOR_MAP
 uniform sampler2D m_ColorMap;
 #endif
@@ -33,27 +36,27 @@ vec2 getTileUVClamped(vec2 tilePos, vec2 tileSize, vec2 imageSize) {
 void main(){
     vec4 color = vec4(1.0);
 
-    #ifdef HAS_COLOR_MAP
+#ifdef HAS_COLOR_MAP
     vec2 uv = v_TexCoord;
 
     #ifdef USE_TILESET_IMAGE
     uv = getTileUVClamped(v_TilePos, m_TileSize.xy, m_ImageSize.xy);
     #endif
 
-    color *= texture2D(m_ColorMap, uv);
-    #endif
+    color = texture2D(m_ColorMap, uv);
 
     #ifdef HAS_TRANS_COLOR
     if(color.rgb == m_TransColor.rgb) {
-        color.a = 0.;
+        discard;
     }
     #endif
+#endif
 
     #ifdef HAS_COLOR
     color *= m_Color;
     #endif
 
-    #ifdef HAS_TINT_COLOR
+    #if defined(USE_TINT_COLOR) && defined(HAS_TINT_COLOR)
     color *= m_TintColor;
     #endif
 

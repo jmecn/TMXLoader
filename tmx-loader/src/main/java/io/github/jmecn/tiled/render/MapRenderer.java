@@ -309,7 +309,7 @@ public abstract class MapRenderer {
     public abstract Point screenToTileCoords(float x, float y);
 
     protected Geometry copySprite(Tile tile) {
-        return tile.getVisual().clone(false);
+        return tile.getVisual().clone();
     }
 
     /**

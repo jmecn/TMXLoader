@@ -169,7 +169,7 @@ public final class MapLoader {
 
             Tileset tileset;
             if (source != null) {
-                logger.info("Loading external tileset: {}", source);
+                logger.info("Load tileset: {}", source);
                 tileset = (Tileset) assetManager.loadAsset(assetKey.getFolder() + source);
                 tileset.setFirstGid(firstGid);
                 tileset.setSource(source);
