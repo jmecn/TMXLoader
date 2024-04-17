@@ -25,4 +25,13 @@ public final class ColorUtil {
 
         return new ColorRGBA(red * scalar, green * scalar, blue * scalar, alpha * scalar);
     }
+
+    public static String toHex(ColorRGBA color) {
+        int alpha = (int) (color.a * 255);
+        int red = (int) (color.r * 255);
+        int green = (int) (color.g * 255);
+        int blue = (int) (color.b * 255);
+
+        return String.format("#%02X%02X%02X%02X", alpha, red, green, blue);
+    }
 }

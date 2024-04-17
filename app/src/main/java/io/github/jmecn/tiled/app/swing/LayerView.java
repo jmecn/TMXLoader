@@ -31,6 +31,7 @@ public class LayerView extends JTree {
 
     public void update() {
         if (tiledMap == null) {
+            setModel(new DefaultTreeModel(new DefaultMutableTreeNode("Layers")));
             return;
         }
 
@@ -44,7 +45,7 @@ public class LayerView extends JTree {
     }
 
     private void addLayer(DefaultMutableTreeNode node, Layer layer) {
-        DefaultMutableTreeNode subNode = new DefaultMutableTreeNode(layer.getName());
+        DefaultMutableTreeNode subNode = new DefaultMutableTreeNode(layer);
         node.add(subNode);
         if (layer instanceof GroupLayer) {
             GroupLayer group = (GroupLayer) layer;

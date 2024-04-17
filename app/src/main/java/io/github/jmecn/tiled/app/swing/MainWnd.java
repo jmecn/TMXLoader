@@ -2,14 +2,21 @@ package io.github.jmecn.tiled.app.swing;
 
 import com.jme3.asset.AssetKey;
 import com.jme3.asset.AssetManager;
+import com.jme3.math.Vector2f;
 import com.jme3.system.awt.AwtPanel;
 import io.github.jmecn.tiled.app.jme3.MyFileLocator;
 import io.github.jmecn.tiled.app.jme3.TiledApp;
+import io.github.jmecn.tiled.core.Layer;
+import io.github.jmecn.tiled.core.Tile;
+import io.github.jmecn.tiled.core.TileLayer;
 import io.github.jmecn.tiled.core.TiledMap;
+import io.github.jmecn.tiled.math2d.Point;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.TreeSelectionModel;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
@@ -31,6 +38,8 @@ public class MainWnd extends JFrame {
     static Logger log = LoggerFactory.getLogger(MainWnd.class.getName());
 
     private final transient TiledApp app;
+    private transient TiledMap map;
+    private transient Layer layer;
 
     private Properties properties;
     private File config;
@@ -43,7 +52,8 @@ public class MainWnd extends JFrame {
     private JLabel mapStatus;
     private JLabel cursorStatus;
     private final JFileChooser fileChooser;
-    private LayerView layerView;
+    private final LayerView layerView;
+    private final PropertyTable propertyTable;
     private JMenu recentFilesMenu;
 
     public MainWnd(TiledApp app, AwtPanel awtPanel) {
@@ -71,7 +81,8 @@ public class MainWnd extends JFrame {
         });
 
         this.fileChooser = createFileChooser();
-        this.layerView = createLayerView();
+        this.layerView = new LayerView();
+        this.propertyTable = new PropertyTable();
         this.setJMenuBar(createMenuBar());
 
         JPanel panel = createContentPanel();
@@ -80,6 +91,14 @@ public class MainWnd extends JFrame {
 
         this.pack();
 
+        layerView.addTreeSelectionListener(e -> {
+            layerView.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
+            DefaultMutableTreeNode node = (DefaultMutableTreeNode) layerView.getLastSelectedPathComponent();
+            if (node != null) {
+                layer = (Layer) node.getUserObject();
+                propertyTable.setLayer(layer);
+            }
+        });
         /*
          * center
          */
@@ -179,17 +198,17 @@ public class MainWnd extends JFrame {
     private JPanel createContentPanel() {
         JPanel panel = new JPanel(new BorderLayout());
 
-        JTabbedPane tabbedPane = new JTabbedPane();
-        panel.add(tabbedPane, BorderLayout.EAST);
-        tabbedPane.addTab("Layers", new JScrollPane(layerView));
+        JScrollPane propertyScrollPane = new JScrollPane(propertyTable);
+        JScrollPane layerScrollPane = new JScrollPane(layerView);
 
+        JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
+        splitPane.setDividerLocation(300);
+        splitPane.setTopComponent(propertyScrollPane);
+        splitPane.setBottomComponent(layerScrollPane);
+
+        panel.add(splitPane, BorderLayout.EAST);
         panel.add(createStatusBar(), BorderLayout.PAGE_END);
         return panel;
-    }
-
-    private LayerView createLayerView() {
-        layerView = new LayerView();
-        return layerView;
     }
 
     private JPanel createStatusBar() {
@@ -250,7 +269,7 @@ public class MainWnd extends JFrame {
             writeProperties();
             fileChooser.setCurrentDirectory(file.getParentFile());
 
-            TiledMap map = loadMap(file.getParent(), file.getName());
+            map = loadMap(file.getParent(), file.getName());
             if (map != null) {
                 saveRecentFile(file);
             }
@@ -260,7 +279,7 @@ public class MainWnd extends JFrame {
     private TiledMap loadMap(String folder, String name) {
 
         AssetManager assetManager = app.getAssetManager();
-        TiledMap map = null;
+        map = null;
         try {
             assetManager.registerLocator(folder, MyFileLocator.class);
             map = (TiledMap) assetManager.loadAsset(name);
@@ -269,13 +288,21 @@ public class MainWnd extends JFrame {
 
             layerView.setTiledMap(map);
             app.load(map);
-            // update the window title
-            this.setTitle(APP_NAME + " - " + name);
         } catch (Exception e) {
             log.error("Failed to load {} {}", folder, name, e);
+            JOptionPane.showMessageDialog(this, "Failed to load " + name, "Error", JOptionPane.ERROR_MESSAGE);
         } finally {
             assetManager.unregisterLocator(folder, MyFileLocator.class);
         }
+
+        layer = null;
+
+        if (map != null) {
+            this.setTitle(APP_NAME + " - " + name);
+        } else {
+            this.setTitle(APP_NAME);
+        }
+        this.propertyTable.setMap(map);
 
         return map;
     }
@@ -360,5 +387,22 @@ public class MainWnd extends JFrame {
             updateRecentFileMenu();
         });
         return item;
+    }
+
+    public void onPick(Point tile, Vector2f pixel) {
+        // TODO Auto-generated method stub
+        if (layer == null) {
+            return;
+        }
+
+        if (layer instanceof TileLayer) {
+            TileLayer tileLayer = (TileLayer) layer;
+            int x = tile.getX();
+            int y = tile.getY();
+            if (x >= 0 && x < tileLayer.getWidth() && y >= 0 && y < tileLayer.getHeight()) {
+                Tile t = tileLayer.getTileAt(x, y);
+                propertyTable.setTile(t);
+            }
+        }
     }
 }

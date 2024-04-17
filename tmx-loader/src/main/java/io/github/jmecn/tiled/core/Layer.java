@@ -77,12 +77,12 @@ public class Layer extends Base {
     /**
      * Horizontal parallax factor for this layer. Defaults to 1. (since 1.5)
      */
-    protected float parallaxX = 1;
+    protected double parallaxX = 1;
 
     /**
      * Vertical parallax factor for this layer. Defaults to 1. (since 1.5)
      */
-    protected float parallaxY = 1;
+    protected double parallaxY = 1;
 
     public Layer() {
         this.width = 0;
@@ -219,6 +219,14 @@ public class Layer extends Base {
         this.tintColor = tintColor;
     }
 
+    public int getLocalOffsetX() {
+        return offsetX;
+    }
+
+    public int getLocalOffsetY() {
+        return offsetY;
+    }
+
     public int getOffsetX() {
         if (parent != null) {
             return parent.getOffsetX();
@@ -243,7 +251,7 @@ public class Layer extends Base {
     // When the parallax scrolling factor is set on a group layer, it applies to all its child layers.
     // The effective parallax scrolling factor of a layer is determined by multiplying the parallax
     // scrolling factor by the scrolling factors of all parent layers.
-    public float getParallaxX() {
+    public double getParallaxX() {
         if (parent != null) {
             return parallaxX * parent.getParallaxX();
         } else {
@@ -251,7 +259,7 @@ public class Layer extends Base {
         }
     }
 
-    public float getParallaxY() {
+    public double getParallaxY() {
         if (parent != null) {
             return parallaxY * parent.getParallaxY();
         } else {
@@ -259,7 +267,7 @@ public class Layer extends Base {
         }
     }
 
-    public void setParallaxFactor(float parallaxX, float parallaxY) {
+    public void setParallaxFactor(double parallaxX, double parallaxY) {
         this.parallaxX = parallaxX;
         this.parallaxY = parallaxY;
     }

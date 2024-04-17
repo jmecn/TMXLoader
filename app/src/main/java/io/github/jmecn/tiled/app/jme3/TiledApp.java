@@ -4,6 +4,9 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 
 import com.jme3.app.SimpleApplication;
+import com.jme3.input.MouseInput;
+import com.jme3.input.controls.ActionListener;
+import com.jme3.input.controls.MouseButtonTrigger;
 import com.jme3.math.Vector2f;
 import com.jme3.system.awt.AwtPanel;
 
@@ -14,7 +17,6 @@ import io.github.jmecn.tiled.core.TiledMap;
 import io.github.jmecn.tiled.enums.ZoomMode;
 
 import io.github.jmecn.tiled.math2d.Point;
-import io.github.jmecn.tiled.render.MapRenderer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,6 +54,13 @@ public class TiledApp extends SimpleApplication {
 
         stateManager.attach(tiledMapState);
 
+        inputManager.addMapping("click", new MouseButtonTrigger(MouseInput.BUTTON_LEFT));
+        inputManager.addListener((ActionListener) (name, isPressed, tpf) -> {
+            if (isPressed) {
+                doClick();
+            }
+        }, "click");
+
         /*
          * Wait until both AWT panels are ready.
          */
@@ -68,6 +77,14 @@ public class TiledApp extends SimpleApplication {
         flyCam.setDragToRotate(true);
     }
 
+    private void doClick() {
+        if (tiledMapState != null && tiledMapState.getMapRenderer() != null) {
+            Point tile = tiledMapState.getCursorTileCoordinate();
+            Vector2f pixel = tiledMapState.getCursorPixelCoordinate();
+            wnd.onPick(tile, pixel);
+        }
+    }
+
     @Override
     public void simpleUpdate(float tpf) {
         if (tiledMapState != null && tiledMapState.getMapRenderer() != null) {
@@ -76,6 +93,9 @@ public class TiledApp extends SimpleApplication {
             Vector2f cursor = tiledMapState.getCursorScreenCoordinate();
             String status = String.format("Tile: (%d,%d), Pixel: (%.0f, %.0f), Cursor: (%.0f,%.0f)", tile.getX(), tile.getY(), pixel.x, pixel.y, cursor.x, cursor.y);
             wnd.setCursorStatus(status);
+
+            float scale = tiledMapState.getMapScale();
+            wnd.setMapStatus(String.format("Map Scale: %.1f%%", scale * 100));
         }
     }
 
@@ -87,11 +107,6 @@ public class TiledApp extends SimpleApplication {
 
                 // look at the center of this map
                 tiledMapState.moveToTile(map.getWidth() * 0.5f, map.getHeight() * 0.5f);
-
-                MapRenderer renderer = tiledMapState.getMapRenderer();
-                Point mapSize = renderer.getMapDimension();
-                String status = String.format("Map[%d,%d], Size:[%d,%d]", map.getWidth(), map.getHeight(), mapSize.getX(), mapSize.getY());
-                wnd.setMapStatus(status);
             }
             return null;
         });
