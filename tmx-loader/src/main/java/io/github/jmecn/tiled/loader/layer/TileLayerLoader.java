@@ -1,5 +1,6 @@
 package io.github.jmecn.tiled.loader.layer;
 
+import com.github.luben.zstd.ZstdInputStream;
 import com.jme3.asset.AssetKey;
 import com.jme3.asset.AssetManager;
 import io.github.jmecn.tiled.core.*;
@@ -14,7 +15,6 @@ import org.w3c.dom.NodeList;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 import java.util.Base64;
 import java.util.Properties;
 import java.util.zip.GZIPInputStream;
@@ -159,8 +159,8 @@ public class TileLayerLoader extends LayerLoader {
                 break;
             }
             case ZSTANDARD: {
-                // TODO support z-standard later
-                throw new UnsupportedEncodingException("Unsupported compression method:" + compression.getValue());
+                is = new ZstdInputStream(new ByteArrayInputStream(decode));
+                break;
             }
             default: {
                 is = new ByteArrayInputStream(decode);

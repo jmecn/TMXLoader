@@ -4,7 +4,6 @@ import com.jme3.math.Vector2f;
 import io.github.jmecn.tiled.core.TileLayer;
 import io.github.jmecn.tiled.core.TiledMap;
 import io.github.jmecn.tiled.enums.Orientation;
-import io.github.jmecn.tiled.enums.StaggerIndex;
 import io.github.jmecn.tiled.math2d.Point;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

@@ -26,23 +26,6 @@ import com.jme3.texture.plugins.AWTLoader;
  */
 class TestTMXLoader {
 
-    // Orthogonal Map
-    static String csvmap = "csvmap.tmx";
-    static String sewers = "sewers.tmx";
-    static String desert = "Desert/desert.tmx";
-    static String outside = "Orthogonal/orthogonal-outside.tmx";
-    static String perspective_walls = "Orthogonal/perspective_walls.tmx";
-    
-    // Hexagonal Map
-    static String hexagonal = "hexagonal.tmx";
-    static String mini = "Hexagonal/hexagonal-mini.tmx";
-    
-    // Staggered Map
-    static String staggered = "staggered.tmx";
-    
-    // Isometric Map
-    static String grass_and_water = "Isometric/isometric_grass_and_water.tmx";
-    
     AssetManager assetManager;
 
     @BeforeEach void initAssetManager() {
@@ -56,9 +39,7 @@ class TestTMXLoader {
     }
 
     @Test void testReadingExampleMap() {
-
-        // Act
-        TiledMap map = (TiledMap) assetManager.loadAsset(sewers);
+        TiledMap map = (TiledMap) assetManager.loadAsset("sewers.tmx");
 
         // Assert
         assertEquals(Orientation.ORTHOGONAL, map.getOrientation());
@@ -71,8 +52,7 @@ class TestTMXLoader {
     }
 
     @Test void testReadingExampleCsvMap() {
-        // Act
-        TiledMap map = (TiledMap) assetManager.loadAsset(csvmap);
+        TiledMap map = (TiledMap) assetManager.loadAsset("csvmap.tmx");
 
         // Assert
         assertEquals(Orientation.ORTHOGONAL, map.getOrientation());
@@ -85,8 +65,7 @@ class TestTMXLoader {
     }
 
     @Test void testReadingExampleHexagonalMap() {
-        // Act
-        TiledMap map = (TiledMap) assetManager.loadAsset(hexagonal);
+        TiledMap map = (TiledMap) assetManager.loadAsset("hexagonal.tmx");
 
         // Assert
         assertEquals(Orientation.HEXAGONAL, map.getOrientation());
@@ -101,8 +80,7 @@ class TestTMXLoader {
     }
 
     @Test void testReadingExampleStaggeredMap() {
-        // Act
-        TiledMap map = (TiledMap) assetManager.loadAsset(staggered);
+        TiledMap map = (TiledMap) assetManager.loadAsset("staggered.tmx");
 
         // Assert
         assertEquals(Orientation.STAGGERED, map.getOrientation());
@@ -116,8 +94,7 @@ class TestTMXLoader {
     }
 
     @Test void testReadingExampleIsometricMap() {
-        // Act
-        TiledMap map = (TiledMap) assetManager.loadAsset(grass_and_water);
+        TiledMap map = (TiledMap) assetManager.loadAsset("Isometric/isometric_grass_and_water.tmx");
 
         // Assert
         assertEquals(Orientation.ISOMETRIC, map.getOrientation());
