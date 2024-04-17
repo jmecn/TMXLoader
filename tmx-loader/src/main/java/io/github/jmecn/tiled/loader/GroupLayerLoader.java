@@ -2,9 +2,7 @@ package io.github.jmecn.tiled.loader;
 
 import com.jme3.asset.AssetKey;
 import com.jme3.asset.AssetManager;
-import io.github.jmecn.tiled.core.GroupLayer;
-import io.github.jmecn.tiled.core.Layer;
-import io.github.jmecn.tiled.core.TiledMap;
+import io.github.jmecn.tiled.core.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Node;
@@ -19,7 +17,7 @@ import static io.github.jmecn.tiled.TiledConst.TEXT_EMPTY;
  *
  * @author yanmaoyuan
  */
-public class GroupLayerLoader extends AbstractLayerLoader {
+public class GroupLayerLoader extends LayerLoader {
 
     private static final Logger logger = LoggerFactory.getLogger(GroupLayerLoader.class);
     private final TiledMap map;
@@ -53,39 +51,22 @@ public class GroupLayerLoader extends AbstractLayerLoader {
         return objectLayerReader;
     }
 
+    @Override
     public GroupLayer load(Node node) throws IOException {
         GroupLayer groupLayer = new GroupLayer();
         readLayerBase(node, groupLayer);
         groupLayer.setMap(map);
 
+        LayerLoaders layerLoaders = new LayerLoaders(assetManager, assetKey, map);
+
         Node child = node.getFirstChild();
         while (child != null) {
-            switch (child.getNodeName()) {
-                case LAYER: {
-                    Layer layer = getTileLayerReader().load(child);
+            // ignore properties
+            if (!PROPERTIES.equals(child.getNodeName()) && !TEXT_EMPTY.equals(child.getNodeName())) {
+                LayerLoader layerLoader = layerLoaders.create(child.getNodeName());
+                if (layerLoader != null) {
+                    Layer layer = layerLoader.load(child);
                     groupLayer.addLayer(layer);
-                    break;
-                }
-                case OBJECTGROUP: {
-                    Layer layer = getObjectLayerReader().load(child);
-                    groupLayer.addLayer(layer);
-                    break;
-                }
-                case IMAGELAYER: {
-                    Layer layer = getImageLayerReader().load(child);
-                    groupLayer.addLayer(layer);
-                    break;
-                }
-                case GROUP: {
-                    Layer layer = load(child);
-                    groupLayer.addLayer(layer);
-                    break;
-                }
-                default: {
-                    if (!PROPERTIES.equals(child.getNodeName()) && !TEXT_EMPTY.equals(child.getNodeName())) {
-                        logger.warn("unknown layer type:{}", child.getNodeName());
-                    }
-                    break;
                 }
             }
             child = child.getNextSibling();

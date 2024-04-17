@@ -3,9 +3,7 @@ package io.github.jmecn.tiled.loader;
 import com.jme3.asset.AssetKey;
 import com.jme3.asset.AssetManager;
 import com.jme3.math.ColorRGBA;
-import io.github.jmecn.tiled.core.Layer;
-import io.github.jmecn.tiled.core.TiledMap;
-import io.github.jmecn.tiled.core.Tileset;
+import io.github.jmecn.tiled.core.*;
 import io.github.jmecn.tiled.enums.Orientation;
 import io.github.jmecn.tiled.enums.RenderOrder;
 import io.github.jmecn.tiled.enums.StaggerAxis;
@@ -48,10 +46,6 @@ public final class TiledMapLoader {
 
     private final TilesetLoader tilesetLoader;
     private final PropertyLoader propertiesLoader;
-    private TileLayerLoader tileLayerReader;
-    private ImageLayerLoader imageLayerReader;
-    private ObjectLayerLoader objectLayerReader;
-    private GroupLayerLoader groupLayerReader;
 
     public TiledMapLoader(AssetManager assetManager, AssetKey<?> key) {
         this.assetManager = assetManager;
@@ -59,31 +53,6 @@ public final class TiledMapLoader {
 
         this.tilesetLoader = new TilesetLoader(assetManager, key);
         this.propertiesLoader = new PropertyLoader();
-    }
-    private TileLayerLoader getTileLayerReader() {
-        if (tileLayerReader == null) {
-            tileLayerReader = new TileLayerLoader(assetManager, assetKey, map);
-        }
-        return tileLayerReader;
-    }
-    private ImageLayerLoader getImageLayerReader() {
-        if (imageLayerReader == null) {
-            imageLayerReader = new ImageLayerLoader(assetManager, assetKey, map);
-        }
-        return imageLayerReader;
-    }
-
-    private ObjectLayerLoader getObjectLayerReader() {
-        if (objectLayerReader == null) {
-            objectLayerReader = new ObjectLayerLoader(assetManager, assetKey, map);
-        }
-        return objectLayerReader;
-    }
-    private GroupLayerLoader getGroupLayerReader() {
-        if (groupLayerReader == null) {
-            groupLayerReader = new GroupLayerLoader(assetManager, assetKey, map);
-        }
-        return groupLayerReader;
     }
 
     /**
@@ -242,39 +211,19 @@ public final class TiledMapLoader {
     }
 
     private void readLayers(Node mapNode) throws IOException {
+        LayerLoaders layerLoaders = new LayerLoaders(assetManager, assetKey, map);
+
         Node child = mapNode.getFirstChild();
         while (child != null) {
             String childName = child.getNodeName();
-            switch (childName) {
-                case LAYER: {
-                    Layer layer = getTileLayerReader().load(child);
-                    map.addLayer(layer);
-                    break;
-                }
-                case OBJECTGROUP: {
-                    Layer layer = getObjectLayerReader().load(child);
-                    map.addLayer(layer);
-                    break;
-                }
-                case IMAGELAYER: {
-                    Layer layer = getImageLayerReader().load(child);
-                    map.addLayer(layer);
-                    break;
-                }
-                case GROUP: {
-                    Layer layer = getGroupLayerReader().load(child);
-                    map.addLayer(layer);
-                    break;
-                }
-                default: {
-                    if (!TILESET.equals(childName) && !PROPERTIES.equals(childName) && !TEXT_EMPTY.equals(childName)) {
-                        logger.warn("Unsupported map element: {}", childName);
-                    }
-                    break;
+            // ignore tileset and properties
+            if (!TILESET.equals(childName) && !PROPERTIES.equals(childName) && !TEXT_EMPTY.equals(childName)) {
+                LayerLoader layerLoader = layerLoaders.create(childName);
+                if (layerLoader != null) {
+                    map.addLayer(layerLoader.load(child));
                 }
             }
             child = child.getNextSibling();
         }
     }
-
 }

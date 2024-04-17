@@ -28,7 +28,7 @@ import static io.github.jmecn.tiled.loader.Utils.getAttributeValue;
  *
  * @author yanmaoyuan
  */
-public class TileLayerLoader extends AbstractLayerLoader {
+public class TileLayerLoader extends LayerLoader {
 
     private static final Logger logger = LoggerFactory.getLogger(TileLayerLoader.class);
     private final TiledMap map;
@@ -45,7 +45,8 @@ public class TileLayerLoader extends AbstractLayerLoader {
      * @return the loaded map layer
      * @throws IOException if an I/O error occurs
      */
-    public Layer load(Node node) throws IOException {
+    @Override
+    public TileLayer load(Node node) throws IOException {
         final int layerWidth = getAttribute(node, WIDTH, map.getWidth());
         final int layerHeight = getAttribute(node, HEIGHT, map.getHeight());
 

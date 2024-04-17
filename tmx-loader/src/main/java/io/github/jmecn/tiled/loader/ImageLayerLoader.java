@@ -18,7 +18,7 @@ import static io.github.jmecn.tiled.loader.Utils.getAttribute;
  *
  * @author yanmaoyuan
  */
-public class ImageLayerLoader extends AbstractLayerLoader {
+public class ImageLayerLoader extends LayerLoader {
     private static final Logger logger = LoggerFactory.getLogger(ImageLayerLoader.class);
     private final TiledMap map;
 
@@ -33,6 +33,7 @@ public class ImageLayerLoader extends AbstractLayerLoader {
      * @param node the node representing the "imagelayer" element
      * @return the loaded image layer
      */
+    @Override
     public ImageLayer load(Node node) {
         int width = getAttribute(node, WIDTH, map.getWidth());
         int height = getAttribute(node, HEIGHT, map.getHeight());

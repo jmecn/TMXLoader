@@ -6,6 +6,7 @@ import io.github.jmecn.tiled.core.Layer;
 import io.github.jmecn.tiled.util.ColorUtil;
 import org.w3c.dom.Node;
 
+import java.io.IOException;
 import java.util.Properties;
 
 import static io.github.jmecn.tiled.TiledConst.*;
@@ -13,24 +14,32 @@ import static io.github.jmecn.tiled.loader.Utils.*;
 import static io.github.jmecn.tiled.loader.Utils.getDoubleAttribute;
 
 /**
- * desc:
+ * The base class for all layer loaders.
  *
  * @author yanmaoyuan
  */
-public abstract class AbstractLayerLoader {
+public abstract class LayerLoader {
 
     protected AssetManager assetManager;
     protected AssetKey<?> assetKey;
     protected PropertyLoader propertiesLoader;
     protected TiledImageLoader tiledImageLoader;
 
-    protected AbstractLayerLoader(AssetManager assetManager, AssetKey<?> key) {
+    protected LayerLoader(AssetManager assetManager, AssetKey<?> key) {
         this.assetManager = assetManager;
         this.assetKey = key;
 
         this.propertiesLoader = new PropertyLoader();
         this.tiledImageLoader = new TiledImageLoader(assetManager, key);
     }
+
+    /**
+     * Loads a map layer from a layer node.
+     * @param node the node representing the "layer" element
+     * @return the loaded map layer
+     * @throws IOException if an I/O error occurs
+     */
+    public abstract Layer load(Node node) throws IOException;
 
     /**
      * read the common part of a Layer
@@ -82,4 +91,5 @@ public abstract class AbstractLayerLoader {
         Properties props = propertiesLoader.load(node.getChildNodes());
         layer.setProperties(props);
     }
+
 }
