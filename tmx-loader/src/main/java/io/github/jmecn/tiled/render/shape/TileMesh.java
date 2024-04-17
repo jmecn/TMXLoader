@@ -34,8 +34,8 @@ public class TileMesh extends Mesh {
         this.offset = offset;
         this.origin = origin;
 
-        int x = coord.x;
-        int y = coord.y;
+        int x = coord.getX();
+        int y = coord.getY();
 
         float[] vertices = getPositions(size, offset, origin);
 
@@ -82,8 +82,8 @@ public class TileMesh extends Mesh {
 
         // I know this can be down in vertex shader, but it will cause view frustum culling problem.
         for (int i = 0; i < vertices.length; i += 3) {
-            vertices[i] = vertices[i] * size.x + origin.x + offset.x;
-            vertices[i + 2] = vertices[i + 2] * size.y + origin.y + offset.y;
+            vertices[i] = vertices[i] * size.getX() + origin.getX() + offset.getX();
+            vertices[i + 2] = vertices[i + 2] * size.getY() + origin.getY() + offset.getY();
         }
         return vertices;
     }

@@ -76,7 +76,7 @@ public class TiledApp extends SimpleApplication {
             Point tile = tiledMapState.getCursorTileCoordinate();
             Vector2f pixel = tiledMapState.getCursorPixelCoordinate();
             Vector2f cursor = tiledMapState.getCursorScreenCoordinate();
-            String status = String.format("Tile: (%d,%d), Pixel: (%.0f, %.0f), Cursor: (%.0f,%.0f)", tile.x, tile.y, pixel.x, pixel.y, cursor.x, cursor.y);
+            String status = String.format("Tile: (%d,%d), Pixel: (%.0f, %.0f), Cursor: (%.0f,%.0f)", tile.getX(), tile.getY(), pixel.x, pixel.y, cursor.x, cursor.y);
             wnd.setCursorStatus(status);
         }
     }
@@ -92,7 +92,7 @@ public class TiledApp extends SimpleApplication {
 
                 MapRenderer renderer = tiledMapState.getMapRenderer();
                 Point mapSize = renderer.getMapDimension();
-                String status = String.format("Map[%d,%d], Size:[%d,%d]", map.getWidth(), map.getHeight(), mapSize.x, mapSize.y);
+                String status = String.format("Map[%d,%d], Size:[%d,%d]", map.getWidth(), map.getHeight(), mapSize.getX(), mapSize.getY());
                 wnd.setMapStatus(status);
             }
             return null;

@@ -1,8 +1,5 @@
 package io.github.jmecn.tiled.core;
 
-import java.awt.Shape;
-import java.awt.geom.Ellipse2D;
-import java.awt.geom.Rectangle2D;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -10,6 +7,7 @@ import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 import com.jme3.scene.Node;
 import io.github.jmecn.tiled.enums.DrawOrder;
+import io.github.jmecn.tiled.math2d.RectangleD;
 
 /**
  * The object group is in fact a map layer, and is hence called "object layer"
@@ -119,7 +117,7 @@ public class ObjectGroup extends Layer {
                 return obj;
             }
 
-            Rectangle2D.Double rect = new Rectangle2D.Double(
+            RectangleD rect = new RectangleD(
                     obj.getX() + this.x * map.getTileWidth(),
                     obj.getY() + this.y * map.getTileHeight(),
                     obj.getWidth(),
@@ -131,47 +129,6 @@ public class ObjectGroup extends Layer {
         return null;
     }
 
-    // This method will work at any zoom level, provided you provide the correct
-    // zoom factor. It also adds a one pixel buffer (that doesn't change with
-    // zoom).
-    /**
-     * <p>
-     * getObjectNear.
-     * </p>
-     * 
-     * @param x a int.
-     * @param y a int.
-     * @param zoom a double.
-     * @return a {@link MapObject} object.
-     */
-    public MapObject getObjectNear(int x, int y, double zoom) {
-        Rectangle2D mouse = new Rectangle2D.Double(
-                x - zoom - 1,
-                y - zoom - 1,
-                2 * zoom + 1,
-                2 * zoom + 1);
-        Shape shape;
-
-        for (MapObject obj : objects) {
-            if (obj.getWidth() == 0 && obj.getHeight() == 0) {
-                shape = new Ellipse2D.Double(obj.getX() * zoom, obj.getY()
-                        * zoom, 10 * zoom, 10 * zoom);
-            } else {
-                shape = new Rectangle2D.Double(
-                        obj.getX() + this.x * map.getTileWidth(),
-                        obj.getY() + this.y * map.getTileHeight(),
-                        obj.getWidth() > 0 ? obj.getWidth() : zoom,
-                        obj.getHeight() > 0 ? obj.getHeight() : zoom);
-            }
-
-            if (shape.intersects(mouse)) {
-                return obj;
-            }
-        }
-
-        return null;
-    }
-    
     @Override
     public Node getVisual() {
         return (Node) visual;

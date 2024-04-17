@@ -54,9 +54,9 @@ public class HexGrid extends Mesh {
 
         Point startTile = screenToTileCoords(0, 0);
         if (staggerX) {
-            staggerX(startTile.x, startTile.y, width, height);
+            staggerX(startTile.getX(), startTile.getY(), width, height);
         } else {
-            staggerY(startTile.x, startTile.y, width, height);
+            staggerY(startTile.getX(), startTile.getY(), width, height);
         }
     }
 
@@ -111,9 +111,9 @@ public class HexGrid extends Mesh {
         float[] texCoord = new float[allPoints.size() * 2];
         for (int i = 0; i < allPoints.size(); i++) {
             Point p = allPoints.get(i);
-            vertices[i * 3] = p.x;
+            vertices[i * 3] = p.getX();
             vertices[i * 3 + 1] = 0.f;
-            vertices[i * 3 + 2] = p.y;
+            vertices[i * 3 + 2] = p.getY();
 
             normals[i * 3] = 0.f;
             normals[i * 3 + 1] = 1.f;
@@ -157,7 +157,7 @@ public class HexGrid extends Mesh {
     }
 
     private long key(Point p) {
-        return p.x * 1000000L + p.y;
+        return p.getX() * 1000000L + p.getY();
     }
 
     private boolean doStaggerX(int x) {
@@ -190,8 +190,7 @@ public class HexGrid extends Mesh {
 
         Point position = tileToScreenCoords(x, y);
         for(Point p : polygon) {
-            p.x += position.x;
-            p.y += position.y;
+            p.addLocal(position);
         }
         return polygon;
     }
@@ -208,7 +207,7 @@ public class HexGrid extends Mesh {
         Point referencePoint = new Point(x / (columnWidth * 2), y / (rowHeight * 2));
 
         // Relative x and y position on the base square of the grid-aligned tile
-        Point rel = new Point(x - referencePoint.x * columnWidth * 2, y - referencePoint.y * rowHeight * 2);
+        Point rel = new Point(x - referencePoint.getX() * columnWidth * 2, y - referencePoint.getY() * rowHeight * 2);
 
         // Adjust the reference point to the correct tile coordinates
         adjustReferencePoint(referencePoint);
@@ -235,16 +234,25 @@ public class HexGrid extends Mesh {
         return referencePoint.add(offsets[nearest]);
     }
 
-    private void adjustReferencePoint(Point referencePoint) {
+    /**
+     * Adjust the reference point to the correct tile coordinates
+     *
+     * @param referencePoint the reference point
+     */
+    public void adjustReferencePoint(Point referencePoint) {
         if (staggerX) {
-            referencePoint.x *= 2;
-            if (staggerEven)
-                referencePoint.x++;
+            referencePoint.setX(adjust(referencePoint.getX()));
         } else {
-            referencePoint.y *= 2;
-            if (staggerEven)
-                referencePoint.y++;
+            referencePoint.setY(adjust(referencePoint.getY()));
         }
+    }
+
+    private int adjust(int v) {
+        v *= 2;
+        if (staggerEven) {
+            v++;
+        }
+        return v;
     }
 
     private Point[] getNearestTile() {

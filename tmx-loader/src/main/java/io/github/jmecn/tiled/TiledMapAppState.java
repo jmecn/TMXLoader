@@ -543,13 +543,13 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
             if (currentTile == null) {
                 currentTile = cursor;
             } else if (!currentTile.equals(cursor)) {
-                currentTile.set(cursor.x, cursor.y);
+                currentTile.set(cursor.getX(), cursor.getY());
             } else {
                 return;
             }
-            Vector2f loc = mapRenderer.tileToScreenCoords(cursor.x, cursor.y);
+            Vector2f loc = mapRenderer.tileToScreenCoords(cursor.getX(), cursor.getY());
             gridCursor.setLocalTranslation(loc.x, 1000f, loc.y);
-            if (map.contains(cursor.x, cursor.y)) {
+            if (map.contains(cursor.getX(), cursor.getY())) {
                 cursorMaterial.setColor("Color", cursorColorAvailable);
             } else {
                 cursorMaterial.setColor("Color", cursorColorUnavailable);

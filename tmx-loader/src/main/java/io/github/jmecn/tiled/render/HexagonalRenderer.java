@@ -59,20 +59,22 @@ public class HexagonalRenderer extends OrthogonalRenderer {
         tileHeight = rowHeight + sideOffsetY;
 
         // The map size is the same regardless of which indexes are shifted.
+        int mapWidth;
+        int mapHeight;
         if (staggerX) {
-            mapSize.set(width * columnWidth + sideOffsetX, height * (tileHeight + sideLengthY));
-
+            mapWidth = width * columnWidth + sideOffsetX;
+            mapHeight = height * (tileHeight + sideLengthY);
             if (width > 1) {
-                mapSize.y += rowHeight;
+                mapHeight += rowHeight;
             }
-
         } else {
-            mapSize.set(width * (tileWidth + sideLengthX), height * rowHeight + sideOffsetY);
-
+            mapWidth = width * (tileWidth + sideLengthX);
+            mapHeight = height * rowHeight + sideOffsetY;
             if (height > 1) {
-                mapSize.x += columnWidth;
+                mapWidth += columnWidth;
             }
         }
+        mapSize.set(mapWidth, mapHeight);
     }
 
     private boolean doStaggerX(int x) {
@@ -119,28 +121,29 @@ public class HexagonalRenderer extends OrthogonalRenderer {
 
     private int renderStaggerX(TileLayer layer, Point startTile) {
         int tileZIndex = 0;
-        boolean staggeredRow = doStaggerX(startTile.x);
+        int x = startTile.getX();
+        int y = startTile.getY();
+        boolean staggeredRow = doStaggerX(x);
 
-        while (startTile.y < height) {
-            Point rowTile = new Point(startTile.x, startTile.y);
-            for (; rowTile.x < width; rowTile.x += 2) {
+        while (y < height) {
+            for (int rowX = x; rowX < width; rowX += 2) {
                 // look up tile at rowTile
-                final Tile tile = layer.getTileAt(rowTile.x, rowTile.y);
+                final Tile tile = layer.getTileAt(rowX, y);
                 if (tile == null || tile.getVisual() == null) {
                     continue;
                 }
 
-                if (layer.isNeedUpdateAt(rowTile.x, rowTile.y)) {
+                if (layer.isNeedUpdateAt(rowX, y)) {
 
                     Geometry visual = tile.getVisual().clone();
 
                     flip(visual, tile);
 
                     // set its position with rowPos and tileZIndex
-                    Vector2f pos = tileToScreenCoords(rowTile.x, rowTile.y);
+                    Vector2f pos = tileToScreenCoords(rowX, y);
                     visual.move(pos.x, tileZIndex, pos.y);
                     visual.setQueueBucket(Bucket.Gui);
-                    layer.setSpatialAt(rowTile.x, rowTile.y, visual);
+                    layer.setSpatialAt(rowX, y, visual);
 
                 }
 
@@ -148,40 +151,42 @@ public class HexagonalRenderer extends OrthogonalRenderer {
             }
 
             if (staggeredRow) {
-                startTile.x -= 1;
-                startTile.y += 1;
+                x -= 1;
+                y += 1;
                 staggeredRow = false;
             } else {
-                startTile.x += 1;
+                x += 1;
                 staggeredRow = true;
             }
         }
 
         return tileZIndex;
     }
+
     private int renderStaggerY(TileLayer layer, Point startTile) {
         int tileZIndex = 0;
 
-        for (; startTile.y < height; startTile.y++) {
-            Point rowTile = startTile.clone();
-            for (; rowTile.x < width; rowTile.x++) {
+        int x = startTile.getX();
+        int y = startTile.getY();
+        for (int rowY = y; rowY < height; rowY++) {
+            for (int rowX = x; rowX < width; rowX++) {
                 // look up tile at rowTile
-                final Tile tile = layer.getTileAt(rowTile.x, rowTile.y);
+                final Tile tile = layer.getTileAt(rowX, rowY);
                 if (tile == null || tile.getVisual() == null) {
                     continue;
                 }
 
-                if (layer.isNeedUpdateAt(rowTile.x, rowTile.y)) {
+                if (layer.isNeedUpdateAt(rowX, rowY)) {
 
                     Geometry visual = tile.getVisual().clone();
 
                     flip(visual, tile);
 
                     // set its position with rowPos and tileZIndex
-                    Vector2f pos = tileToScreenCoords(rowTile.x, rowTile.y);
+                    Vector2f pos = tileToScreenCoords(rowX, rowY);
                     visual.move(pos.x, tileZIndex, pos.y);
                     visual.setQueueBucket(Bucket.Gui);
-                    layer.setSpatialAt(rowTile.x, rowTile.y, visual);
+                    layer.setSpatialAt(rowX, rowY, visual);
                 }
                 tileZIndex++;
             }
@@ -192,7 +197,7 @@ public class HexagonalRenderer extends OrthogonalRenderer {
 
     @Override
     public void renderGrid(Node gridVisual, Material gridMaterial) {
-        Mesh border = new Rect(mapSize.x, mapSize.y, true);
+        Mesh border = new Rect(mapSize.getX(), mapSize.getY(), true);
         Geometry rect = new Geometry("GridBorder", border);
         rect.setMaterial(gridMaterial);
         gridVisual.attachChild(rect);
@@ -258,7 +263,7 @@ public class HexagonalRenderer extends OrthogonalRenderer {
         Point referencePoint = new Point(x / (columnWidth * 2), y / (rowHeight * 2));
 
         // Relative x and y position on the base square of the grid-aligned tile
-        Point rel = new Point(x - referencePoint.x * columnWidth * 2, y - referencePoint.y * rowHeight * 2);
+        Point rel = new Point(x - referencePoint.getX() * columnWidth * 2, y - referencePoint.getY() * rowHeight * 2);
 
         // Adjust the reference point to the correct tile coordinates
         adjustReferencePoint(referencePoint);
@@ -314,16 +319,18 @@ public class HexagonalRenderer extends OrthogonalRenderer {
      */
     public void adjustReferencePoint(Point referencePoint) {
         if (staggerX) {
-            referencePoint.x *= 2;
-            if (staggerEven) {
-                referencePoint.x++;
-            }
+            referencePoint.setX(adjust(referencePoint.getX()));
         } else {
-            referencePoint.y *= 2;
-            if (staggerEven) {
-                referencePoint.y++;
-            }
+            referencePoint.setY(adjust(referencePoint.getY()));
         }
+    }
+
+    private int adjust(int v) {
+        v *= 2;
+        if (staggerEven) {
+            v++;
+        }
+        return v;
     }
 
     public Point topLeft(int x, int y) {

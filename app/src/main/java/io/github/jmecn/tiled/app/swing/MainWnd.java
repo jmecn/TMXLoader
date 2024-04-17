@@ -120,7 +120,7 @@ public class MainWnd extends JFrame {
 
         JMenuItem openItem = new JMenuItem("Open");
         openItem.setMnemonic('O');
-        openItem.addActionListener(e -> load());
+        openItem.addActionListener(e -> openFile());
         fileMenu.add(openItem);
 
         recentFilesMenu = new JMenu("Recent Files");
@@ -214,63 +214,44 @@ public class MainWnd extends JFrame {
         // TODO
     }
 
-    private void load(RecentFile file) {
-
-        AssetManager assetManager = app.getAssetManager();
-        log.info("Load:{}", file.getAbsolutePath());
-        TiledMap map = null;
-        try {
-            assetManager.registerLocator(file.getFolder(), MyFileLocator.class);
-            map = (TiledMap) assetManager.loadAsset(file.getName());
-            // remove from cache, in case of reload
-            assetManager.deleteFromCache(new AssetKey<>(file.getName()));
-        } catch (Exception e) {
-            log.error("Failed to load {}", file.getAbsolutePath(), e);
-        } finally {
-            assetManager.unregisterLocator(file.getFolder(), MyFileLocator.class);
-        }
-
-        if (map != null) {
-            layerView.setTiledMap(map);
-            app.load(map);
-            // update the window title
-            this.setTitle(APP_NAME + " - " + file.getName());
-        }
-    }
-
-    private void load() {
+    private void openFile() {
         int result = fileChooser.showOpenDialog(this);
         if (result == JFileChooser.APPROVE_OPTION) {
             File file = fileChooser.getSelectedFile();
-            String fileName = file.getName();
 
             // save last directory
             properties.setProperty(LAST_DIR, file.getParent());
             writeProperties();
             fileChooser.setCurrentDirectory(file.getParentFile());
 
-            AssetManager assetManager = app.getAssetManager();
-            log.info("Load:{}", file.getAbsoluteFile());
-            TiledMap map = null;
-            try {
-                assetManager.registerLocator(file.getParent(), MyFileLocator.class);
-                map = (TiledMap) assetManager.loadAsset(fileName);
-                // remove from cache, in case of reload
-                assetManager.deleteFromCache(new AssetKey<>(fileName));
-            } catch (Exception e) {
-                log.error("Failed to load {}", file.getAbsoluteFile(), e);
-            } finally {
-                assetManager.unregisterLocator(file.getParent(), MyFileLocator.class);
-            }
-
+            TiledMap map = loadMap(file.getParent(), file.getName());
             if (map != null) {
-                layerView.setTiledMap(map);
-                app.load(map);
-                // update the window title
-                this.setTitle(APP_NAME + " - " + fileName);
-                this.saveRecentFile(file);
+                saveRecentFile(file);
             }
         }
+    }
+
+    private TiledMap loadMap(String folder, String name) {
+
+        AssetManager assetManager = app.getAssetManager();
+        TiledMap map = null;
+        try {
+            assetManager.registerLocator(folder, MyFileLocator.class);
+            map = (TiledMap) assetManager.loadAsset(name);
+            // remove from cache, in case of reload
+            assetManager.deleteFromCache(new AssetKey<>(name));
+
+            layerView.setTiledMap(map);
+            app.load(map);
+            // update the window title
+            this.setTitle(APP_NAME + " - " + name);
+        } catch (Exception e) {
+            log.error("Failed to load {} {}", folder, name, e);
+        } finally {
+            assetManager.unregisterLocator(folder, MyFileLocator.class);
+        }
+
+        return map;
     }
 
     private void saveRecentFile(File file) {
@@ -317,7 +298,7 @@ public class MainWnd extends JFrame {
             item.addActionListener(e1 -> {
                 File file = new File(recentFile.getAbsolutePath());
                 if (file.exists()) {
-                    load(recentFile);
+                    loadMap(recentFile.getFolder(), recentFile.getName());
                 } else {
                     recentFiles.remove(recentFile);
                     saveRecentFile(file);

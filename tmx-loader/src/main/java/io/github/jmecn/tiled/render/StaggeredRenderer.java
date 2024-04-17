@@ -49,23 +49,23 @@ public class StaggeredRenderer extends HexagonalRenderer {
 
         // Relative x and y position on the base square of the grid-aligned tile
         Point rel = new Point(
-                alignedX - referencePoint.x * tileWidth,
-                alignedY - referencePoint.y * tileHeight);
+                alignedX - referencePoint.getX() * tileWidth,
+                alignedY - referencePoint.getY() * tileHeight);
 
         // Adjust the reference point to the correct tile coordinates
         adjustReferencePoint(referencePoint);
 
-        float yPos = rel.x * ((float) tileHeight / tileWidth);
+        float yPos = rel.getX() * ((float) tileHeight / tileWidth);
 
         // Check whether the cursor is in any of the corners (neighboring tiles)
-        if (sideOffsetY - yPos > rel.y) {
-            return topLeft(referencePoint.x, referencePoint.y);
-        } else if (-sideOffsetY + yPos > rel.y) {
-            return topRight(referencePoint.x, referencePoint.y);
-        } else if (sideOffsetY + yPos < rel.y) {
-            return bottomLeft(referencePoint.x, referencePoint.y);
-        } else if (sideOffsetY * 3 - yPos < rel.y) {
-            return bottomRight(referencePoint.x, referencePoint.y);
+        if (sideOffsetY - yPos > rel.getY()) {
+            return topLeft(referencePoint.getX(), referencePoint.getY());
+        } else if (-sideOffsetY + yPos > rel.getY()) {
+            return topRight(referencePoint.getX(), referencePoint.getY());
+        } else if (sideOffsetY + yPos < rel.getY()) {
+            return bottomLeft(referencePoint.getX(), referencePoint.getY());
+        } else if (sideOffsetY * 3 - yPos < rel.getY()) {
+            return bottomRight(referencePoint.getX(), referencePoint.getY());
         }
 
         return referencePoint;

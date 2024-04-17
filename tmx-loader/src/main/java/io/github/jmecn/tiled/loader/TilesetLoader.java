@@ -414,7 +414,7 @@ public final class TilesetLoader {
         tile.setProperties(props);
 
         readTileImage(tile, node);
-        readTileAnimation(tile, node);
+        readAnimation(tile, node);
     }
 
     private void readTileImage(Tile tile, Node parent) {
@@ -439,13 +439,15 @@ public final class TilesetLoader {
         tile.setMaterial(material);
     }
 
-    private void readTileAnimation(Tile tile, Node parent) {
+    private void readAnimation(Tile tile, Node parent) {
         Node node = getChildByTag(parent, ANIMATION);
         if (node == null) {
             return;
         }
 
-        Animation animation = new Animation(null);
+        String name = getAttributeValue(node, NAME);
+
+        Animation animation = new Animation(name);
         NodeList frames = node.getChildNodes();
         for (int k = 0; k < frames.getLength(); k++) {
             Node frameNode = frames.item(k);

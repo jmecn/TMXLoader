@@ -244,7 +244,7 @@ public abstract class MapRenderer {
         Material mat = layer.getMaterial();
         setTintColor(mat, layer);
 
-        Mesh mesh = new Rect(mapSize.x, mapSize.y, false);
+        Mesh mesh = new Rect(mapSize.getX(), mapSize.getY(), false);
         Geometry geom = new Geometry(layer.getName(), mesh);
         geom.setMaterial(mat);
         geom.setQueueBucket(Bucket.Gui);
@@ -354,10 +354,10 @@ public abstract class MapRenderer {
     }
 
     public Point getMapDimension() {
-        return new Point(mapSize.x, mapSize.y);// read only
+        return new Point(mapSize.getX(), mapSize.getY());// read only
     }
 
     public Vector2f getMapDimensionF() {
-        return new Vector2f(mapSize.x, mapSize.y);
+        return new Vector2f(mapSize.getX(), mapSize.getY());
     }
 }

@@ -15,7 +15,7 @@ import com.jme3.util.BufferUtils;
 
 /**
  * Create mesh for the visual part of an ObjectNode.
- * Rectangle, Ellipse, Polygon, Polyline
+ * RectangleD, Ellipse, Polygon, Polyline
  * 
  * @author yanmaoyuan
  *

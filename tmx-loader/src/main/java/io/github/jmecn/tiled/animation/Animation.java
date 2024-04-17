@@ -112,14 +112,4 @@ public class Animation {
     public String toString() {
         return "(" + name + ")" + id + ": @ " + frameRate;
     }
-
-    @Override
-    public Animation clone() {
-        Animation frame = new Animation(name, frames);
-        frame.id = id;
-        frame.flags = flags;
-        frame.frameRate = frameRate;
-
-        return frame;
-    }
 }
