@@ -1,6 +1,5 @@
 package io.github.jmecn.tiled.math2d;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import com.jme3.math.Vector2f;
@@ -46,9 +45,9 @@ import com.jme3.math.Vector2f;
  * 
  */
 public class Triangulation {
-    static float EPSILON = 0.0000000001f;
+    private static final float EPSILON = 0.0000000001f;
 
-    public static float Area(final List<Vector2f> contour) {
+    public static float area(final List<Vector2f> contour) {
 
         int n = contour.size();
 
@@ -63,7 +62,7 @@ public class Triangulation {
     }
 
     /*
-     * InsideTriangle decides if a point P is Inside of the triangle defined by
+     * InsideTriangle decides if a point P is inside of the triangle defined by
      * A, B, C.
      */
     public static boolean InsideTriangle(Vector2f A, Vector2f B, Vector2f C, Vector2f P)
@@ -78,7 +77,7 @@ public class Triangulation {
         Vector2f cp = P.subtract(C);
         
         return ((a.determinant(bp) >= 0.0f) && (b.determinant(cp) >= 0.0f) && (c.determinant(ap) >= 0.0f));
-    };
+    }
 
     public static boolean Snip(final List<Vector2f> contour, int u, int v,
             int w, int n, int[] V) {
@@ -112,7 +111,7 @@ public class Triangulation {
 
         /* we want a counter-clockwise polygon in V */
 
-        if (0.0f < Area(contour))
+        if (0.0f < area(contour))
             for (int v = 0; v < n; v++)
                 V[v] = v;
         else
@@ -166,47 +165,5 @@ public class Triangulation {
         }
 
         return true;
-    }
-
-    public static void main(String[] args) {
-        // Small test application demonstrating the usage of the triangulate
-        // class.
-
-        // Create a pretty complicated little contour by pushing them onto
-        // an stl vector.
-        List<Vector2f> points = new ArrayList<Vector2f>();
-        points.add(new Vector2f(0, 0));
-        points.add(new Vector2f(55, -23));
-        points.add(new Vector2f(96, -117));
-        points.add(new Vector2f(110, -61));
-        points.add(new Vector2f(104, -42));
-        points.add(new Vector2f(119, -33));
-        points.add(new Vector2f(116, 6));
-        points.add(new Vector2f(104, 9));
-        points.add(new Vector2f(100, 36));
-        points.add(new Vector2f(60, 43));
-        points.add(new Vector2f(53, 58));
-        points.add(new Vector2f(43, 58));
-        points.add(new Vector2f(34, 74));
-        points.add(new Vector2f(21, 69));
-        points.add(new Vector2f(18, 90));
-        points.add(new Vector2f(0, 89));
-
-        // allocate an STL vector to hold the answer.
-        List<Integer> result = new ArrayList<Integer>();
-
-        // Invoke the triangulator to triangulate this polygon.
-        Triangulation.Process(points, result);
-
-        // print out the results.
-        int tcount = result.size() / 3;
-
-        for (int i = 0; i < tcount; i++) {
-            final int p1 = result.get(i * 3 + 0);
-            final int p2 = result.get(i * 3 + 1);
-            final int p3 = result.get(i * 3 + 2);
-            
-            System.out.printf("Triangle %d => (%d, %d, %d)\n", i + 1, p1, p2, p3);
-        }
     }
 }

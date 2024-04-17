@@ -71,6 +71,9 @@ public final class TilesetLoader {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         Document doc;
         try {
+            factory.setFeature("http://xml.org/sax/features/external-general-entities", false);
+            factory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+
             DocumentBuilder builder = factory.newDocumentBuilder();
             doc = builder.parse(inputStream);
 
@@ -103,15 +106,14 @@ public final class TilesetLoader {
         String assetPath = toJmeAssetPath(assetManager, assetKey, source);
 
         // load it with assetManager
-        Tileset ext = null;
+        Tileset tileset;
         try {
             AssetInfo assetInfo = assetManager.locateAsset(new AssetKey<>(assetPath));
-            ext = load(assetInfo.openStream());
-            return ext;
+            tileset = load(assetInfo.openStream());
+            return tileset;
         } catch (Exception e) {
             throw new IllegalArgumentException("Tileset " + source + " was not loaded correctly!", e);
         }
-
     }
 
     /**
@@ -144,8 +146,8 @@ public final class TilesetLoader {
         int tileSpacing = getAttribute(node, SPACING, 0);
         int tileMargin = getAttribute(node, MARGIN, 0);
 
-        Tileset set = new Tileset(tileWidth, tileHeight, tileSpacing, tileMargin);
-        set.setFirstGid(firstGid);
+        Tileset tileset = new Tileset(tileWidth, tileHeight, tileSpacing, tileMargin);
+        tileset.setFirstGid(firstGid);
 
         String name = getAttributeValue(node, NAME);
         String clazz = getAttribute(node, CLASS, "");
@@ -153,14 +155,12 @@ public final class TilesetLoader {
         String tileRenderSize = getAttribute(node, TILE_RENDER_SIZE, TileRenderSize.TILE.getValue());
         String fillMode = getAttribute(node, FILL_MODE, FillMode.STRETCH.getValue());
 
-        set.setName(name);
-        set.setClazz(clazz);
-        set.setObjectAlignment(objectAlignment);
-        set.setTileRenderSize(tileRenderSize);
-        set.setFillMode(fillMode);
+        tileset.setName(name);
+        tileset.setClazz(clazz);
+        tileset.setObjectAlignment(objectAlignment);
+        tileset.setTileRenderSize(tileRenderSize);
+        tileset.setFillMode(fillMode);
 
-        boolean hasTilesetImage = false;
-        TiledImage image;
         NodeList children = node.getChildNodes();
         for (int i = 0; i < children.getLength(); i++) {
             Node child = children.item(i);
@@ -168,36 +168,7 @@ public final class TilesetLoader {
             String nodeName = child.getNodeName();
             switch (nodeName) {
                 case IMAGE: {
-                    if (hasTilesetImage) {
-                        logger.warn("Ignoring illegal image element after tileset image.");
-                        continue;
-                    }
-
-                    image = tiledImageLoader.load(child);
-                    if (image.getTexture() != null) {
-                        // Not a shared image, but an entire set in one image
-                        // file. There should be only one image element in this
-                        // case.
-                        hasTilesetImage = true;
-
-                        Material material = image.getMaterial();
-                        material.setBoolean("UseTilesetImage", true);
-                        material.setVector4("TileSize", new Vector4f(tileWidth, tileHeight, tileMargin, tileSpacing));
-
-                        set.setImageSource(image.getSource());
-                        set.setTexture(image.getTexture());
-                        set.setMaterial(material);
-
-                        TileCutter cutter = new TileCutter(image.getWidth(), image.getHeight(), tileWidth, tileHeight, tileMargin, tileSpacing);
-                        set.setColumns(cutter.getColumns());
-                        set.setTileCount(cutter.getTileCount());
-
-                        Tile tile = cutter.getNextTile();
-                        while (tile != null) {
-                            set.addNewTile(tile);
-                            tile = cutter.getNextTile();
-                        }
-                    }
+                    readImage(tileset, child);
                     break;
                 }
                 case "grid": {
@@ -210,21 +181,18 @@ public final class TilesetLoader {
                     Orientation gridOrientation = Orientation.fromString(orientation);
                     int gridWidth = getAttribute(node, WIDTH, 0);
                     int gridHeight = getAttribute(node, HEIGHT, 0);
-                    set.setGrid(gridOrientation, gridWidth, gridHeight);
+                    tileset.setGrid(gridOrientation, gridWidth, gridHeight);
                     break;
                 }
                 case TERRAIN_TYPES: {
-                    NodeList terrainTypes = child.getChildNodes();
-                    for (int k = 0; k < terrainTypes.getLength(); k++) {
-                        Node terrainNode = terrainTypes.item(k);
-                        if (terrainNode.getNodeName().equalsIgnoreCase(TERRAIN)) {
-                            set.addTerrain(readTerrain(terrainNode));
-                        }
-                    }
+                    getChildrenByTag(child, TERRAIN).forEach(n -> {
+                        Terrain terrain = readTerrain(n);
+                        tileset.addTerrain(terrain);
+                    });
                     break;
                 }
                 case TILE:
-                    readTile(set, child);
+                    readTile(tileset, child);
                     break;
                 case TILE_OFFSET: {
                     /*
@@ -232,34 +200,22 @@ public final class TilesetLoader {
                      * applied when drawing a tile from the related tileset. When
                      * not present, no offset is applied.
                      */
-                    final int tileOffsetX = getAttribute(child, X, 0);
-                    final int tileOffsetY = getAttribute(child, Y, 0);
-
-                    set.setTileOffset(tileOffsetX, tileOffsetY);
+                    int tileOffsetX = getAttribute(child, X, 0);
+                    int tileOffsetY = getAttribute(child, Y, 0);
+                    tileset.setTileOffset(tileOffsetX, tileOffsetY);
                     break;
                 }
                 case TRANSFORMATIONS: {
-                    // This element is used to describe which transformations can be applied to the tiles
-                    // (e.g. to extend a Wang set by transforming existing tiles).
-                    // Whether the tiles in this set can be flipped horizontally (default 0)
-                    int hFlip = getAttribute(node, H_FLIP, 0);
-                    // Whether the tiles in this set can be flipped vertically (default 0)
-                    int vFlip = getAttribute(node, V_FLIP, 0);
-                    // Whether the tiles in this set can be rotated in 90 degree increments (default 0)
-                    int rotate = getAttribute(node, ROTATE, 0);
-                    // Whether untransformed tiles remain preferred, otherwise transformed tiles are used to produce more variations (default 0)
-                    int preferUntransformed = getAttribute(node, PREFER_UNTRANSFORMED, 0);
-                    set.setTransformations(new Transformations(hFlip, vFlip, rotate, preferUntransformed));
+                    Transformations transformations = readTransformation(child);
+                    tileset.setTransformations(transformations);
                     break;
                 }
                 case WANGSETS: {
-                    NodeList wangSets = child.getChildNodes();
-                    for (int k = 0; k < wangSets.getLength(); k++) {
-                        Node wangSetNode = wangSets.item(k);
-                        if (wangSetNode.getNodeName().equalsIgnoreCase(WANGSET)) {
-                            set.addWangSet(readWangSet(wangSetNode));
-                        }
-                    }
+                    // read wangsets
+                    getChildrenByTag(child, WANGSET).forEach(n -> {
+                        WangSet wangSet = readWangSet(n);
+                        tileset.addWangSet(wangSet);
+                    });
                     break;
                 }
                 default: {
@@ -267,60 +223,50 @@ public final class TilesetLoader {
                         logger.warn("Unsupported tileset element: {}", nodeName);
                     }
                     break;
-
                 }
             }
         }
 
-        return set;
+        return tileset;
     }
 
-    /**
-     * Create the visual part for every tile of a given Tileset.
-     *
-     * @param tileset the Tileset
-     * @param map the TiledMap
-     */
-    public void createVisual(Tileset tileset, TiledMap map) {
+    private void readImage(Tileset tileset, Node node) {
+        if (tileset.isImageBased()) {
+            logger.warn("Ignoring illegal image element after tileset image.");
+            return;
+        }
 
-        Point offset = new Point(tileset.getTileOffsetX(), tileset.getTileOffsetY());
-        Point origin = new Point(0, map.getTileHeight());
+        TiledImage image = tiledImageLoader.load(node);
+        tileset.setImage(image);
 
-        List<Tile> tiles = tileset.getTiles();
-        int len = tiles.size();
-        for (int i = 0; i < len; i++) {
-            Tile tile = tiles.get(i);
+        int tileWidth = tileset.getTileWidth();
+        int tileHeight = tileset.getTileHeight();
+        int tileMargin = tileset.getTileMargin();
+        int tileSpacing = tileset.getTileSpacing();
 
-            String name = "tile#" + tileset.getFirstGid() + "#" + tile.getId();
+        Material material = image.getMaterial();
+        material.setBoolean("UseTilesetImage", true);
+        material.setVector4("TileSize", new Vector4f(tileWidth, tileHeight, tileMargin, tileSpacing));
 
-            Point coord = new Point(tile.getX(), tile.getY());
-            Point size = new Point(tile.getWidth(), tile.getHeight());
-            TileMesh mesh = new TileMesh(coord, size, offset, origin);
+        tileset.setImageSource(image.getSource());
+        tileset.setTexture(image.getTexture());
+        tileset.setMaterial(material);
 
-            Geometry geometry = new Geometry(name, mesh);
-            geometry.setQueueBucket(RenderQueue.Bucket.Gui);
+        TileCutter cutter = new TileCutter(image.getWidth(), image.getHeight(), tileWidth, tileHeight, tileMargin, tileSpacing);
+        tileset.setColumns(cutter.getColumns());
+        tileset.setTileCount(cutter.getTileCount());
 
-            if (tile.getMaterial() != null) {
-                geometry.setMaterial(tile.getMaterial());
-            } else {
-                geometry.setMaterial(tileset.getMaterial());
-            }
-
-            if (tile.isAnimated()) {
-                geometry.setBatchHint(Spatial.BatchHint.Never);
-                AnimatedTileControl control = new AnimatedTileControl(tile);
-                geometry.addControl(control);
-            }
-
-            tile.setVisual(geometry);
+        Tile tile = cutter.getNextTile();
+        while (tile != null) {
+            tileset.addNewTile(tile);
+            tile = cutter.getNextTile();
         }
     }
-
     /**
      * read terrain.
      *
-     * @param node
-     * @return
+     * @param node the node
+     * @return the terrain
      */
     private Terrain readTerrain(Node node) {
         final String name = getAttributeValue(node, NAME);
@@ -336,11 +282,25 @@ public final class TilesetLoader {
         return terrain;
     }
 
+    private Transformations readTransformation(Node node) {
+        // This element is used to describe which transformations can be applied to the tiles
+        // (e.g. to extend a Wang set by transforming existing tiles).
+        // Whether the tiles in this set can be flipped horizontally (default 0)
+        int hFlip = getAttribute(node, H_FLIP, 0);
+        // Whether the tiles in this set can be flipped vertically (default 0)
+        int vFlip = getAttribute(node, V_FLIP, 0);
+        // Whether the tiles in this set can be rotated in 90 degree increments (default 0)
+        int rotate = getAttribute(node, ROTATE, 0);
+        // Whether untransformed tiles remain preferred, otherwise transformed tiles are used to produce more variations (default 0)
+        int preferUntransformed = getAttribute(node, PREFER_UNTRANSFORMED, 0);
+        return new Transformations(hFlip, vFlip, rotate, preferUntransformed);
+    }
+
     /**
      * read wangset
      *
-     * @param node
-     * @return
+     * @param node the node
+     * @return the wangset
      */
     private WangSet readWangSet(Node node) {
         String name = getAttributeValue(node, NAME);
@@ -395,39 +355,37 @@ public final class TilesetLoader {
         return new WangTile(tileId, wangId);
     }
 
-
     /**
      * Read Tile for tileset
      * <p>
      * Can contain: properties, image (since 0.9), objectgroup (since 0.10),
      * animation (since 0.10)
+     * </p>
      *
-     * @param set
-     * @param t
-     * @return
-     * @throws Exception
+     * @param tileset the Tileset
+     * @param node the node representing the "tile" element
      */
-    private void readTile(Tileset set, Node t) {
+    private void readTile(Tileset tileset, Node node) {
 
         Tile tile;
 
-        int id = getAttribute(t, ID, -1);
+        int id = getAttribute(node, ID, -1);
 
-        if (!set.isImageBased() || id > set.getMaxTileId()) {
+        if (!tileset.isImageBased() || id > tileset.getMaxTileId()) {
             tile = new Tile();
             tile.setId(id);
-            tile.setGid(id + set.getFirstGid());
+            tile.setGid(id + tileset.getFirstGid());
 
-            set.addTile(tile);
+            tileset.addTile(tile);
         } else {
-            tile = set.getTile(id);
+            tile = tileset.getTile(id);
         }
 
         // since 1.9
-        int x = getAttribute(t, X, -1);
-        int y = getAttribute(t, Y, -1);
-        int width = getAttribute(t, WIDTH, -1);
-        int height = getAttribute(t, HEIGHT, -1);
+        int x = getAttribute(node, X, -1);
+        int y = getAttribute(node, Y, -1);
+        int width = getAttribute(node, WIDTH, -1);
+        int height = getAttribute(node, HEIGHT, -1);
         if (x > -1) {
             tile.setX(x);
         }
@@ -442,7 +400,7 @@ public final class TilesetLoader {
         }
 
         // in <tileset> we need id, terrain, probability
-        String terrainStr = getAttributeValue(t, TERRAIN);
+        String terrainStr = getAttributeValue(node, TERRAIN);
         if (terrainStr != null) {
             String[] tileIds = terrainStr.split("[\\s]*,[\\s]*");
 
@@ -457,44 +415,92 @@ public final class TilesetLoader {
             tile.setTerrain(terrain);
         }
 
-        float probability = (float) getDoubleAttribute(t, PROBABILITY, 0.0);
+        float probability = (float) getDoubleAttribute(node, PROBABILITY, 0.0);
         tile.setProbability(probability);
 
-        NodeList children = t.getChildNodes();
-
-        Properties props = propertiesLoader.readProperties(t);
+        Properties props = propertiesLoader.readProperties(node);
         tile.setProperties(props);
 
-        for (int i = 0; i < children.getLength(); i++) {
-            Node child = children.item(i);
-            if (IMAGE.equals(child.getNodeName())) {
-                TiledImage image = tiledImageLoader.load(child);
-                tile.setImage(image);
-                // use the tile image size as tile size by default
-                if (tile.getWidth() <= 0 && tile.getHeight() <= 0) {
-                    tile.setWidth(image.getWidth());
-                    tile.setHeight(image.getHeight());
-                }
+        readTileImage(tile, node);
+        readTileAnimation(tile, node);
+    }
 
-                Material material = image.getMaterial();
-                material.setBoolean("UseTilesetImage", true);
-                material.setVector4("TileSize", new Vector4f(tile.getWidth(), tile.getHeight(), 0f, 0f));
+    private void readTileImage(Tile tile, Node parent) {
+        Node node = getChildByTag(parent, IMAGE);
+        if (node == null) {
+            return;
+        }
 
-                tile.setTexture(image.getTexture());
-                tile.setMaterial(material);
-            } else if (ANIMATION.equals(child.getNodeName())) {
-                Animation animation = new Animation(null);
-                NodeList frames = child.getChildNodes();
-                for (int k = 0; k < frames.getLength(); k++) {
-                    Node frameNode = frames.item(k);
-                    if (frameNode.getNodeName().equals(FRAME)) {
-                        int tileId = getAttribute(frameNode, TILE_ID, 0);
-                        int duration = getAttribute(frameNode, DURATION, 0);
-                        animation.addFrame(new Frame(tileId, duration));
-                    }
-                }
-                tile.addAnimation(animation);
+        TiledImage image = tiledImageLoader.load(node);
+        tile.setImage(image);
+        // use the tile image size as tile size by default
+        if (tile.getWidth() <= 0 && tile.getHeight() <= 0) {
+            tile.setWidth(image.getWidth());
+            tile.setHeight(image.getHeight());
+        }
+
+        Material material = image.getMaterial();
+        material.setBoolean("UseTilesetImage", true);
+        material.setVector4("TileSize", new Vector4f(tile.getWidth(), tile.getHeight(), 0f, 0f));
+
+        tile.setTexture(image.getTexture());
+        tile.setMaterial(material);
+    }
+
+    private void readTileAnimation(Tile tile, Node parent) {
+        Node node = getChildByTag(parent, ANIMATION);
+        if (node == null) {
+            return;
+        }
+
+        Animation animation = new Animation(null);
+        NodeList frames = node.getChildNodes();
+        for (int k = 0; k < frames.getLength(); k++) {
+            Node frameNode = frames.item(k);
+            if (frameNode.getNodeName().equals(FRAME)) {
+                int tileId = getAttribute(frameNode, TILE_ID, 0);
+                int duration = getAttribute(frameNode, DURATION, 0);
+                animation.addFrame(new Frame(tileId, duration));
             }
+        }
+        tile.addAnimation(animation);
+    }
+
+    /**
+     * Create the visual part for every tile of a given Tileset.
+     *
+     * @param tileset the Tileset
+     * @param map the TiledMap
+     */
+    public void createVisual(Tileset tileset, TiledMap map) {
+
+        Point offset = new Point(tileset.getTileOffsetX(), tileset.getTileOffsetY());
+        Point origin = new Point(0, map.getTileHeight());
+
+        List<Tile> tiles = tileset.getTiles();
+        for (Tile tile : tiles) {
+            String name = "tile#" + tileset.getFirstGid() + "#" + tile.getId();
+
+            Point coord = new Point(tile.getX(), tile.getY());
+            Point size = new Point(tile.getWidth(), tile.getHeight());
+            TileMesh mesh = new TileMesh(coord, size, offset, origin);
+
+            Geometry geometry = new Geometry(name, mesh);
+            geometry.setQueueBucket(RenderQueue.Bucket.Gui);
+
+            if (tile.getMaterial() != null) {
+                geometry.setMaterial(tile.getMaterial());
+            } else {
+                geometry.setMaterial(tileset.getMaterial());
+            }
+
+            if (tile.isAnimated()) {
+                geometry.setBatchHint(Spatial.BatchHint.Never);
+                AnimatedTileControl control = new AnimatedTileControl(tile);
+                geometry.addControl(control);
+            }
+
+            tile.setVisual(geometry);
         }
     }
 }

@@ -136,11 +136,12 @@ public class Tileset extends Base implements Iterable<Tile> {
      */
     private int tileOffsetY = 0;
 
-    private Transformations transformations;
-
+    private TiledImage image;
     private String imageSource;
     private Texture texture;
     private Material material;
+
+    private Transformations transformations;
 
     /**
      * This element defines an array of terrain types, which can be referenced
@@ -240,6 +241,14 @@ public class Tileset extends Base implements Iterable<Tile> {
 
     public void setColumns(int columns) {
         this.columns = columns;
+    }
+
+    public TiledImage getImage() {
+        return image;
+    }
+
+    public void setImage(TiledImage image) {
+        this.image = image;
     }
 
     public String getImageSource() {
@@ -425,7 +434,7 @@ public class Tileset extends Base implements Iterable<Tile> {
      * @return <code>true</code> if the tileset is image-based, <code>false</code> if it is collection of images.
      */
     public boolean isImageBased() {
-        return texture != null;
+        return image != null;
     }
 
     @Override

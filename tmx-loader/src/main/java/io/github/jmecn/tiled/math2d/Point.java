@@ -34,11 +34,6 @@ public class Point {
         this.y = y;
     }
 
-    public void setLocation(int x, int y) {
-        this.x = x;
-        this.y = y;
-    }
-    
     public Point sub(Point p) {
         return new Point(x - p.x, y - p.y);
     }

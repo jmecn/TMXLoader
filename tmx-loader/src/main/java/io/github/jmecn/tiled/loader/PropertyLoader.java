@@ -52,6 +52,9 @@ public class PropertyLoader {
                 readProperty(child, props);
             }
         }
+        if (!props.isEmpty()) {
+            logger.debug("properties:{}", props);
+        }
         return props;
     }
 

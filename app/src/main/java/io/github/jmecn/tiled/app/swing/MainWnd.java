@@ -170,25 +170,25 @@ public class MainWnd extends JFrame {
         JPanel panel = new JPanel();
         panel.setLayout(new FlowLayout(FlowLayout.LEFT));
         panel.add(mapStatus);
-        panel.add(new JSeparator(JSeparator.VERTICAL));
+        panel.add(new JSeparator(SwingConstants.VERTICAL));
         panel.add(cursorStatus);
 
         return panel;
     }
 
     private JFileChooser createFileChooser() {
-        JFileChooser fileChooser = new JFileChooser();
-        fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-        fileChooser.setMultiSelectionEnabled(false);
+        JFileChooser chooser = new JFileChooser();
+        chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        chooser.setMultiSelectionEnabled(false);
 
         // restore last directory
         String dir = properties.getProperty("lastDir", ".");
         File lastDir = new File(dir);
         if (lastDir.isDirectory() && lastDir.exists()) {
-            fileChooser.setCurrentDirectory(lastDir);
+            chooser.setCurrentDirectory(lastDir);
         }
 
-        fileChooser.setFileFilter(new javax.swing.filechooser.FileFilter() {
+        chooser.setFileFilter(new javax.swing.filechooser.FileFilter() {
             @Override
             public boolean accept(java.io.File f) {
                 return f.isDirectory() || f.getName().endsWith(".tmx");
@@ -200,7 +200,7 @@ public class MainWnd extends JFrame {
             }
         });
 
-        return fileChooser;
+        return chooser;
     }
 
     public void setMapStatus(String status) {

@@ -172,7 +172,6 @@ public final class TiledMapLoader {
         // Load properties
         Properties props = propertiesLoader.readProperties(mapNode);
         map.setProperties(props);
-        logger.debug("map properties:{}", props);
 
         // read tilesets
         readTilesets(doc);

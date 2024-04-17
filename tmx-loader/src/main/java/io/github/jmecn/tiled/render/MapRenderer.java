@@ -1,17 +1,14 @@
 package io.github.jmecn.tiled.render;
 
-import java.nio.FloatBuffer;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
-import com.jme3.math.FastMath;
 import com.jme3.math.Vector2f;
 import com.jme3.renderer.queue.RenderQueue.Bucket;
 import com.jme3.scene.*;
-import com.jme3.util.BufferUtils;
 import io.github.jmecn.tiled.core.*;
 import io.github.jmecn.tiled.enums.DrawOrder;
 import io.github.jmecn.tiled.enums.Orientation;

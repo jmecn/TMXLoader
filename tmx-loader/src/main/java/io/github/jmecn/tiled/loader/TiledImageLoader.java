@@ -15,7 +15,6 @@ import io.github.jmecn.tiled.util.ColorUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -23,7 +22,6 @@ import java.lang.reflect.Method;
 import java.util.Base64;
 
 import static io.github.jmecn.tiled.TiledConst.*;
-import static io.github.jmecn.tiled.TiledConst.DATA;
 import static io.github.jmecn.tiled.loader.Utils.*;
 
 /**
@@ -68,22 +66,22 @@ public final class TiledImageLoader {
             source = assetPath;
             texture = loadTexture2D(assetPath);
         } else {
-            NodeList nodeList = node.getChildNodes();
-            for (int i = 0; i < nodeList.getLength(); i++) {
-                Node item = nodeList.item(i);
-                if (DATA.equals(item.getNodeName())) {
-                    Node cdata = item.getFirstChild();
-                    if (cdata != null) {
-                        String encodedData = cdata.getNodeValue();
-                        byte[] imageData = Base64.getDecoder().decode(encodedData.trim());
-                        texture = loadTexture2D(imageData);
-                    }
-                    break;
-                }
+            // embedded image data, decode from the CDATA.
+            Node item = getChildByTag(node, DATA);
+            if (item != null && item.getFirstChild() != null) {
+                Node cdata = item.getFirstChild();
+                String encodedData = cdata.getNodeValue();
+                byte[] imageData = Base64.getDecoder().decode(encodedData.trim());
+                texture = loadTexture2D(imageData);
             }
         }
 
-        if (texture != null && (width == 0 || height == 0)) {
+        if (texture == null) {
+            logger.error("Image source not found: {}", source);
+            throw new IllegalArgumentException("Image source not found: " + source);
+        }
+
+        if (width == 0 || height == 0) {
             logger.warn("Image size is not specified, using the texture size.");
             width = texture.getImage().getWidth();
             height = texture.getImage().getHeight();
@@ -130,8 +128,8 @@ public final class TiledImageLoader {
 
     private Texture2D loadTexture2D(final byte[] data) {
         Class<?> loaderClass = null;
-        Object loaderInstance = null;
-        Method loadMethod = null;
+        Object loaderInstance;
+        Method loadMethod;
 
         try {
             // try Desktop first

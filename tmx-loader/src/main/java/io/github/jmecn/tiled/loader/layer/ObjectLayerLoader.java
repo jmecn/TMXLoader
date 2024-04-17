@@ -16,9 +16,12 @@ import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -89,31 +92,28 @@ public class ObjectLayerLoader extends LayerLoader {
      * @param inputStream the input stream of the template file
      * @return the loaded ObjectTemplate
      */
-    private ObjectTemplate loadObjectTemplate(final InputStream inputStream) {
+    private ObjectTemplate loadObjectTemplate(final InputStream inputStream) throws IOException, ParserConfigurationException, SAXException {
         ObjectTemplate template;
         Node root;
 
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        Document doc;
-        try {
-            DocumentBuilder builder = factory.newDocumentBuilder();
-            doc = builder.parse(inputStream);
+        factory.setFeature("http://xml.org/sax/features/external-general-entities", false);
+        factory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
 
-            NodeList nodeList = doc.getElementsByTagName(TEMPLATE);
+        DocumentBuilder builder = factory.newDocumentBuilder();
+        Document doc = builder.parse(inputStream);
 
-            // There can be only one template in a .tx file.
-            root = nodeList.item(0);
+        NodeList nodeList = doc.getElementsByTagName(TEMPLATE);
 
-            if (root != null) {
-                template = readObjectTemplate(root);
-                return template;
-            } else {
-                logger.warn("Not a valid template file.");
-                throw new IllegalArgumentException("Not a valid template file");
-            }
-        } catch (Exception e) {
-            logger.error("Failed while loading {}", assetKey.getName(), e);
-            throw new IllegalStateException("Failed while loading " + assetKey.getName(), e);
+        // There can be only one template in a .tx file.
+        root = nodeList.item(0);
+
+        if (root != null) {
+            template = readObjectTemplate(root);
+            return template;
+        } else {
+            logger.warn("Not a valid template file.");
+            throw new IllegalArgumentException("Not a valid template file");
         }
     }
 
@@ -149,6 +149,9 @@ public class ObjectLayerLoader extends LayerLoader {
         Tileset tileset = null;
         MapObject obj = null;
 
+        int firstGid = 0;
+        String source = null;
+
         // Add all objects from the objects group
         NodeList children = node.getChildNodes();
         for (int i = 0; i < children.getLength(); i++) {
@@ -157,8 +160,8 @@ public class ObjectLayerLoader extends LayerLoader {
             if (TILESET.equals(child.getNodeName())) {
                 // The readObjectNode method will automatically set the tileset from tiled map,
                 // so it doesn't need to load tileset again here.
-                int firstGid = Utils.getAttribute(child, FIRST_GID, 1);
-                String source = Utils.getAttributeValue(child, SOURCE);
+                firstGid = Utils.getAttribute(child, FIRST_GID, 1);
+                source = Utils.getAttributeValue(child, SOURCE);
             } else if (OBJECT.equals(child.getNodeName())) {
                 obj = readObjectNode(child);
 
@@ -167,6 +170,11 @@ public class ObjectLayerLoader extends LayerLoader {
                 }
                 break;
             }
+        }
+
+        // for debug, in case the tileset is different from the tileset in the map.
+        if (tileset != null && firstGid != tileset.getFirstGid()) {
+            logger.warn("Template firstGid:{}, source:{}, Tileset firstGid:{}, source:{}", firstGid, source, tileset.getFirstGid(), tileset.getSource());
         }
 
         ObjectTemplate template = new ObjectTemplate();
@@ -228,73 +236,92 @@ public class ObjectLayerLoader extends LayerLoader {
          * if an object have "gid" attribute means it references to a tile.
          */
         if (gid != null) {
-            obj.setShape(ObjectType.TILE);
-
-            int gidValue = (int) Long.parseLong(gid);
-
-            // clear the flag
-            int tileId = gidValue & ~Tile.FLIPPED_MASK;
-
-            Tile tile = map.getTileForTileGID(tileId);
-
-            Tile t = tile.clone();
-            t.setGid(gidValue);
-            obj.setTile(t);
-        }
-
-        NodeList children = node.getChildNodes();
-        for (int i = 0; i < children.getLength(); i++) {
-            Node child = children.item(i);
-            String nodeName = child.getNodeName();
-            switch (nodeName) {
-                case ELLIPSE: {
-                    obj.setShape(ObjectType.ELLIPSE);
-                    break;
-                }
-                case POINT: {
-                    obj.setShape(ObjectType.POINT);
-                    break;
-                }
-                case POLYGON: {
-                    obj.setShape(ObjectType.POLYGON);
-                    obj.setPoints(readPoints(child));
-                    break;
-                }
-                case POLYLINE: {
-                    obj.setShape(ObjectType.POLYLINE);
-                    obj.setPoints(readPoints(child));
-                    break;
-                }
-                case TEXT: {
-                    obj.setShape(ObjectType.TEXT);
-                    obj.setTextData(readTextObject(child));
-                    break;
-                }
-                case IMAGE: {
-                    obj.setShape(ObjectType.IMAGE);
-                    TiledImage image = tiledImageLoader.load(child);
-                    obj.setImageSource(image.getSource());
-                    obj.setTexture(image.getTexture());
-                    obj.setMaterial(image.getMaterial());
-                    break;
-                }
-                default: {
-                    if (!PROPERTIES.equals(nodeName) && !TEXT_EMPTY.equals(nodeName)) {
-                        logger.warn("unknown object type:{}", nodeName);
-                    }
-                    break;
-                }
-            }
+            setTileByGid(obj, gid);
+        } else {
+            readShape(node, obj);
         }
 
         return obj;
     }
 
     /**
+     * Set tile by gid
+     * @param obj the object
+     * @param id the gid
+     */
+    private void setTileByGid(MapObject obj, String id) {
+        obj.setShape(ObjectType.TILE);
+
+        int gid = (int) Long.parseLong(id);
+
+        // clear the flag
+        int tileId = gid & ~Tile.FLIPPED_MASK;
+
+        Tile tile = map.getTileForTileGID(tileId);
+
+        Tile t = tile.clone();
+        t.setGid(gid);
+        obj.setTile(t);
+    }
+
+    /**
+     * Read the shape of the object
+     * @param node the node containing the shape
+     * @param obj the object
+     */
+    private void readShape(Node node, MapObject obj) {
+        NodeList children = node.getChildNodes();
+        for (int i = 0; i < children.getLength(); i++) {
+            Node child = children.item(i);
+            String nodeName = child.getNodeName();
+
+            if (!PROPERTIES.equals(nodeName) && !TEXT_EMPTY.equals(nodeName)) {
+                switch (nodeName) {
+                    case ELLIPSE: {
+                        obj.setShape(ObjectType.ELLIPSE);
+                        break;
+                    }
+                    case POINT: {
+                        obj.setShape(ObjectType.POINT);
+                        break;
+                    }
+                    case POLYGON: {
+                        obj.setShape(ObjectType.POLYGON);
+                        obj.setPoints(readPoints(child));
+                        break;
+                    }
+                    case POLYLINE: {
+                        obj.setShape(ObjectType.POLYLINE);
+                        obj.setPoints(readPoints(child));
+                        break;
+                    }
+                    case TEXT: {
+                        obj.setShape(ObjectType.TEXT);
+                        obj.setTextData(readTextObject(child));
+                        break;
+                    }
+                    case IMAGE: {
+                        obj.setShape(ObjectType.IMAGE);
+                        TiledImage image = tiledImageLoader.load(child);
+                        obj.setImageSource(image.getSource());
+                        obj.setTexture(image.getTexture());
+                        obj.setMaterial(image.getMaterial());
+                        break;
+                    }
+                    default: {
+                        logger.warn("unknown object type:{}", nodeName);
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    /**
      * Read points of a polygon or polyline
      *
      * @param child the node containing the points
-     * @return
+     * @return a list of points
      */
     private List<Vector2f> readPoints(Node child) {
         List<Vector2f> points = new ArrayList<>();
