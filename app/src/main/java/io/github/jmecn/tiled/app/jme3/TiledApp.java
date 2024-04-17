@@ -31,10 +31,11 @@ public class TiledApp extends SimpleApplication {
     private AwtPanel panel;
     private MainWnd wnd;
 
-    private TiledMapAppState tiledMapState;
+    private final TiledMapAppState tiledMapState;
 
     public TiledApp(CountDownLatch latch) {
-        super();
+        tiledMapState = new TiledMapAppState();
+        tiledMapState.setZoomMode(ZoomMode.CAMERA);
         this.latch = latch;
     }
 
@@ -47,12 +48,9 @@ public class TiledApp extends SimpleApplication {
 
     @Override
     public void simpleInitApp() {
-        assetManager.registerLoader(TmxLoader.class, "tmx", "tsx", "tx");
+        assetManager.registerLoader(TmxLoader.class, "tmx", "tsx");
 
-        TiledMapAppState state = new TiledMapAppState();
-        state.setZoomMode(ZoomMode.CAMERA);
-        stateManager.attach(state);
-        this.tiledMapState = state;
+        stateManager.attach(tiledMapState);
 
         /*
          * Wait until both AWT panels are ready.
@@ -99,9 +97,27 @@ public class TiledApp extends SimpleApplication {
         });
     }
 
-    public void toggleGrid() {
-        TiledMapAppState tiledMap = stateManager.getState(TiledMapAppState.class);
-        tiledMap.toggleGrid();
+    public void setGridVisible(boolean visible) {
+        tiledMapState.setGridVisible(visible);
     }
 
+    public void setCursorVisible(boolean visible) {
+        tiledMapState.setCursorVisible(visible);
+    }
+
+    public void setParallaxEnabled(boolean enabled) {
+        tiledMapState.setParallaxEnabled(enabled);
+    }
+
+    public boolean isGridVisible() {
+        return tiledMapState.isGridVisible();
+    }
+
+    public boolean isCursorVisible() {
+        return tiledMapState.isCursorVisible();
+    }
+
+    public boolean isParallaxEnabled() {
+        return tiledMapState.isParallaxEnabled();
+    }
 }

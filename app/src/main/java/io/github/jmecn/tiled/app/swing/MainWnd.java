@@ -34,6 +34,9 @@ public class MainWnd extends JFrame {
 
     private Properties properties;
     private File config;
+    private boolean isGridVisible;
+    private boolean isCursorVisible;
+    private boolean isParallaxEnabled;
 
     private final LinkedList<RecentFile> recentFiles = new LinkedList<>();
 
@@ -50,6 +53,10 @@ public class MainWnd extends JFrame {
         readProperties();
         // load recent files
         readRecentFiles();
+
+        this.isGridVisible = app.isGridVisible();
+        this.isCursorVisible = app.isCursorVisible();
+        this.isParallaxEnabled = app.isParallaxEnabled();
 
         this.app = app;
 
@@ -133,24 +140,47 @@ public class MainWnd extends JFrame {
         viewMenu.setMnemonic('V');
         menuBar.add(viewMenu);
 
-        JCheckBoxMenuItem layerItem = new JCheckBoxMenuItem("Layers");
-        layerItem.setMnemonic('L');
-        layerItem.addActionListener(e -> showLayers());
-        viewMenu.add(layerItem);
-
         JCheckBoxMenuItem gridItem = new JCheckBoxMenuItem("Show Grid");
         gridItem.setMnemonic('G');
-        gridItem.addActionListener(e -> app.toggleGrid());
+        gridItem.setSelected(isGridVisible);
+        gridItem.addActionListener(e -> setGridVisible());
         viewMenu.add(gridItem);
 
+        JCheckBoxMenuItem cursorItem = new JCheckBoxMenuItem("Show Cursor");
+        cursorItem.setMnemonic('C');
+        cursorItem.setSelected(isCursorVisible);
+        cursorItem.addActionListener(e -> setCursorVisible());
+        viewMenu.add(cursorItem);
+
+        JCheckBoxMenuItem parallaxItem = new JCheckBoxMenuItem("Enable Parallax");
+        parallaxItem.setMnemonic('P');
+        parallaxItem.setSelected(isParallaxEnabled);
+        parallaxItem.addActionListener(e -> setParallaxEnable());
+        viewMenu.add(parallaxItem);
+
         return menuBar;
+    }
+
+    private void setGridVisible() {
+        isGridVisible = !isGridVisible;
+        app.setGridVisible(isGridVisible);
+    }
+
+    private void setCursorVisible() {
+        isCursorVisible = !isCursorVisible;
+        app.setCursorVisible(isCursorVisible);
+    }
+
+    private void setParallaxEnable() {
+        isParallaxEnabled = !isParallaxEnabled;
+        app.setParallaxEnabled(isParallaxEnabled);
     }
 
     private JPanel createContentPanel() {
         JPanel panel = new JPanel(new BorderLayout());
 
         JTabbedPane tabbedPane = new JTabbedPane();
-        panel.add(tabbedPane, BorderLayout.WEST);
+        panel.add(tabbedPane, BorderLayout.EAST);
         tabbedPane.addTab("Layers", new JScrollPane(layerView));
 
         panel.add(createStatusBar(), BorderLayout.PAGE_END);
@@ -208,10 +238,6 @@ public class MainWnd extends JFrame {
 
     public void setCursorStatus(String status) {
         cursorStatus.setText(status);
-    }
-
-    private void showLayers() {
-        // TODO
     }
 
     private void openFile() {

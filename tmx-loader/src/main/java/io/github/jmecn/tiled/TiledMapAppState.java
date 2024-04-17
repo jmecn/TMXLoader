@@ -62,10 +62,12 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
     private final Quaternion mapRotation;
 
     // The grid
+    private boolean isGridVisible = false;
     private final Node gridVisual;// for render grid
     private Material gridMaterial;// for render grid
     private boolean isGridUpdated = true;
 
+    private boolean isCursorVisible = true;
     private Point currentTile;
     private Spatial gridCursor;
     private Material cursorMaterial;
@@ -75,8 +77,8 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
 
     // The parallax
     private boolean isParallaxEnabled = true;
-    private Vector2f parallaxOrigin = new Vector2f(0, 0);
-    private Vector2f parallaxDistance = new Vector2f(0, 0);
+    private final Vector2f parallaxOrigin = new Vector2f(0, 0);
+    private final Vector2f parallaxDistance = new Vector2f(0, 0);
 
     // The mapNode
     private final Vector3f mapTranslation;
@@ -462,8 +464,8 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
         inputManager.addMapping(ZOOMOUT, new MouseAxisTrigger(MouseInput.AXIS_WHEEL, true));
         inputManager.addMapping(DRAG, new MouseButtonTrigger(MouseInput.BUTTON_LEFT));
 
-        // add key mapping to show/hide grid
-        inputManager.addMapping(GRID, new KeyTrigger(KeyInput.KEY_G));
+        inputManager.addMapping(GRID, new KeyTrigger(KeyInput.KEY_G));// add key mapping to show/hide grid
+        inputManager.addMapping(PARALLAX, new KeyTrigger(KeyInput.KEY_P));// add key mapping to enable/disable parallax
 
         inputManager.addListener(this, MAPPINGS);
 
@@ -688,15 +690,61 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
                 drag();
             }
         } else if (GRID.equals(name) && isPressed) {
+            isGridVisible = !isGridVisible;
             toggleGrid();
+        } else if (PARALLAX.equals(name) && isPressed) {
+            isParallaxEnabled = !isParallaxEnabled;
+            calculateMapParallax();
         }
+    }
+
+    public boolean isGridVisible() {
+        return isGridVisible;
+    }
+
+    public void setGridVisible(boolean visible) {
+        isGridVisible = visible;
+
+        if (gridVisual != null) {
+            if (isGridVisible) {
+                if (map != null && map.getVisual() != null) {
+                    map.getVisual().attachChild(gridVisual);
+                }
+            } else {
+                gridVisual.removeFromParent();
+            }
+        }
+    }
+
+    public boolean isCursorVisible() {
+        return isCursorVisible;
+    }
+
+    public void setCursorVisible(boolean visible) {
+        isCursorVisible = visible;
+        if (gridCursor != null) {
+            if (isCursorVisible && map != null && map.getVisual() != null) {
+                map.getVisual().attachChild(gridCursor);
+            } else {
+                gridCursor.removeFromParent();
+            }
+        }
+    }
+
+    public boolean isParallaxEnabled() {
+        return isParallaxEnabled;
+    }
+
+    public void setParallaxEnabled(boolean enabled) {
+        isParallaxEnabled = enabled;
+        calculateMapParallax();
     }
 
     /**
      * show/hide the grid
      */
-    public void toggleGrid() {
-        if (gridVisual.getParent() == null) {
+    private void toggleGrid() {
+        if (isGridVisible) {
             if (map != null && map.getVisual() != null) {
                 map.getVisual().attachChild(gridVisual);
             }
