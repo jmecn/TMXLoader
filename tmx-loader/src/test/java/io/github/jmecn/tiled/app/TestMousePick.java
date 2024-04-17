@@ -29,25 +29,22 @@ public class TestMousePick extends SimpleApplication {
         TiledMapAppState state = stateManager.getState(TiledMapAppState.class);
         Point point = state.getCursorTileCoordinate();
         System.out.println("Click:" + point);
-        if (tiledMap.contains(point.x, point.y)) {
+        if (tiledMap.contains(point.getX(), point.getY())) {
             // next tile
             tileId++;
             if (tileId >= TILE_MAX) {
                 tileId = 0;
             }
-            tiledMap.setTileAtFromTileId(tileLayer, point.x, point.y, tileId);
+            tiledMap.setTileAtFromTileId(tileLayer, point.getX(), point.getY(), tileId);
         }
     }
 
     public void initInput() {
         inputManager.setCursorVisible(true);
         inputManager.addMapping("CLICK", new MouseButtonTrigger(MouseInput.BUTTON_LEFT));
-        inputManager.addListener(new ActionListener() {
-            @Override
-            public void onAction(String name, boolean isPressed, float tpf) {
-                if (isPressed) {
-                    click();
-                }
+        inputManager.addListener((ActionListener) (name, isPressed, tpf) -> {
+            if (isPressed) {
+                click();
             }
         }, "CLICK");
     }
