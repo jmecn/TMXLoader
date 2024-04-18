@@ -76,8 +76,6 @@ public class MapObject extends Base {
      */
     private boolean visible;
 
-    
-    // when ObjectGroupType == Tile
     /**
      * A reference to a tile (optional).
      * 
