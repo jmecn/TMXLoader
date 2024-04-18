@@ -208,7 +208,8 @@ public class ObjectRenderer {
 
     private void image(MapObject obj) {
         Geometry visual = new Geometry(obj.getName(), new Rect((float)obj.getWidth(), (float)obj.getHeight(), false));
-        visual.setMaterial(obj.getMaterial());
+        TiledImage image = obj.getImage();
+        visual.setMaterial(image.getMaterial());
         visual.setQueueBucket(RenderQueue.Bucket.Gui);
 
         obj.setVisual(visual);

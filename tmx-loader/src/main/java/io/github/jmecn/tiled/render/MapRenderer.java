@@ -241,7 +241,9 @@ public abstract class MapRenderer {
             layer.getParentVisual().attachChild(layerNode);
         }
 
-        Material mat = layer.getMaterial();
+        TiledImage image = layer.getImage();
+
+        Material mat = image.getMaterial();
         setTintColor(mat, layer);
 
         Mesh mesh = new Rect(mapSize.getX(), mapSize.getY(), false);

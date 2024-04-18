@@ -396,10 +396,10 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
         } else {
             // When the camera moves, the layer moves in relation to the camera by a factor of the parallax scrolling factor.
             // As move mapVisual means move the map, so we need to move the layer in the opposite direction, 1.0-parallaxFactor
-            float x = (float)((1.0 - layer.getParallaxX()) * distance.x);
-            float y = layer.getVisual().getLocalTranslation().y;
-            float z = (float)((1.0 - layer.getParallaxY()) * distance.y);
-            layer.getVisual().setLocalTranslation(x, y, z);
+            float x = (float)((1.0 - layer.getRenderParallaxX()) * distance.x);
+            float y = (float)((1.0 - layer.getRenderParallaxY()) * distance.y);
+            float z = layer.getVisual().getLocalTranslation().y;
+            layer.getVisual().setLocalTranslation(x, z, y);
         }
     }
 

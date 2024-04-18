@@ -71,8 +71,8 @@ public class PropertyTable extends JTable {
         add("opacity", layer.getOpacity());
 
         add("class", layer.getClazz());
-        add("offsetX", layer.getLocalOffsetX());
-        add("offsetY", layer.getLocalOffsetY());
+        add("offsetX", layer.getOffsetX());
+        add("offsetY", layer.getOffsetY());
         add("parallaxX", layer.getParallaxX());
         add("parallaxY", layer.getParallaxY());
 

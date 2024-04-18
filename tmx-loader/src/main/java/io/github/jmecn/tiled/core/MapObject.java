@@ -2,9 +2,7 @@ package io.github.jmecn.tiled.core;
 
 import java.util.List;
 
-import com.jme3.material.Material;
 import com.jme3.math.Vector2f;
-import com.jme3.texture.Texture;
 import io.github.jmecn.tiled.enums.ObjectType;
 
 /**
@@ -81,31 +79,21 @@ public class MapObject extends Base {
     
     // when ObjectGroupType == Tile
     /**
-     * An reference to a tile (optional).
+     * A reference to a tile (optional).
      * 
      * When the object has a gid set, then it is represented by the image of the
      * tile with that global ID. The image alignment currently depends on the
      * map orientation. In orthogonal orientation it's aligned to the
      * bottom-left while in isometric it's aligned to the bottom-center.
      */
-    private int gid;
-    private Tile tile;
+    private int gid;// ObjectType.TILE
+    private Tile tile;// ObjectType.TILE
+    private List<Vector2f> points;// ObjectType.POLYGON, ObjectType.POLYLINE
+    private TiledImage image;// ObjectType.IMAGE
+    private ObjectText textData;// ObjectType.TEXT
 
-    // ObjectGroupType == Polygon || ObjectGroupType == Polyline
-    private List<Vector2f> points;
-
-    // ObjectGroupType == Image
-    private String imageSource = "";
-
-    private Texture texture;
-    private Material material;
-
-    private ObjectText textData;
-
-    /**
-     * Default constructor
-     */
     public MapObject() {
+        // for serialization
     }
 
     public MapObject(double x, double y, double width, double height) {
@@ -235,33 +223,12 @@ public class MapObject extends Base {
         this.points = points;
     }
 
-    public String getImageSource() {
-        return imageSource;
+    public TiledImage getImage() {
+        return image;
     }
 
-    public void setImageSource(String imageSource) {
-        this.imageSource = imageSource;
-    }
-
-    /**
-     * Get texture of this object.
-     * 
-     * @return the Texture
-     */
-    public Texture getTexture() {
-        return texture;
-    }
-
-    public void setTexture(Texture texture) {
-        this.texture = texture;
-    }
-
-    public Material getMaterial() {
-        return material;
-    }
-
-    public void setMaterial(Material material) {
-        this.material = material;
+    public void setImage(TiledImage image) {
+        this.image = image;
     }
 
     public ObjectText getTextData() {
@@ -274,10 +241,8 @@ public class MapObject extends Base {
 
     @Override
     public String toString() {
-        return "MapObject [id=" + id + ", name=" + name + ", clazz=" + clazz
-                + ", shape=" + shape + ", x=" + x + ", y=" + y
-                + ", width=" + width + ", height=" + height + "]";
+        return "MapObject [id=" + id + ", name=" + name + ", shape=" + shape
+                + ", x=" + x + ", y=" + y + ", width=" + width + ", height=" + height + "]";
     }
-
 
 }

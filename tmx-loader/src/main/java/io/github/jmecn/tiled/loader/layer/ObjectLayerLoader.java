@@ -301,9 +301,7 @@ public class ObjectLayerLoader extends LayerLoader {
                     case IMAGE: {
                         obj.setShape(ObjectType.IMAGE);
                         TiledImage image = imageLoader.load(child);
-                        obj.setImageSource(image.getSource());
-                        obj.setTexture(image.getTexture());
-                        obj.setMaterial(image.getMaterial());
+                        obj.setImage(image);
                         break;
                     }
                     default: {

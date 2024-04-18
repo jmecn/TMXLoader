@@ -48,13 +48,14 @@ public class ObjectTemplate {
         obj.setClazz(object.getClazz());
         obj.setWidth(object.getWidth());
         obj.setHeight(object.getHeight());
-        obj.setRotation(object.getRotation());
         obj.setShape(object.getShape());
-        obj.setGid(object.getGid());
-        obj.setTile(object.getTile());
-        obj.setPoints(object.getPoints());
+        obj.setGid(object.getGid());// for Shape.TILE
+        obj.setTile(object.getTile());// for Shape.TILE
+        obj.setPoints(object.getPoints());// for Shape.POLYLINE, Shape.POLYGON
+        obj.setImage(object.getImage());// for Shape.IMAGE
+        obj.setTextData(object.getTextData());// for Shape.TEXT
         obj.setVisible(object.isVisible());
-        obj.setTextData(object.getTextData());
+        obj.setRotation(object.getRotation());
         obj.setProperties(object.getProperties());
     }
 }

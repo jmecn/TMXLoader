@@ -12,7 +12,7 @@ public class Layer extends Base {
     
     protected TiledMap map;
 
-    protected GroupLayer parent;
+    protected Layer parent;
 
     /**
      * Unique ID of the layer (defaults to 0, with valid IDs being at least 1).
@@ -43,51 +43,29 @@ public class Layer extends Base {
      * The width and height of the layer in tiles. Traditionally required, but
      * as of Tiled always the same as the map width and height for fixed-size maps.
      */
-    protected int width;
-    protected int height;
-
-    /**
-     * The opacity of the layer as a value from 0 to 1. Defaults to 1.
-     */
+    protected int width = 0;
+    protected int height = 0;
     protected double opacity = 1.0;
-
-    /**
-     * Whether the layer is shown (1) or hidden (0). Defaults to 1.
-     */
     protected boolean visible = true;
-
     protected boolean locked = false;
+    protected ColorRGBA tintColor = new ColorRGBA(1f, 1f, 1f, 1f);
 
-    /**
-     * A tint color that is multiplied with any tiles drawn by this layer
-     * in #AARRGGBB or #RRGGBB format (optional).
-     */
-    protected ColorRGBA tintColor = new ColorRGBA(1, 1, 1, 1);
-
-    /**
-     * Horizontal offset for this layer in pixels. Defaults to 0. (since 0.14)
-     */
     protected int offsetX = 0;
-
-    /**
-     * Vertical offset for this layer in pixels. Defaults to 0. (since 0.14)
-     */
     protected int offsetY = 0;
+    protected int renderOffsetX = 0;
+    protected int renderOffsetY = 0;
+    private boolean isRenderOffsetUpdated = true;
 
-    /**
-     * Horizontal parallax factor for this layer. Defaults to 1. (since 1.5)
-     */
     protected double parallaxX = 1;
-
-    /**
-     * Vertical parallax factor for this layer. Defaults to 1. (since 1.5)
-     */
     protected double parallaxY = 1;
+    protected double renderParallaxX = 1;
+    protected double renderParallaxY = 1;
+    private boolean isRenderParallaxUpdated = true;
 
     public Layer() {
-        this.width = 0;
-        this.height = 0;
+        // for serialization
     }
+
     /**
      * Constructor for TMXLayer.
      * 
@@ -98,91 +76,155 @@ public class Layer extends Base {
         this.width = width;
         this.height = height;
     }
-    
-    public Layer(TiledMap map) {
-        this.map = map;
-    }
-    
+
+    /**
+     * @return The map this layer is part of.
+     */
     public TiledMap getMap() {
         return map;
     }
 
+    /**
+     * @param map The map this layer is part of.
+     */
     public void setMap(TiledMap map) {
         this.map = map;
     }
 
-    public GroupLayer getParent() {
+    /**
+     * @return The parent of this layer.
+     */
+    public Layer getParent() {
         return parent;
     }
 
-    public void setParent(GroupLayer parent) {
+    /**
+     * Set the parent of this layer.
+     * @param parent The parent of this layer.
+     */
+    public void setParent(Layer parent) {
+        if (parent == this) {
+            throw new IllegalArgumentException("Can't set parent to itself!");
+        }
         this.parent = parent;
     }
 
+    /**
+     * @return The unique ID of the layer.
+     */
     public int getId() {
         return id;
     }
 
+    /**
+     * @param id The unique ID of the layer.
+     */
     public void setId(int id) {
         this.id = id;
     }
 
+    /**
+     * @return The name of the layer.
+     */
     public String getName() {
         return name;
     }
 
+    /**
+     * @param name The name of the layer.
+     */
     public void setName(String name) {
         this.name = name;
     }
 
+    /**
+     * @return The class of the layer.
+     */
     public String getClazz() {
         return clazz;
     }
 
+    /**
+     * @param clazz The class of the layer.
+     */
     public void setClazz(String clazz) {
         this.clazz = clazz;
     }
 
+    /**
+     * @return The x coordinate of the layer in tiles.
+     */
     public int getX() {
         return x;
     }
 
+    /**
+     * @param x The x coordinate of the layer in tiles.
+     */
     public void setX(int x) {
         this.x = x;
     }
 
+    /**
+     * @return The y coordinate of the layer in tiles.
+     */
     public int getY() {
         return y;
     }
 
+    /**
+     * @param y The y coordinate of the layer in tiles.
+     */
     public void setY(int y) {
         this.y = y;
     }
 
+    /**
+     * @return The width of the layer in tiles.
+     */
     public int getWidth() {
         return width;
     }
 
+    /**
+     * @param width The width of the layer in tiles.
+     */
     public void setWidth(int width) {
         this.width = width;
     }
 
+    /**
+     * @return The height of the layer in tiles.
+     */
     public int getHeight() {
         return height;
     }
 
+    /**
+     * @param height The height of the layer in tiles.
+     */
     public void setHeight(int height) {
         this.height = height;
     }
 
+    /**
+     * @return The opacity of the layer as a value from 0 to 1. Defaults to 1.
+     */
     public double getOpacity() {
         return opacity;
     }
 
+    /**
+     * Set the opacity of the layer as a value from 0 to 1. Defaults to 1.
+     * @param opacity The opacity of the layer as a value from 0 to 1.
+     */
     public void setOpacity(double opacity) {
         this.opacity = opacity;
     }
 
+    /**
+     * @return Whether the layer is shown or hidden. Defaults to true.
+     */
     public boolean isVisible() {
         if (parent != null) {
             return parent.visible;
@@ -191,22 +233,24 @@ public class Layer extends Base {
         }
     }
 
+    /**
+     * @param visible Whether the layer is shown or hidden.
+     */
     public void setVisible(boolean visible) {
         this.visible = visible;
     }
 
     public boolean isLocked() {
-        if (parent != null) {
-            return parent.isLocked();
-        } else {
-            return locked;
-        }
+        return locked;
     }
 
     public void setLocked(boolean locked) {
         this.locked = locked;
     }
 
+    /**
+     * @return A tint color that is multiplied with any tiles drawn by this layer.
+     */
     public ColorRGBA getTintColor() {
         if (parent != null) {
             return parent.getTintColor();
@@ -215,67 +259,192 @@ public class Layer extends Base {
         }
     }
 
+    /**
+     * @param tintColor A tint color that is multiplied with any tiles drawn by this layer.
+     */
     public void setTintColor(ColorRGBA tintColor) {
         this.tintColor = tintColor;
     }
 
-    public int getLocalOffsetX() {
+    /**
+     * @return Horizontal offset for this layer in pixels. Defaults to 0.
+     */
+    public int getOffsetX() {
         return offsetX;
     }
 
-    public int getLocalOffsetY() {
+    /**
+     * @param offsetX Horizontal offset for this layer in pixels.
+     */
+    public void setOffsetX(int offsetX) {
+        this.offsetX = offsetX;
+        invalidRenderOffset();
+    }
+
+    /**
+     * @return Vertical offset for this layer in pixels. Defaults to 0. (since 0.14)
+     */
+    public int getOffsetY() {
         return offsetY;
     }
 
-    public int getOffsetX() {
-        if (parent != null) {
-            return parent.getOffsetX();
-        } else {
-            return offsetX;
-        }
+    /**
+     * @param offsetY Vertical offset for this layer in pixels.
+     */
+    public void setOffsetY(int offsetY) {
+        this.offsetY = offsetY;
+        invalidRenderOffset();
     }
 
-    public int getOffsetY() {
-        if (parent != null) {
-            return parent.getOffsetY();
-        } else {
-            return offsetY;
-        }
-    }
-    
+    /**
+     * Set the offset for this layer in pixels.
+     * @param offsetX Horizontal offset for this layer in pixels.
+     * @param offsetY Vertical offset for this layer in pixels.
+     */
     public void setOffset(int offsetX, int offsetY) {
         this.offsetX = offsetX;
         this.offsetY = offsetY;
+        invalidRenderOffset();
     }
 
-    // When the parallax scrolling factor is set on a group layer, it applies to all its child layers.
-    // The effective parallax scrolling factor of a layer is determined by multiplying the parallax
-    // scrolling factor by the scrolling factors of all parent layers.
+    /**
+     * @return Horizontal offset for this layer in pixels, including the offset of all parent layers.
+     */
+    public int getRenderOffsetX() {
+        if (isRenderOffsetUpdated) {
+            calculateRenderOffset();
+        }
+        return renderOffsetX;
+    }
+
+    /**
+     * @return Vertical offset for this layer in pixels, including the offset of all parent layers.
+     */
+    public int getRenderOffsetY() {
+        if (isRenderOffsetUpdated) {
+            calculateRenderOffset();
+        }
+        return renderOffsetY;
+    }
+
+    /**
+     * @return Horizontal parallax factor for this layer. Defaults to 1. (since 1.5)
+     */
     public double getParallaxX() {
-        if (parent != null) {
-            return parallaxX * parent.getParallaxX();
-        } else {
-            return parallaxX;
-        }
+        return parallaxX;
     }
 
+    /**
+     * @param parallaxX Horizontal parallax factor for this layer.
+     */
+    public void setParallaxX(double parallaxX) {
+        this.parallaxX = parallaxX;
+        invalidRenderParallax();
+    }
+
+    /**
+     * @return Vertical parallax factor for this layer. Defaults to 1. (since 1.5)
+     */
     public double getParallaxY() {
-        if (parent != null) {
-            return parallaxY * parent.getParallaxY();
-        } else {
-            return parallaxY;
-        }
+        return parallaxY;
     }
 
+    /**
+     * @param parallaxY Vertical parallax factor for this layer.
+     */
+    public void setParallaxY(double parallaxY) {
+        this.parallaxY = parallaxY;
+        invalidRenderParallax();
+    }
+
+    /**
+     * Set the parallax factor for this layer.
+     * @param parallaxX Horizontal parallax factor for this layer.
+     * @param parallaxY Vertical parallax factor for this layer.
+     */
     public void setParallaxFactor(double parallaxX, double parallaxY) {
         this.parallaxX = parallaxX;
         this.parallaxY = parallaxY;
+        invalidRenderParallax();
     }
 
+    public double getRenderParallaxX() {
+        if (isRenderParallaxUpdated) {
+            calculateRenderParallax();
+        }
+        return renderParallaxX;
+    }
+
+    public double getRenderParallaxY() {
+        if (isRenderParallaxUpdated) {
+            calculateRenderParallax();
+        }
+        return renderParallaxY;
+    }
+
+    /**
+     * Mark the render offset as invalid.
+     */
+    public void invalidRenderOffset() {
+        isRenderOffsetUpdated = true;
+    }
+
+    /**
+     * Mark the render parallax as invalid.
+     */
+    public void invalidRenderParallax() {
+        isRenderParallaxUpdated = true;
+    }
+
+    /**
+     * Calculate the render offset for this layer.
+     *
+     * <p>When the offset is set on a group layer, it applies to all its child layers.</p>
+     */
+    protected void calculateRenderOffset() {
+        if (parent != null) {
+            parent.calculateRenderOffset();
+            renderOffsetX = offsetX + parent.getRenderOffsetX();
+            renderOffsetY = offsetY + parent.getRenderOffsetY();
+        } else {
+            renderOffsetX = offsetX;
+            renderOffsetY = offsetY;
+        }
+        isRenderOffsetUpdated = false;
+    }
+
+    /**
+     * Calculate the render parallax factor for this layer.
+     *
+     * <p>When the parallax scrolling factor is set on a group layer, it applies to all its child layers.</p>
+     * <p>The effective parallax scrolling factor of a layer is determined by multiplying the parallax scrolling
+     * factor by the scrolling factors of all parent layers.</p>
+     */
+    protected void calculateRenderParallax() {
+        if (parent != null) {
+            parent.calculateRenderParallax();
+            renderParallaxX = parallaxX * parent.getRenderParallaxX();
+            renderParallaxY = parallaxY * parent.getRenderParallaxY();
+        } else {
+            renderParallaxX = parallaxX;
+            renderParallaxY = parallaxY;
+        }
+        isRenderParallaxUpdated = false;
+    }
+
+    @Override
+    public Node getVisual() {
+        return (Node) visual;
+    }
+
+    /**
+     * @return The parent visual object of this layer.
+     */
     public Node getParentVisual() {
         if (parent != null) {
             return parent.getVisual();
         }
+
         if (map != null) {
             return map.getVisual();
         }

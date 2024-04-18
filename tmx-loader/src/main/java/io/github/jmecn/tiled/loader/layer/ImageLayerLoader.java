@@ -9,10 +9,10 @@ import io.github.jmecn.tiled.loader.LayerLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 import static io.github.jmecn.tiled.TiledConst.*;
 import static io.github.jmecn.tiled.loader.Utils.getAttribute;
+import static io.github.jmecn.tiled.loader.Utils.getChildByTag;
 
 /**
  * Tiled Image Layer Loader.
@@ -46,28 +46,14 @@ public class ImageLayerLoader extends LayerLoader {
         layer.setRepeatX(repeatX);
         layer.setRepeatY(repeatY);
 
-        boolean hasImage = false;
-        NodeList children = node.getChildNodes();
-        for (int i = 0; i < children.getLength(); i++) {
-            Node child = children.item(i);
-            String nodeName = child.getNodeName();
-            if (IMAGE.equals(nodeName)) {
-                TiledImage image = imageLoader.load(child);
-                if (image.getTexture() != null) {
-                    layer.setSource(image.getSource());
-                    layer.setTexture(image.getTexture());
-                    layer.setMaterial(image.getMaterial());
-
-                    hasImage = true;
-                    break;
-                }
-            }
-        }
-
-        if (!hasImage) {
+        Node imageNode = getChildByTag(node, IMAGE);
+        if (imageNode == null) {
             logger.warn("ImageLayer {} has no image", layer.getName());
             throw new IllegalArgumentException("ImageLayer " + layer.getName() + " has no image");
         }
+
+        TiledImage image = imageLoader.load(imageNode);
+        layer.setImage(image);
 
         return layer;
     }

@@ -1,7 +1,5 @@
 package io.github.jmecn.tiled.core;
 
-import com.jme3.scene.Node;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -18,13 +16,9 @@ public class GroupLayer extends Layer {
 
     private final Map<String, Layer> layerMap;
 
-    public GroupLayer( ) {
+    public GroupLayer() {
         layers = new ArrayList<>();
         layerMap = new HashMap<>();
-    }
-
-    public List<Layer> getLayers() {
-        return layers;
     }
 
     public void addLayer(Layer layer) {
@@ -34,16 +28,56 @@ public class GroupLayer extends Layer {
         layerMap.put(layer.getName(), layer);
     }
 
-    @Override
-    public Node getVisual() {
-        return (Node) visual;
-    }
-
-    public Layer getLayer(int i) {
-        return layers.get(i);
-    }
-
+    /**
+     * @return The number of layers in this group.
+     */
     public int getLayerCount() {
         return layers.size();
     }
+
+    /**
+     * @return The list of layers in this group.
+     */
+    public List<Layer> getLayers() {
+        return layers;
+    }
+
+    /**
+     * @param index The index of the layer.
+     * @return The layer at the given index.
+     */
+    public Layer getLayer(int index) {
+        return layers.get(index);
+    }
+
+    /**
+     * @param name The name of the layer.
+     * @return The layer with the given name, or null if no layer with that name
+     */
+    public Layer getLayer(String name) {
+        return layerMap.get(name);
+    }
+
+    /**
+     * Invalid the render offset of all layers.
+     */
+    @Override
+    public void invalidRenderOffset() {
+        super.invalidRenderOffset();
+        for (Layer layer : layers) {
+            layer.invalidRenderOffset();
+        }
+    }
+
+    /**
+     * Invalid the render parallax of all layers.
+     */
+    @Override
+    public void invalidRenderParallax() {
+        super.invalidRenderParallax();
+        for (Layer layer : layers) {
+            layer.invalidRenderParallax();
+        }
+    }
+
 }

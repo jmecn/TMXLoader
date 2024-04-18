@@ -5,7 +5,6 @@ import java.util.List;
 
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
-import com.jme3.scene.Node;
 import io.github.jmecn.tiled.enums.DrawOrder;
 import io.github.jmecn.tiled.math2d.RectangleD;
 
@@ -39,6 +38,7 @@ public class ObjectGroup extends Layer {
     private final List<MapObject> objects = new LinkedList<>();
 
     public ObjectGroup() {
+        // for serialization
     }
 
     public ObjectGroup(int width, int height) {
@@ -129,9 +129,4 @@ public class ObjectGroup extends Layer {
         return null;
     }
 
-    @Override
-    public Node getVisual() {
-        return (Node) visual;
-    }
-    
 }
