@@ -11,7 +11,6 @@ import com.jme3.renderer.queue.RenderQueue.Bucket;
 import com.jme3.scene.*;
 import io.github.jmecn.tiled.core.*;
 import io.github.jmecn.tiled.enums.DrawOrder;
-import io.github.jmecn.tiled.enums.Orientation;
 import io.github.jmecn.tiled.math2d.Point;
 import io.github.jmecn.tiled.render.shape.Rect;
 import io.github.jmecn.tiled.render.shape.TileMesh;
@@ -36,7 +35,7 @@ import io.github.jmecn.tiled.render.shape.TileMesh;
  * tile and every object. Now I choose XOZ plane, it's much easier to do the
  * math.
  * 
- * The Point(x,y) in Tiled now converted to Vector3f(x, 0, y).
+ * <p>The Point(x,y) in Tiled now converted to Vector3f(x, 0, y).</p>
  * 
  * <pre>
  * O------- X
@@ -47,7 +46,6 @@ import io.github.jmecn.tiled.render.shape.TileMesh;
  * </pre>
  * 
  * @author yanmaoyuan
- * 
  */
 public abstract class MapRenderer {
 
