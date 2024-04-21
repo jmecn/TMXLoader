@@ -153,8 +153,6 @@ public class MainWnd extends JFrame {
         updateRecentFileMenu();
         fileMenu.add(recentFilesMenu);
 
-        fileMenu.addSeparator();
-
         JMenu viewMenu = new JMenu("View");
         viewMenu.setMnemonic('V');
         menuBar.add(viewMenu);

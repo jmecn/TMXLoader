@@ -15,7 +15,7 @@ maven
 <dependency>
     <groupId>io.github.jmecn</groupId>
     <artifactId>tmx-loader</artifactId>
-    <version>0.4.0</version>
+    <version>0.5.0</version>
 </dependency>
 ```
 
@@ -27,7 +27,7 @@ repositories {
 }
 
 dependencies {
-    implementation 'io.github.jmecn:tmx-loader:0.4.0'
+    implementation 'io.github.jmecn:tmx-loader:0.5.0'
 }
 ```
 
@@ -98,3 +98,7 @@ public class TmxLoaderExample extends SimpleApplication {
 ![staggered05](docs/screenshots/staggered05.png)
 
 ![animated tile](https://cloud.githubusercontent.com/assets/5283598/21221336/f211c08e-c2f7-11e6-9de8-e3018fd65b07.gif)
+
+* Parallax scroll
+
+https://youtu.be/0OIIdxaAZjA
