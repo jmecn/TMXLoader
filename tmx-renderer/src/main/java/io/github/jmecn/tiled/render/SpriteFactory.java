@@ -72,7 +72,7 @@ public final class SpriteFactory {
             }
 
             tileSprites.put(tile.getGid(), geometry);
-            // tile.setVisual(geometry);
+            tile.setVisual(geometry); // TODO remove it when I have a better animation system
         }
     }
 

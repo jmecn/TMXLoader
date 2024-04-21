@@ -120,9 +120,6 @@ public abstract class MapRenderer {
             Node node = new Node(layer.getName());
             node.setQueueBucket(Bucket.Gui);
             map.getVisual().attachChild(node);
-
-            // layer.setVisual(node);// TODO remove this later
-
             return node;
         });
     }
