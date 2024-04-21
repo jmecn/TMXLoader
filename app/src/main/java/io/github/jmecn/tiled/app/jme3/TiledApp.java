@@ -91,7 +91,9 @@ public class TiledApp extends SimpleApplication {
             Point tile = tiledMapState.getCursorTileCoordinate();
             Vector2f pixel = tiledMapState.getCursorPixelCoordinate();
             Vector2f cursor = tiledMapState.getCursorScreenCoordinate();
-            String status = String.format("Tile: (%d,%d), Pixel: (%.0f, %.0f), Cursor: (%.0f,%.0f)", tile.getX(), tile.getY(), pixel.x, pixel.y, cursor.x, cursor.y);
+            String status = String.format("Tile: (%d,%d), Pixel: (%.0f, %.0f), Cursor: (%.0f,%.0f), Camera:(%d, %d)",
+                    tile.getX(), tile.getY(), pixel.x, pixel.y, cursor.x, cursor.y,
+                    cam.getWidth(), cam.getHeight());
             wnd.setCursorStatus(status);
 
             float scale = tiledMapState.getMapScale();
@@ -103,10 +105,8 @@ public class TiledApp extends SimpleApplication {
         enqueue((Callable<Void>)() -> {
             if (map != null) {
                 tiledMapState.setMap(map);
+                tiledMapState.setMapScale(1f);
                 tiledMapState.update(0);
-
-                // look at the center of this map
-                tiledMapState.moveToTile(map.getWidth() * 0.5f, map.getHeight() * 0.5f);
             }
             return null;
         });

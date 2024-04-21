@@ -174,10 +174,9 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
         cam.setFrustum(near, far, -halfWidth, halfWidth, halfHeight, -halfHeight);
 
         cam.setParallelProjection(true);
-//        cam.lookAtDirection(new Vector3f(0f, 0f, -1f), Vector3f.UNIT_Y);
-//        cam.setLocation(new Vector3f(halfWidth, halfHeight, 0));
         cam.lookAtDirection(new Vector3f(0f, -1f, 0f), new Vector3f(0f, 0f, -1f));
         cam.setLocation(new Vector3f(halfWidth, 0, halfHeight));
+        logger.info("cam: {}, direction:{}", cam.getLocation(), cam.getDirection());
 
         gridMaterial = createGridMaterial();
 
@@ -408,6 +407,15 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
         }
     }
 
+    public void setMapScale(float scale) {
+        mapScale = scale;
+        if (map != null) {
+            viewColumns = screenDimension.x / (map.getTileWidth() * mapScale);
+            map.getVisual().setLocalScale(mapScale, 1, mapScale);
+            isMapUpdated = true;
+        }
+    }
+
     public float getMapScale() {
         if (map != null) {
             float pixel = map.getTileWidth() * viewColumns;
@@ -468,7 +476,6 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
         inputManager.addMapping(ZOOMIN, new MouseAxisTrigger(MouseInput.AXIS_WHEEL, false));
         inputManager.addMapping(ZOOMOUT, new MouseAxisTrigger(MouseInput.AXIS_WHEEL, true));
         inputManager.addMapping(DRAG, new MouseButtonTrigger(MouseInput.BUTTON_LEFT));
-        // inputManager.addMapping(DRAG, new MouseButtonTrigger(MouseInput.AXIS_X), new MouseButtonTrigger(MouseInput.AXIS_Y));
 
         inputManager.addMapping(GRID, new KeyTrigger(KeyInput.KEY_G));// add key mapping to show/hide grid
         inputManager.addMapping(PARALLAX, new KeyTrigger(KeyInput.KEY_P));// add key mapping to enable/disable parallax
@@ -778,4 +785,5 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
         mat.setColor("Color", cursorColorAvailable);
         return mat;
     }
+
 }
