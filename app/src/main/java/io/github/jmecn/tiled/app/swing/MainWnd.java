@@ -388,7 +388,6 @@ public class MainWnd extends JFrame {
     }
 
     public void onPick(Point tile, Vector2f pixel) {
-        // TODO Auto-generated method stub
         if (layer == null) {
             return;
         }
