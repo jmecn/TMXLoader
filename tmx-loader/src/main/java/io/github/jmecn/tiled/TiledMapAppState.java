@@ -31,6 +31,8 @@ import io.github.jmecn.tiled.render.IsometricRenderer;
 import io.github.jmecn.tiled.render.MapRenderer;
 import io.github.jmecn.tiled.render.OrthogonalRenderer;
 import io.github.jmecn.tiled.render.StaggeredRenderer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * TiledMapAppState will create a Spatial for com.jme3.tmx.core.TiledMap
@@ -40,6 +42,7 @@ import io.github.jmecn.tiled.render.StaggeredRenderer;
  */
 public class TiledMapAppState extends BaseAppState implements AnalogListener, ActionListener {
 
+    static Logger logger = LoggerFactory.getLogger(TiledMapAppState.class);
     public static final String INIT_ERROR = "inputManager is null. Please initialize TiledMapAppState first.";
     public static final String LEFT = "left";
     public static final String RIGHT = "right";
@@ -171,8 +174,10 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
         cam.setFrustum(near, far, -halfWidth, halfWidth, halfHeight, -halfHeight);
 
         cam.setParallelProjection(true);
-        cam.lookAtDirection(new Vector3f(0f, 0f, -1f), Vector3f.UNIT_Y);
-        cam.setLocation(new Vector3f(halfWidth, halfHeight, 0));
+//        cam.lookAtDirection(new Vector3f(0f, 0f, -1f), Vector3f.UNIT_Y);
+//        cam.setLocation(new Vector3f(halfWidth, halfHeight, 0));
+        cam.lookAtDirection(new Vector3f(0f, -1f, 0f), new Vector3f(0f, 0f, -1f));
+        cam.setLocation(new Vector3f(halfWidth, 0, halfHeight));
 
         gridMaterial = createGridMaterial();
 
@@ -339,7 +344,7 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
 
     public void moveToTile(float x, float y) {
         Vector2f tilePos = mapRenderer.tileToScreenCoords(x, y).multLocal(getMapScale());
-        Vector2f camPos = new Vector2f(cam.getLocation().x, screenDimension.y - cam.getLocation().y);
+        Vector2f camPos = new Vector2f(cam.getLocation().x, screenDimension.y - cam.getLocation().z);
         camPos.subtract(tilePos, tilePos);
         mapTranslation.set(tilePos.x, 0, tilePos.y);
         moveMapVisual();
@@ -347,7 +352,7 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
 
     public void moveToPixel(float x, float y) {
         Vector2f pixelPos = mapRenderer.pixelToScreenCoords(x, y).multLocal(getMapScale());
-        Vector2f camPos = new Vector2f(cam.getLocation().x, screenDimension.y - cam.getLocation().y);
+        Vector2f camPos = new Vector2f(cam.getLocation().x, screenDimension.y - cam.getLocation().z);
         camPos.subtract(pixelPos, pixelPos);
         mapTranslation.set(pixelPos.x, 0, pixelPos.y);
         moveMapVisual();
@@ -463,6 +468,7 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
         inputManager.addMapping(ZOOMIN, new MouseAxisTrigger(MouseInput.AXIS_WHEEL, false));
         inputManager.addMapping(ZOOMOUT, new MouseAxisTrigger(MouseInput.AXIS_WHEEL, true));
         inputManager.addMapping(DRAG, new MouseButtonTrigger(MouseInput.BUTTON_LEFT));
+        // inputManager.addMapping(DRAG, new MouseButtonTrigger(MouseInput.AXIS_X), new MouseButtonTrigger(MouseInput.AXIS_Y));
 
         inputManager.addMapping(GRID, new KeyTrigger(KeyInput.KEY_G));// add key mapping to show/hide grid
         inputManager.addMapping(PARALLAX, new KeyTrigger(KeyInput.KEY_P));// add key mapping to enable/disable parallax
@@ -516,7 +522,7 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
         if (inputManager == null) {
             throw new IllegalStateException(INIT_ERROR);
         }
-        return new Vector2f(cam.getLocation().x, cam.getLocation().y);
+        return new Vector2f(cam.getLocation().x, cam.getLocation().z);
     }
 
     /**
@@ -561,7 +567,7 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
      * @param sideways move up-down or right-left
      */
     public void move(float value, boolean sideways) {
-        pos.set(mapTranslation.clone());
+        pos.set(mapTranslation);
 
         if (sideways) {
             vel.set(1f, 0f, 0f);
@@ -591,6 +597,7 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
 
         // move camera
         mapTranslation.set(startLoc.add(stopPos.x, 0, -stopPos.y));
+        logger.debug("startPos: {}, stopPos: {}, mapTranslation:{}", startPos, stopPos, mapTranslation);
         moveMapVisual();
     }
 
@@ -652,6 +659,7 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
         if (mapRenderer == null) {
             return;
         }
+        logger.info("Analog: {} value: {} tpf:{}", name, value, tpf);
         switch (name) {
             case UP:
                 move(-tpf, false);
