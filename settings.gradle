@@ -8,4 +8,4 @@
  */
 
 rootProject.name = 'TMXLoader'
-include('tmx-loader', 'app')
+include('tmx-loader', 'tmx-renderer', 'app')

@@ -171,7 +171,8 @@ public final class MapLoader {
             if (source != null) {
                 logger.info("Load tileset: {}", source);
                 tileset = (Tileset) assetManager.loadAsset(assetKey.getFolder() + source);
-                tileset.setFirstGid(firstGid);
+                // as first gid is a map related property, we need to update it.
+                tileset.updateFirstGid(firstGid);
                 tileset.setSource(source);
             } else {
                 tileset = tilesetLoader.readTileset(node);
@@ -187,7 +188,6 @@ public final class MapLoader {
                 logger.debug("Tileset {} has no tile height. Using map tile height: {}", tileset.getName(), map.getTileHeight());
             }
 
-            tilesetLoader.createVisual(tileset, map);
             map.addTileset(tileset);
         }
     }

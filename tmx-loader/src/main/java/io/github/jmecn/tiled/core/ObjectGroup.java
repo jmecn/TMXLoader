@@ -6,7 +6,7 @@ import java.util.List;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 import io.github.jmecn.tiled.enums.DrawOrder;
-import io.github.jmecn.tiled.math2d.RectangleD;
+import io.github.jmecn.tiled.math2d.Bound2D;
 
 /**
  * The object group is in fact a map layer, and is hence called "object layer"
@@ -117,7 +117,7 @@ public class ObjectGroup extends Layer {
                 return obj;
             }
 
-            RectangleD rect = new RectangleD(
+            Bound2D rect = new Bound2D(
                     obj.getX() + this.x * map.getTileWidth(),
                     obj.getY() + this.y * map.getTileHeight(),
                     obj.getWidth(),

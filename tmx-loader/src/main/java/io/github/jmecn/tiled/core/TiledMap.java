@@ -410,9 +410,13 @@ public class TiledMap extends Base {
 
         Tile tile = getTileForTileGID(gid);
         if (tile != null) {
-            Tile t = tile.clone();
-            t.setGid(tileId);
-            tileContainer.setTileAt(x, y, t);
+            if (tile.getGid() != tileId) {
+                Tile t = tile.copy();
+                t.setGid(tileId);
+                tileContainer.setTileAt(x, y, t);
+            } else {
+                tileContainer.setTileAt(x, y, tile);
+            }
         }
     }
 

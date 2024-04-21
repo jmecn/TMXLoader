@@ -4,7 +4,6 @@ plugins {
 
 dependencies {
     implementation project(':tmx-loader')
-    implementation project(':tmx-renderer')
 
     implementation "org.jmonkeyengine:jme3-desktop:$jme3Version"
     implementation "org.jmonkeyengine:jme3-lwjgl:$jme3Version"
@@ -13,5 +12,5 @@ dependencies {
 
 application {
     // Define the main class for the application.
-    mainClass = 'io.github.jmecn.tiled.app.Main'
+    mainClass = 'io.github.jmecn.tiled.render.Main'
 }

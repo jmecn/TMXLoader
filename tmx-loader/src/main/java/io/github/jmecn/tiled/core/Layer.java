@@ -227,7 +227,7 @@ public class Layer extends Base {
      */
     public boolean isVisible() {
         if (parent != null) {
-            return parent.visible;
+            return parent.isVisible();
         } else {
             return visible;
         }
@@ -435,20 +435,6 @@ public class Layer extends Base {
     @Override
     public Node getVisual() {
         return (Node) visual;
-    }
-
-    /**
-     * @return The parent visual object of this layer.
-     */
-    public Node getParentVisual() {
-        if (parent != null) {
-            return parent.getVisual();
-        }
-
-        if (map != null) {
-            return map.getVisual();
-        }
-        return null;
     }
 
     @Override

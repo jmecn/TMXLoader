@@ -4,12 +4,7 @@ import com.jme3.asset.AssetInfo;
 import com.jme3.asset.AssetKey;
 import com.jme3.asset.AssetManager;
 import com.jme3.material.Material;
-import com.jme3.math.Vector2f;
 import com.jme3.math.Vector4f;
-import com.jme3.renderer.queue.RenderQueue;
-import com.jme3.scene.Geometry;
-import com.jme3.scene.Spatial;
-import io.github.jmecn.tiled.animation.AnimatedTileControl;
 import io.github.jmecn.tiled.animation.Animation;
 import io.github.jmecn.tiled.animation.Frame;
 import io.github.jmecn.tiled.core.*;
@@ -17,8 +12,6 @@ import io.github.jmecn.tiled.enums.FillMode;
 import io.github.jmecn.tiled.enums.ObjectAlignment;
 import io.github.jmecn.tiled.enums.Orientation;
 import io.github.jmecn.tiled.enums.TileRenderSize;
-import io.github.jmecn.tiled.math2d.Point;
-import io.github.jmecn.tiled.render.shape.TileMesh;
 import io.github.jmecn.tiled.util.ColorUtil;
 import io.github.jmecn.tiled.util.TileCutter;
 import org.slf4j.Logger;
@@ -30,7 +23,6 @@ import org.w3c.dom.NodeList;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.InputStream;
-import java.util.List;
 import java.util.Properties;
 
 import static io.github.jmecn.tiled.TiledConst.*;
@@ -459,44 +451,5 @@ public final class TilesetLoader {
             }
         }
         tile.addAnimation(animation);
-    }
-
-    /**
-     * Create the visual part for every tile of a given Tileset.
-     *
-     * @param tileset the Tileset
-     * @param map the TiledMap
-     */
-    public void createVisual(Tileset tileset, TiledMap map) {
-
-        Point tileOffset = tileset.getTileOffset();
-        Vector2f offset = new Vector2f(tileOffset.getX(), tileOffset.getY());
-        Vector2f origin = new Vector2f(0, map.getTileHeight());
-
-        List<Tile> tiles = tileset.getTiles();
-        for (Tile tile : tiles) {
-            String name = "tile#" + tileset.getFirstGid() + "#" + tile.getId();
-
-            Vector2f coord = new Vector2f(tile.getX(), tile.getY());
-            Vector2f size = new Vector2f(tile.getWidth(), tile.getHeight());
-            TileMesh mesh = new TileMesh(coord, size, offset, origin);
-
-            Geometry geometry = new Geometry(name, mesh);
-            geometry.setQueueBucket(RenderQueue.Bucket.Gui);
-
-            if (tile.getMaterial() != null) {
-                geometry.setMaterial(tile.getMaterial());
-            } else {
-                geometry.setMaterial(tileset.getMaterial());
-            }
-
-            if (tile.isAnimated()) {
-                geometry.setBatchHint(Spatial.BatchHint.Never);
-                AnimatedTileControl control = new AnimatedTileControl(tile);
-                geometry.addControl(control);
-            }
-
-            tile.setVisual(geometry);
-        }
     }
 }

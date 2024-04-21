@@ -257,7 +257,7 @@ public class ObjectLayerLoader extends LayerLoader {
 
         Tile tile = map.getTileForTileGID(tileId);
 
-        Tile t = tile.clone();
+        Tile t = tile.copy();
         t.setGid(gid);
         obj.setTile(t);
     }

@@ -287,7 +287,7 @@ public class Tile extends Base implements Cloneable {
     }
 
     /*
-     * This part is about he terrain. It's useless in jme3.
+     * This part is about the terrain. It's useless in jme3.
      */
 
     public int getTerrain() {
@@ -310,9 +310,7 @@ public class Tile extends Base implements Cloneable {
      * Tile was cloned when TileLayer and ObjectGroup need a tile as a part of
      * them.
      */
-    @Override
-    public Tile clone() {
-
+    public Tile copy() {
         // tile base
         Tile tile = new Tile(x, y, width, height);
         tile.id = id;
@@ -331,6 +329,7 @@ public class Tile extends Base implements Cloneable {
         // terrain
         tile.terrain = terrain;
         tile.probability = probability;
+        tile.properties = properties;
 
         return tile;
     }

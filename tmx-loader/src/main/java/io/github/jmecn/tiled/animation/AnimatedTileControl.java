@@ -84,10 +84,10 @@ public class AnimatedTileControl extends AbstractControl {
     protected void controlRender(RenderManager rm, ViewPort vp) {
         // ignore
     }
-
-    public Object clone() {
-        AnimatedTileControl control = new AnimatedTileControl(tile);
-        control.anim = anim;
-        return control;
-    }
+//
+//    public Object clone() {
+//        AnimatedTileControl control = new AnimatedTileControl(tile);
+//        control.anim = anim;
+//        return control;
+//    }
 }

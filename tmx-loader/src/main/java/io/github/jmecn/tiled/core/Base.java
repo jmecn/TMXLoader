@@ -49,14 +49,4 @@ public class Base extends VisualSpatial {
     public void setProperties(Properties properties) {
         this.properties = properties;
     }
-
-    public Base copy() {
-        Base clone = new Base();
-        clone.properties = this.properties;
-        if (this.visual != null) {
-            clone.visual = this.visual.clone();
-        }
-        return clone;
-    }
-    
 }

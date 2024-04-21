@@ -160,6 +160,17 @@ public class Tileset extends Base implements Iterable<Tile> {
         this.firstGid = firstGid;
     }
 
+    /**
+     * Update the first global tile ID of this tileset.
+     * @param firstGid
+     */
+    public void updateFirstGid(int firstGid) {
+        this.firstGid = firstGid;
+        for (Tile t : tiles) {
+            t.setGid(firstGid + t.getId());
+        }
+    }
+
     public String getSource() {
         return source;
     }
@@ -314,6 +325,10 @@ public class Tileset extends Base implements Iterable<Tile> {
     public int addTile(Tile t) {
         if (t.getId() < 0) {
             t.setId(tiles.size());
+        }
+
+        if (t.getGid() <= 0) {
+            t.setGid(firstGid + t.getId());
         }
 
         if (tileWidth < t.getWidth()) {
