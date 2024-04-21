@@ -111,7 +111,7 @@ public class TileLayer extends Layer implements TileContainer {
             needUpdateSpatial[ty - y][tx - x] = true;
             
             // tell map renderer to update it
-            isNeedUpdate = true;
+            setNeedUpdated(true);
         }
     }
 

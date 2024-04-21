@@ -115,7 +115,7 @@ public class Chunk extends VisualSpatial implements TileContainer {
             needUpdateSpatial[ty - y][tx - x] = true;
 
             // tell map renderer to update it
-            isNeedUpdate = true;
+            setNeedUpdated(true);
         }
     }
 

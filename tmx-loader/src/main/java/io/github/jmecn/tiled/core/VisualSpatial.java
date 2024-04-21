@@ -11,17 +11,8 @@ import com.jme3.scene.Spatial;
  */
 public class VisualSpatial {
     
-    protected boolean isTransformUpdated = true;
     protected boolean isNeedUpdate = true;
     protected Spatial visual;
-
-    public boolean isTransformUpdated() {
-        return isTransformUpdated;
-    }
-
-    public void setTransformUpdated(boolean isTransformUpdated) {
-        this.isTransformUpdated = isTransformUpdated;
-    }
 
     public boolean isNeedUpdated() {
         return isNeedUpdate;

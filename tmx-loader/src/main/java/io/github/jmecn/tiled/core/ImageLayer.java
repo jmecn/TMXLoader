@@ -36,6 +36,7 @@ public class ImageLayer extends Layer {
      */
     public void setRepeatX(boolean repeatX) {
         this.repeatX = repeatX;
+        setNeedUpdated(true);
     }
 
     /**
@@ -50,6 +51,7 @@ public class ImageLayer extends Layer {
      */
     public void setRepeatY(boolean repeatY) {
         this.repeatY = repeatY;
+        setNeedUpdated(true);
     }
 
     /**
@@ -64,6 +66,8 @@ public class ImageLayer extends Layer {
      */
     public void setImage(TiledImage image) {
         this.image = image;
+        // tell map renderer to update it
+        setNeedUpdated(true);
     }
 
 }

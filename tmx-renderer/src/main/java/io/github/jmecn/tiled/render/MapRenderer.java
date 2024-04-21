@@ -62,7 +62,7 @@ public abstract class MapRenderer {
     protected Node rootNode;
     protected List<Layer> sortedLayers;
     protected Map<Layer, Node> layerNodeMap;// save the layer node
-    protected Map<Layer, Spatial[][]> layerSpatialMap;// save the layer spatial
+    protected Map<Layer, Spatial[]> layerSpatialMap;// save the layer spatial
 
     protected SpriteFactory spriteFactory;
 
@@ -132,13 +132,11 @@ public abstract class MapRenderer {
         });
     }
 
-    private Spatial[][] getLayerSpatials(TileLayer layer) {
-        Spatial[][] spatials = layerSpatialMap.get(layer);
-        if (spatials != null) {
-            return spatials;
+    private Spatial[] getLayerSpatials(TileLayer layer) {
+        if (layerSpatialMap.containsKey(layer)) {
+            return layerSpatialMap.get(layer);
         }
-
-        spatials = new Spatial[layer.getHeight()][layer.getWidth()];
+        Spatial[] spatials = new Spatial[layer.getHeight() * layer.getWidth()];
         layerSpatialMap.put(layer, spatials);
         return spatials;
     }
@@ -157,18 +155,17 @@ public abstract class MapRenderer {
     public void setSpatialAt(TileLayer layer, int tx, int ty, Spatial spatial) {
         if (layer.contains(tx, ty)) {
 
-            int x = layer.getX();
-            int y = layer.getY();
             Node parent = getLayerNode(layer);
-            Spatial[][] spatials = getLayerSpatials(layer);
+            Spatial[] spatials = getLayerSpatials(layer);
 
-            Spatial old = spatials[ty-y][tx-x];
+            int index = ty * layer.getWidth() + tx;
+            Spatial old = spatials[index];
             if (old != null) {
                 parent.detachChild(old);
             }
 
             parent.attachChild(spatial);
-            spatials[ty - y][tx - x] = spatial;
+            spatials[index] = spatial;
 
             layer.setNeedUpdateAt(tx, ty, false);
 
@@ -303,23 +300,30 @@ public abstract class MapRenderer {
             }
         }
 
+        layerNode.setLocalScale(1f, 1f / len, 1f);
         return layerNode;
     }
 
     protected Spatial render(ImageLayer layer) {
         Node layerNode = getLayerNode(layer);
 
-        TiledImage image = layer.getImage();
+        if (layer.isNeedUpdated()) {
+            layerNode.detachAllChildren();
 
-        Material mat = image.getMaterial();
-        setTintColor(mat, layer);
+            TiledImage image = layer.getImage();
 
-        Mesh mesh = new Rect(mapSize.getX(), mapSize.getY(), false);
-        Geometry geom = new Geometry(layer.getName(), mesh);
-        geom.setMaterial(mat);
-        geom.setQueueBucket(Bucket.Gui);
+            Material mat = image.getMaterial();
+            setTintColor(mat, layer);
 
-        layerNode.attachChild(geom);
+            Mesh mesh = new Rect(mapSize.getX(), mapSize.getY(), false);
+            Geometry geom = new Geometry(layer.getName(), mesh);
+            geom.setMaterial(mat);
+            geom.setQueueBucket(Bucket.Gui);
+
+            layerNode.attachChild(geom);
+
+            layer.setNeedUpdated(false);
+        }
 
         return layerNode;
     }
@@ -379,11 +383,12 @@ public abstract class MapRenderer {
     public abstract Point screenToTileCoords(float x, float y);
 
     protected void removeTileSprite(TileLayer layer, int x, int y) {
-        Spatial[][] spatials = getLayerSpatials(layer);
-        if (spatials[y][x] != null) {
+        Spatial[] spatials = getLayerSpatials(layer);
+        int index = y * layer.getWidth() + x;
+        if (spatials[index] != null) {
             Node parent = getLayerNode(layer);
-            parent.detachChild(spatials[y][x]);
-            spatials[y][x] = null;
+            parent.detachChild(spatials[index]);
+            spatials[index] = null;
         }
     }
 
