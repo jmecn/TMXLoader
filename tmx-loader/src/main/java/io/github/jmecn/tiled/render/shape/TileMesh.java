@@ -20,9 +20,9 @@ import java.nio.FloatBuffer;
  */
 public class TileMesh extends Mesh {
 
-    private final Point coord;
-    private final Point size;
-    private final Point offset;
+    private final Vector2f coord;
+    private final Vector2f size;
+    private final Vector2f offset;
     private final Vector2f origin;
 
     /**
@@ -33,14 +33,14 @@ public class TileMesh extends Mesh {
      * @param offset the offset of the tile
      * @param origin the origin of the tile
      */
-    public TileMesh(Point coord, Point size, Point offset, Vector2f origin) {
+    public TileMesh(Vector2f coord, Vector2f size, Vector2f offset, Vector2f origin) {
         this.coord = coord;
         this.size = size;
         this.offset = offset;
         this.origin = origin;
 
-        int x = coord.getX();
-        int y = coord.getY();
+        float x = coord.getX();
+        float y = coord.getY();
 
         float[] vertices = getPositions(size, offset, origin);
 
@@ -78,7 +78,7 @@ public class TileMesh extends Mesh {
      * @param offset the offset of the tile
      * @param origin the origin of the tile
      */
-    private float[] getPositions(Point size, Point offset, Vector2f origin) {
+    private float[] getPositions(Vector2f size, Vector2f offset, Vector2f origin) {
         float[] vertices = new float[]{
                 0, 0, -1,
                 1, 0, -1,
@@ -93,7 +93,7 @@ public class TileMesh extends Mesh {
         return vertices;
     }
 
-    public TileMesh(Point coord, Point size, Point offset, Vector2f origin, int gid, Orientation orientation) {
+    public TileMesh(Vector2f coord, Vector2f size, Vector2f offset, Vector2f origin, int gid, Orientation orientation) {
         this(coord, size, offset, origin);
 
         boolean isFlipHorizontally = (gid & Tile.FLIPPED_HORIZONTALLY_FLAG) != 0;
@@ -172,15 +172,15 @@ public class TileMesh extends Mesh {
 
         this.setBuffer(VertexBuffer.Type.Position, 3, vertices);
     }
-    public Point getCoord() {
+    public Vector2f getCoord() {
         return coord;
     }
 
-    public Point getSize() {
+    public Vector2f getSize() {
         return size;
     }
 
-    public Point getOffset() {
+    public Vector2f getOffset() {
         return offset;
     }
 

@@ -469,15 +469,16 @@ public final class TilesetLoader {
      */
     public void createVisual(Tileset tileset, TiledMap map) {
 
-        Point offset = tileset.getTileOffset();
+        Point tileOffset = tileset.getTileOffset();
+        Vector2f offset = new Vector2f(tileOffset.getX(), tileOffset.getY());
         Vector2f origin = new Vector2f(0, map.getTileHeight());
 
         List<Tile> tiles = tileset.getTiles();
         for (Tile tile : tiles) {
             String name = "tile#" + tileset.getFirstGid() + "#" + tile.getId();
 
-            Point coord = new Point(tile.getX(), tile.getY());
-            Point size = new Point(tile.getWidth(), tile.getHeight());
+            Vector2f coord = new Vector2f(tile.getX(), tile.getY());
+            Vector2f size = new Vector2f(tile.getWidth(), tile.getHeight());
             TileMesh mesh = new TileMesh(coord, size, offset, origin);
 
             Geometry geometry = new Geometry(name, mesh);

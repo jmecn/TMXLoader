@@ -239,18 +239,19 @@ public class ObjectRenderer {
         Tile tile = obj.getTile();
         float tw = tile.getWidth();
 
-        Point coord = new Point(tile.getX(), tile.getY());
-        Point size = new Point(tile.getWidth(), tile.getHeight());
-        Point offset;
+        Vector2f coord = new Vector2f(tile.getX(), tile.getY());
+        Vector2f size = new Vector2f(tile.getWidth(), tile.getHeight());
+        Vector2f offset;
         if (tile.getTileset() != null) {
             Tileset tileset = tile.getTileset();
-            offset = tileset.getTileOffset();
+            Point tileOffset = tileset.getTileOffset();
+            offset = new Vector2f(tileOffset.getX(), tileOffset.getY());
             // scale the tile
             if (tileset.getFillMode() == FillMode.STRETCH) {
                 size.set((int) obj.getWidth(), (int) obj.getHeight());
             }
         } else {
-            offset = new Point(0, 0);
+            offset = new Vector2f(0, 0);
         }
 
         Vector2f origin = new Vector2f(0, 0);// In orthogonal, it's aligned to the bottom-left
