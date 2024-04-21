@@ -50,12 +50,16 @@ import java.util.*;
  */
 public abstract class MapRenderer {
 
+    public static final String TINT_COLOR = "TintColor";
+    public static final String COLOR = "Color";
+
     protected TiledMap map;
     protected int width;
     protected int height;
     protected int tileWidth;
     protected int tileHeight;
 
+    protected Node rootNode;
     protected List<Layer> sortedLayers;
     protected Map<Layer, Node> layerNodeMap;// save the layer node
     protected Map<Layer, Spatial[][]> layerSpatialMap;// save the layer spatial
@@ -75,6 +79,10 @@ public abstract class MapRenderer {
         this.tileHeight = map.getTileHeight();
 
         this.mapSize = new Point(width * tileWidth, height * tileHeight);
+
+        this.rootNode = new Node("TileMap");
+        this.rootNode.setQueueBucket(Bucket.Gui);
+
         this.layerNodeMap = new HashMap<>();
         this.layerSpatialMap = new HashMap<>();
 
@@ -119,7 +127,7 @@ public abstract class MapRenderer {
         return layerNodeMap.computeIfAbsent(layer, key -> {
             Node node = new Node(layer.getName());
             node.setQueueBucket(Bucket.Gui);
-            map.getVisual().attachChild(node);
+            rootNode.attachChild(node);
             return node;
         });
     }
@@ -175,13 +183,13 @@ public abstract class MapRenderer {
     private void applyTineColor(Spatial spatial, ColorRGBA tintColor) {
         if (spatial instanceof Geometry) {
             Geometry geom = (Geometry) spatial;
-            geom.getMaterial().setColor("TintColor", tintColor);
+            geom.getMaterial().setColor(TINT_COLOR, tintColor);
         } else {
             Node node = (Node) spatial;
             for (Spatial child : node.getChildren()) {
                 if (child instanceof Geometry) {
                     Geometry geom = (Geometry) child;
-                    geom.getMaterial().setColor("TintColor", tintColor);
+                    geom.getMaterial().setColor(TINT_COLOR, tintColor);
                 }
             }
         }
@@ -230,53 +238,14 @@ public abstract class MapRenderer {
             }
         }
 
-        return map.getVisual();
+        return rootNode;
     }
 
     private void setTintColor(Material material, Layer layer) {
         ColorRGBA tintColor = layer.getTintColor();
         if (tintColor != null) {
-            material.setColor("TintColor", tintColor);
+            material.setColor(TINT_COLOR, tintColor);
         }
-    }
-
-    protected Spatial render(GroupLayer group) {
-        // instance the layer node
-        if (group.getVisual() == null) {
-            Node layerNode = new Node("GroupLayer#" + group.getName());
-            layerNode.setQueueBucket(Bucket.Gui);
-            group.setVisual(layerNode);
-            map.getVisual().attachChild(layerNode);
-        }
-
-        for (Layer layer : group.getLayers()) {
-            if (!layer.isVisible() || !layer.isNeedUpdated()) {
-                continue;
-            }
-
-            Spatial visual = null;
-            if (layer instanceof TileLayer) {
-                visual = render((TileLayer) layer);
-            }
-
-            if (layer instanceof ObjectGroup) {
-                visual = render((ObjectGroup) layer);
-            }
-
-            if (layer instanceof ImageLayer) {
-                visual = render((ImageLayer) layer);
-            }
-
-            if (layer instanceof GroupLayer) {
-                visual = render((GroupLayer) layer);
-            }
-
-            if (visual != null) {
-                group.getVisual().attachChild(visual);
-            }
-        }
-
-        return group.getVisual();
     }
 
     protected abstract Spatial render(TileLayer layer);
@@ -296,7 +265,7 @@ public abstract class MapRenderer {
         final ColorRGBA bgColor = borderColor.mult(0.3f);
         Material mat = layer.getMaterial();
         Material bgMat = mat.clone();
-        bgMat.setColor("Color", bgColor);
+        bgMat.setColor(COLOR, bgColor);
         // set tint color
         setTintColor(mat, layer);
         setTintColor(bgMat, layer);
@@ -443,6 +412,14 @@ public abstract class MapRenderer {
         TileMesh mesh = (TileMesh) visual.getMesh();
         TileMesh newMesh = new TileMesh(mesh.getCoord(), mesh.getSize(), mesh.getOffset(), mesh.getOrigin(), tile.getGid(), map.getOrientation());
         visual.setMesh(newMesh);
+    }
+
+    /**
+     * Get the map node
+     * @return the map node
+     */
+    public Node getRootNode() {
+        return rootNode;
     }
 
     private static final class CompareTopdown implements Comparator<MapObject> {

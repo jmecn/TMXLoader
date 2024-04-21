@@ -23,7 +23,6 @@ import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import io.github.jmecn.tiled.core.GroupLayer;
 import io.github.jmecn.tiled.core.Layer;
-import io.github.jmecn.tiled.core.Tileset;
 import io.github.jmecn.tiled.math2d.Point;
 import io.github.jmecn.tiled.core.TiledMap;
 import io.github.jmecn.tiled.enums.ZoomMode;
@@ -252,7 +251,7 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
         mapRenderer.renderGrid(gridVisual, gridMaterial);
         if (gridVisual.getParent() != null) {
             gridVisual.removeFromParent();
-            map.getVisual().attachChild(gridVisual);
+            mapRenderer.getRootNode().attachChild(gridVisual);
         }
         isGridUpdated = false;
     }
@@ -266,7 +265,7 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
         currentTile = null;
         cursorMaterial.setColor("Color", cursorColorAvailable);
         gridCursor = mapRenderer.createTileGrid(cursorMaterial);
-        map.getVisual().attachChild(gridCursor);
+        mapRenderer.getRootNode().attachChild(gridCursor);
         isCursorUpdated = false;
     }
     /**
@@ -279,7 +278,6 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
             return;
 
         rootNode.detachAllChildren();
-        rootNode.attachChild(map.getVisual());
         
         if (viewPort != null) {
             viewPort.setBackgroundColor(map.getBackgroundColor());
@@ -306,6 +304,9 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
                 // use OrthogonalRenderer by default
                 mapRenderer = new OrthogonalRenderer(map);
         }
+
+        // create the visual part for the map
+        rootNode.attachChild(mapRenderer.getRootNode());
 
         Vector2f loc = mapRenderer.pixelToScreenCoords(map.getParallaxOriginX(), map.getParallaxOriginY());
         mapTranslation.set(loc.x, 0, loc.y);
@@ -357,7 +358,7 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
         float x = (float) Math.floor(mapTranslation.x);
         float y = (float) Math.floor(mapTranslation.y);
         float z = (float) Math.floor(mapTranslation.z);
-        map.getVisual().setLocalTranslation(x, y, z);
+        mapRenderer.getRootNode().setLocalTranslation(x, y, z);
 
         calculateMapParallax();
     }
@@ -409,7 +410,7 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
         mapScale = scale;
         if (map != null) {
             viewColumns = screenDimension.x / (map.getTileWidth() * mapScale);
-            map.getVisual().setLocalScale(mapScale, 1, mapScale);
+            mapRenderer.getRootNode().setLocalScale(mapScale, 1, mapScale);
             isMapUpdated = true;
         }
     }
@@ -418,7 +419,7 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
         if (map != null) {
             float pixel = map.getTileWidth() * viewColumns;
             mapScale = screenDimension.x / pixel;
-            map.getVisual().setLocalScale(mapScale, 1, mapScale);
+            mapRenderer.getRootNode().setLocalScale(mapScale, 1, mapScale);
         }
         
         return mapScale;
@@ -592,7 +593,7 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
      * 
      */
     private void drag() {
-        if (map == null || map.getVisual() == null) {
+        if (map == null || mapRenderer.getRootNode() == null) {
             return;
         }
 
@@ -718,8 +719,8 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
 
         if (gridVisual != null) {
             if (isGridVisible) {
-                if (map != null && map.getVisual() != null) {
-                    map.getVisual().attachChild(gridVisual);
+                if (map != null && mapRenderer.getRootNode() != null) {
+                    mapRenderer.getRootNode().attachChild(gridVisual);
                 }
             } else {
                 gridVisual.removeFromParent();
@@ -734,8 +735,8 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
     public void setCursorVisible(boolean visible) {
         isCursorVisible = visible;
         if (gridCursor != null) {
-            if (isCursorVisible && map != null && map.getVisual() != null) {
-                map.getVisual().attachChild(gridCursor);
+            if (isCursorVisible && map != null && mapRenderer.getRootNode() != null) {
+                mapRenderer.getRootNode().attachChild(gridCursor);
             } else {
                 gridCursor.removeFromParent();
             }
@@ -756,8 +757,8 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
      */
     private void toggleGrid() {
         if (isGridVisible) {
-            if (map != null && map.getVisual() != null) {
-                map.getVisual().attachChild(gridVisual);
+            if (map != null && mapRenderer.getRootNode() != null) {
+                mapRenderer.getRootNode().attachChild(gridVisual);
             }
         } else {
             gridVisual.removeFromParent();
