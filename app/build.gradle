@@ -3,7 +3,7 @@ plugins {
 }
 
 dependencies {
-    implementation project(':tmx-loader')
+    //implementation project(':tmx-loader')
     implementation project(':tmx-renderer')
 
     implementation "org.jmonkeyengine:jme3-desktop:$jme3Version"

@@ -1,11 +1,12 @@
 plugins {
     id 'tiled.java-library-conventions'
+    id 'tiled.maven-publish-conventions'
 }
 
 dependencies {
-    implementation project(':tmx-loader')
+    api project(':tmx-loader')
 
-    implementation "org.jmonkeyengine:jme3-desktop:$jme3Version"
-    implementation "org.jmonkeyengine:jme3-lwjgl:$jme3Version"
-    implementation 'ch.qos.logback:logback-classic:1.2.13'
+    testImplementation "org.jmonkeyengine:jme3-desktop:$jme3Version"
+    testImplementation "org.jmonkeyengine:jme3-lwjgl:$jme3Version"
+    testImplementation 'ch.qos.logback:logback-classic:1.2.13'
 }

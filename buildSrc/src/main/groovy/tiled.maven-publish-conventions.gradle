@@ -1,0 +1,85 @@
+plugins {
+    id 'maven-publish'
+    id 'signing'
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+            artifact sourcesJar
+            artifact javadocJar
+            pom {
+                name = POM_NAME
+                description = POM_DESCRIPTION
+                url = POM_URL
+                licenses {
+                    license {
+                        name = POM_LICENSE_NAME
+                        url = POM_LICENSE_URL
+                    }
+                }
+                developers {
+                    developer {
+                        id = 'jmecn'
+                        name = 'yanmaoyuan'
+                        email = '115050813@qq.com'
+                    }
+                }
+                scm {
+                    connection = POM_SCM_CONNECTION
+                    developerConnection = POM_SCM_DEVELOPER_CONNECTION
+                    url = POM_SCM_URL
+                }
+            }
+        }
+    }
+    repositories {
+        mavenLocal()
+
+        def ossrhUrl;
+        if (version.endsWith('SNAPSHOT')) {
+            // snapshot
+            ossrhUrl = 'https://s01.oss.sonatype.org/content/repositories/snapshots/'
+        } else {
+            // release
+            ossrhUrl = 'https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/'
+        }
+
+        maven {
+            name = 'GitHubPackages'
+            url = uri('https://maven.pkg.github.com/jmecn/TMXLoader')
+            credentials {
+                username = System.getenv("GITHUB_ACTOR")
+                password = System.getenv("GITHUB_TOKEN")
+            }
+        }
+        maven {
+            name = 'OSSRH'
+            url = ossrhUrl
+            credentials {
+                username = project.findProperty("ossrhUsername") ?: System.getenv("OSSRH_USERNAME")
+                password = project.findProperty("ossrhPassword") ?: System.getenv("OSSRH_PASSWORD")
+            }
+        }
+    }
+}
+
+publishToMavenLocal.doLast {
+    println 'published ' + project.getName() + "-${version} to mavenLocal"
+}
+
+signing {
+    def signingKeyId = project.findProperty('signingKeyId') ?: System.getenv("GPG_KEY_ID")
+    def signingKey = project.findProperty('signingKey') ?: System.getenv("GPG_KEY")
+    def signingPassword = project.findProperty('signingPassword') ?: System.getenv("GPG_PASSWORD")
+
+    useInMemoryPgpKeys(signingKeyId, signingKey, signingPassword)
+
+    sign configurations.archives
+    sign publishing.publications.mavenJava
+}
+
+tasks.withType(Sign).configureEach {
+    onlyIf { project.findProperty('signingKey') ?: System.getenv("GPG_KEY") }
+}
