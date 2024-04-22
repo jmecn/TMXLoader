@@ -152,17 +152,25 @@ public class Tileset extends Base implements Iterable<Tile> {
         this.margin = margin;
     }
 
+    /**
+     * Get the first global tile ID of this tileset.
+     * @return The first global tile ID of this tileset.
+     */
     public int getFirstGid() {
         return firstGid;
     }
 
+    /**
+     * Set the first global tile ID of this tileset.
+     * @param firstGid The first global tile ID of this tileset.
+     */
     public void setFirstGid(int firstGid) {
         this.firstGid = firstGid;
     }
 
     /**
-     * Update the first global tile ID of this tileset.
-     * @param firstGid
+     * Update the first global tile ID of this tileset. Also update the global tile ID of all tiles in this tileset.
+     * @param firstGid The first global tile ID of this tileset.
      */
     public void updateFirstGid(int firstGid) {
         this.firstGid = firstGid;

@@ -1,5 +1,5 @@
 plugins {
-    id 'tiled.java-application-conventions'
+    id 'tiled.java-library-conventions'
 }
 
 dependencies {
@@ -8,9 +8,4 @@ dependencies {
     implementation "org.jmonkeyengine:jme3-desktop:$jme3Version"
     implementation "org.jmonkeyengine:jme3-lwjgl:$jme3Version"
     implementation 'ch.qos.logback:logback-classic:1.2.13'
-}
-
-application {
-    // Define the main class for the application.
-    mainClass = 'io.github.jmecn.tiled.render.Main'
 }

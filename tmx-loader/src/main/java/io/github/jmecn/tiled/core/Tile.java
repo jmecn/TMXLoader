@@ -309,6 +309,7 @@ public class Tile extends Base implements Cloneable {
     /**
      * Tile was cloned when TileLayer and ObjectGroup need a tile as a part of
      * them.
+     * @return a new Tile object.
      */
     public Tile copy() {
         // tile base

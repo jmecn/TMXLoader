@@ -145,12 +145,10 @@ public abstract class MapRenderer {
      * Sets the spatial at the specified position. Does nothing if (tx, ty) falls
      * outside of this layer.
      *
-     * @param tx
-     *            x position of tile
-     * @param ty
-     *            y position of tile
-     * @param spatial
-     *            the spatial to place
+     * @param layer the layer
+     * @param tx x position of tile
+     * @param ty y position of tile
+     * @param spatial the spatial to place
      */
     public void setSpatialAt(TileLayer layer, int tx, int ty, Spatial spatial) {
         if (layer.contains(tx, ty)) {
@@ -158,7 +156,7 @@ public abstract class MapRenderer {
             Node parent = getLayerNode(layer);
             Spatial[] spatials = getLayerSpatials(layer);
 
-            int index = ty * layer.getWidth() + tx;
+            int index = (ty - layer.getY()) * layer.getWidth() + (tx - layer.getX());
             Spatial old = spatials[index];
             if (old != null) {
                 parent.detachChild(old);
@@ -384,7 +382,7 @@ public abstract class MapRenderer {
 
     protected void removeTileSprite(TileLayer layer, int x, int y) {
         Spatial[] spatials = getLayerSpatials(layer);
-        int index = y * layer.getWidth() + x;
+        int index = (y - layer.getY()) * layer.getWidth() + (x - layer.getX());
         if (spatials[index] != null) {
             Node parent = getLayerNode(layer);
             parent.detachChild(spatials[index]);

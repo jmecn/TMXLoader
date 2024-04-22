@@ -9,3 +9,36 @@ plugins {
     // Apply the java-library plugin for API and implementation separation.
     id 'java-library'
 }
+
+tasks.register('sourcesJar', Jar) {
+    from sourceSets.main.allJava
+    archiveClassifier.set('sources')
+}
+
+tasks.register('javadocJar', Jar) {
+    from javadoc
+    archiveClassifier.set('javadoc')
+}
+
+artifacts {
+    archives jar, sourcesJar, javadocJar
+}
+
+jar {
+    manifest {
+        attributes 'Implementation-Title': project.name,
+                'Implementation-Version': project.version,
+                'Automatic-Module-Name': "${project.name.replace("-", ".")}",
+                'Created-By': "${JavaVersion.current()} (${System.getProperty("java.vendor")})"
+    }
+}
+
+javadoc {
+    failOnError = false
+    options.memberLevel = JavadocMemberLevel.PROTECTED
+    options.author = true
+    options.use = true
+    options.charSet = "UTF-8"
+    options.encoding = "UTF-8"
+    source = sourceSets.main.allJava
+}

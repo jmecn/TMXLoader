@@ -1,2 +1,10 @@
-group = 'io.github.jmecn'
-version = '0.4.0-SNAPSHOT'
+allprojects {
+    group = 'io.github.jmecn'
+    version = '0.6.0-SNAPSHOT'
+
+    tasks.withType(JavaCompile).tap {
+        configureEach {
+            options.encoding = 'UTF-8'
+        }
+    }
+}

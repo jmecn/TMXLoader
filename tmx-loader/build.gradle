@@ -4,9 +4,6 @@ plugins {
     id 'signing'
 }
 
-group = 'io.github.jmecn'
-version = '0.5.0'
-
 dependencies {
     // Core
     api "org.jmonkeyengine:jme3-core:$jme3Version"
@@ -17,40 +14,6 @@ dependencies {
     testImplementation "org.jmonkeyengine:jme3-desktop:$jme3Version"
     testImplementation "org.jmonkeyengine:jme3-lwjgl:$jme3Version"
     testImplementation 'ch.qos.logback:logback-classic:1.2.13'
-}
-
-jar {
-    manifest {
-        attributes 'Implementation-Title': 'TMXLoader',
-                   'Implementation-Version': project.version,
-                   'Automatic-Module-Name': "${project.name.replace("-", ".")}",
-                   'Created-By': "${JavaVersion.current()} (${System.getProperty("java.vendor")})"
-    }
-}
-
-javadoc {
-    failOnError = false
-    options.memberLevel = JavadocMemberLevel.PROTECTED
-    options.docTitle = "TMXLoader ${version} Javadoc"
-    options.author = true
-    options.use = true
-    options.charSet = "UTF-8"
-    options.encoding = "UTF-8"
-    source = sourceSets.main.allJava
-}
-
-tasks.register('sourcesJar', Jar) {
-    from sourceSets.main.allJava
-    archiveClassifier.set('sources')
-}
-
-tasks.register('javadocJar', Jar) {
-    from javadoc
-    archiveClassifier.set('javadoc')
-}
-
-artifacts {
-    archives jar, sourcesJar, javadocJar
 }
 
 publishing {
