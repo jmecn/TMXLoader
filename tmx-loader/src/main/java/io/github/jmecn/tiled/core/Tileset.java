@@ -4,6 +4,7 @@ import java.util.*;
 import java.util.logging.Logger;
 
 import com.jme3.material.Material;
+import com.jme3.math.Vector2f;
 import com.jme3.texture.Texture;
 import io.github.jmecn.tiled.enums.FillMode;
 import io.github.jmecn.tiled.enums.ObjectAlignment;
@@ -112,7 +113,7 @@ public class Tileset extends Base implements Iterable<Tile> {
     private FillMode fillMode;
 
     // This element is used to specify an offset in pixels, to be applied when drawing a tile from the related tileset. When not present, no offset is applied.
-    private final Point tileOffset = new Point(0, 0);
+    private final Vector2f tileOffset = new Vector2f(0, 0);
 
     private TilesetGrid grid;
 
@@ -458,7 +459,7 @@ public class Tileset extends Base implements Iterable<Tile> {
     /**
      * @return Horizontal offset in pixels. (defaults to 0)
      */
-    public Point getTileOffset() {
+    public Vector2f getTileOffset() {
         return tileOffset;
     }
 

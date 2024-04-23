@@ -1,4 +1,4 @@
-package io.github.jmecn.tiled.render;
+package io.github.jmecn.tiled.factory;
 
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
@@ -13,7 +13,6 @@ import io.github.jmecn.tiled.animation.AnimatedTileControl;
 import io.github.jmecn.tiled.core.*;
 import io.github.jmecn.tiled.enums.FillMode;
 import io.github.jmecn.tiled.enums.Orientation;
-import io.github.jmecn.tiled.math2d.Point;
 import io.github.jmecn.tiled.shape.*;
 import io.github.jmecn.tiled.util.ObjectMesh;
 
@@ -22,7 +21,7 @@ import io.github.jmecn.tiled.util.ObjectMesh;
  *
  * @author yanmaoyuan
  */
-public class ObjectFactory {
+public class DefaultObjectFactory implements ObjectFactory {
     /**
      * This value used to generate ellipse mesh.
      */
@@ -32,7 +31,7 @@ public class ObjectFactory {
     private final Material mat;
     private final Material bgMat;
 
-    public ObjectFactory(ObjectGroup layer) {
+    public DefaultObjectFactory(ObjectGroup layer) {
         this.map = layer.getMap();
 
         ColorRGBA borderColor = layer.getColor();
@@ -247,8 +246,7 @@ public class ObjectFactory {
         Vector2f offset;
         if (tile.getTileset() != null) {
             Tileset tileset = tile.getTileset();
-            Point tileOffset = tileset.getTileOffset();
-            offset = new Vector2f(tileOffset.getX(), tileOffset.getY());
+            offset = tileset.getTileOffset();
             // scale the tile
             if (tileset.getFillMode() == FillMode.STRETCH) {
                 size.set((int) obj.getWidth(), (int) obj.getHeight());

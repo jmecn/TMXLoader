@@ -10,7 +10,7 @@ publishing {
             artifact sourcesJar
             artifact javadocJar
             pom {
-                name = POM_NAME
+                name = project.name
                 description = POM_DESCRIPTION
                 url = POM_URL
                 licenses {

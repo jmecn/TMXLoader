@@ -10,9 +10,11 @@ import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import io.github.jmecn.tiled.core.*;
 import io.github.jmecn.tiled.enums.DrawOrder;
+import io.github.jmecn.tiled.factory.DefaultObjectFactory;
+import io.github.jmecn.tiled.factory.DefaultSpriteFactory;
+import io.github.jmecn.tiled.factory.SpriteFactory;
 import io.github.jmecn.tiled.math2d.Point;
 import io.github.jmecn.tiled.shape.Rect;
-import io.github.jmecn.tiled.shape.TileMesh;
 
 import java.util.*;
 
@@ -86,7 +88,7 @@ public abstract class MapRenderer {
         this.layerNodeMap = new HashMap<>();
         this.layerSpatialMap = new HashMap<>();
 
-        this.spriteFactory = new SpriteFactory(map);
+        this.spriteFactory = new DefaultSpriteFactory(map);
         sortLayers();
     }
 
@@ -121,6 +123,22 @@ public abstract class MapRenderer {
                 list.add(layer);
             }
         }
+    }
+
+    /**
+     * Set the sprite factory
+     * @param spriteFactory the sprite factory
+     */
+    public void setSpriteFactory(SpriteFactory spriteFactory) {
+        this.spriteFactory = spriteFactory;
+    }
+
+    /**
+     * Get the sprite factory
+     * @return the sprite factory
+     */
+    public SpriteFactory getSpriteFactory() {
+        return spriteFactory;
     }
 
     public Node getLayerNode(Layer layer) {
@@ -278,7 +296,7 @@ public abstract class MapRenderer {
             }
         }
 
-        ObjectFactory objectFactory = new ObjectFactory(layer);
+        DefaultObjectFactory objectFactory = new DefaultObjectFactory(layer);
         for (int i = 0; i < len; i++) {
             MapObject obj = objects.get(i);
 
@@ -392,29 +410,12 @@ public abstract class MapRenderer {
 
     protected void putTileSprite(TileLayer layer, int x, int y, int z, Tile tile, Vector2f pixelCoord) {
         Geometry visual = copySprite(tile);
-        flip(visual, tile);
         visual.move(pixelCoord.x, z, pixelCoord.y);
         setSpatialAt(layer, x, y, visual);
     }
 
     protected Geometry copySprite(Tile tile) {
         return spriteFactory.getTileSprite(tile).clone();
-    }
-
-    /**
-     * Flip the tile
-     *
-     * @param visual The spatial for this tile.
-     * @param tile The image of this tile.
-     */
-    protected void flip(Geometry visual, Tile tile) {
-        if (tile.getGidNoMask() == tile.getGid()) {
-            // no flip
-            return;
-        }
-        TileMesh mesh = (TileMesh) visual.getMesh();
-        TileMesh newMesh = new TileMesh(mesh.getCoord(), mesh.getSize(), mesh.getOffset(), mesh.getOrigin(), tile.getGid(), map.getOrientation());
-        visual.setMesh(newMesh);
     }
 
     /**
