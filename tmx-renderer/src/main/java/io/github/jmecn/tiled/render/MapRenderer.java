@@ -10,8 +10,7 @@ import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import io.github.jmecn.tiled.core.*;
 import io.github.jmecn.tiled.enums.DrawOrder;
-import io.github.jmecn.tiled.render.factory.DefaultObjectFactory;
-import io.github.jmecn.tiled.render.factory.DefaultSpriteFactory;
+import io.github.jmecn.tiled.render.factory.MaterialFactory;
 import io.github.jmecn.tiled.render.factory.SpriteFactory;
 import io.github.jmecn.tiled.math2d.Point;
 import io.github.jmecn.tiled.render.shape.Rect;
@@ -52,9 +51,6 @@ import java.util.*;
  */
 public abstract class MapRenderer {
 
-    public static final String TINT_COLOR = "TintColor";
-    public static final String COLOR = "Color";
-
     protected TiledMap map;
     protected int width;
     protected int height;
@@ -67,6 +63,7 @@ public abstract class MapRenderer {
     protected Map<Layer, Spatial[]> layerSpatialMap;// save the layer spatial
 
     protected SpriteFactory spriteFactory;
+    protected MaterialFactory materialFactory;
 
     /**
      * The whole map size in pixel
@@ -87,8 +84,6 @@ public abstract class MapRenderer {
 
         this.layerNodeMap = new HashMap<>();
         this.layerSpatialMap = new HashMap<>();
-
-        this.spriteFactory = new DefaultSpriteFactory(map);
         sortLayers();
     }
 
@@ -141,6 +136,22 @@ public abstract class MapRenderer {
         return spriteFactory;
     }
 
+    /**
+     * Set the material factory
+     * @param materialFactory the material factory
+     */
+    public void setMaterialFactory(MaterialFactory materialFactory) {
+        this.materialFactory = materialFactory;
+    }
+
+    /**
+     * Get the material factory
+     * @return the material factory
+     */
+    public MaterialFactory getMaterialFactory() {
+        return materialFactory;
+    }
+
     public Node getLayerNode(Layer layer) {
         return layerNodeMap.computeIfAbsent(layer, key -> {
             Node node = new Node(layer.getName());
@@ -188,21 +199,21 @@ public abstract class MapRenderer {
             // set tint color
             ColorRGBA tintColor = layer.getTintColor();
             if (tintColor != null) {
-                applyTineColor(spatial, layer.getTintColor());
+                applyTintColor(spatial, layer.getTintColor());
             }
         }
     }
 
-    private void applyTineColor(Spatial spatial, ColorRGBA tintColor) {
+    private void applyTintColor(Spatial spatial, ColorRGBA tintColor) {
         if (spatial instanceof Geometry) {
-            Geometry geom = (Geometry) spatial;
-            geom.getMaterial().setColor(TINT_COLOR, tintColor);
+            Geometry geometry = (Geometry) spatial;
+            geometry.getMaterial().setColor(MaterialConst.TINT_COLOR, tintColor);
         } else {
             Node node = (Node) spatial;
             for (Spatial child : node.getChildren()) {
                 if (child instanceof Geometry) {
-                    Geometry geom = (Geometry) child;
-                    geom.getMaterial().setColor(TINT_COLOR, tintColor);
+                    Geometry geometry = (Geometry) child;
+                    geometry.getMaterial().setColor(MaterialConst.TINT_COLOR, tintColor);
                 }
             }
         }
@@ -257,7 +268,7 @@ public abstract class MapRenderer {
     private void setTintColor(Material material, Layer layer) {
         ColorRGBA tintColor = layer.getTintColor();
         if (tintColor != null) {
-            material.setColor(TINT_COLOR, tintColor);
+            material.setColor(MaterialConst.TINT_COLOR, tintColor);
         }
     }
 
@@ -274,15 +285,6 @@ public abstract class MapRenderer {
         List<MapObject> objects = layer.getObjects();
         Node layerNode = getLayerNode(layer);
 
-        final ColorRGBA borderColor = layer.getColor();
-        final ColorRGBA bgColor = borderColor.mult(0.3f);
-        Material mat = layer.getMaterial();
-        Material bgMat = mat.clone();
-        bgMat.setColor(COLOR, bgColor);
-        // set tint color
-        setTintColor(mat, layer);
-        setTintColor(bgMat, layer);
-
         int len = objects.size();
 
         if (len > 0) {
@@ -296,13 +298,19 @@ public abstract class MapRenderer {
             }
         }
 
-        DefaultObjectFactory objectFactory = new DefaultObjectFactory(layer);
+
+        Material material = materialFactory.newMaterial(layer.getColor());
+        ColorRGBA tintColor = layer.getTintColor();
+        if (tintColor != null) {
+            material.setColor(MaterialConst.TINT_COLOR, tintColor);
+        }
+
         for (int i = 0; i < len; i++) {
             MapObject obj = objects.get(i);
 
             if (obj.isVisible() && obj.isNeedUpdated()) {
 
-                Spatial visual = objectFactory.create(obj);
+                Spatial visual = spriteFactory.newObjectSprite(obj, material);
                 if (visual == null) {
                     continue;
                 }
@@ -409,7 +417,8 @@ public abstract class MapRenderer {
     }
 
     protected void putTileSprite(TileLayer layer, int x, int y, int z, Tile tile, Vector2f pixelCoord) {
-        Geometry visual = spriteFactory.newTileSprite(tile);
+        Material material = materialFactory.newMaterial(tile);
+        Geometry visual = spriteFactory.newTileSprite(tile, material);
         visual.move(pixelCoord.x, z, pixelCoord.y);
         setSpatialAt(layer, x, y, visual);
     }

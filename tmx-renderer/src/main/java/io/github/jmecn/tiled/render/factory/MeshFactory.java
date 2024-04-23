@@ -39,5 +39,10 @@ public interface MeshFactory {
      */
     Mesh getTileMesh(Tile tile);
 
-    Mesh createMesh(MapObject object);
+    /**
+     * Create a new mesh for a map object.
+     * @param object the map object
+     * @return the mesh
+     */
+    Mesh newObjectMesh(MapObject object);
 }

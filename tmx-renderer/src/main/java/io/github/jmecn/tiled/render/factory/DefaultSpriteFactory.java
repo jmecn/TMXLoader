@@ -1,14 +1,12 @@
 package io.github.jmecn.tiled.render.factory;
 
 import com.jme3.material.Material;
+import com.jme3.math.FastMath;
 import com.jme3.renderer.queue.RenderQueue;
-import com.jme3.scene.Geometry;
-import com.jme3.scene.Mesh;
+import com.jme3.scene.*;
 import com.jme3.util.IntMap;
 import io.github.jmecn.tiled.animation.AnimatedTileControl;
-import io.github.jmecn.tiled.core.Tile;
-import io.github.jmecn.tiled.core.TiledMap;
-import io.github.jmecn.tiled.core.Tileset;
+import io.github.jmecn.tiled.core.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -86,12 +84,10 @@ public final class DefaultSpriteFactory implements SpriteFactory {
     @Override
     public Geometry getTileSprite(Tile tile) {
         if (cache.containsKey(tile.getGid())) {
-            logger.debug("Reuse tile sprite:{}, total:{}", tile.getGid(), cache.size());
             return cache.get(tile.getGid());
         } else {
             Geometry sprite = newTileSprite(tile);
             cache.put(tile.getGid(), sprite);
-            logger.debug("Create tile sprite:{}, total:{}", tile.getGid(), cache.size());
             return sprite;
         }
     }
@@ -106,4 +102,136 @@ public final class DefaultSpriteFactory implements SpriteFactory {
         }
         return material;
     }
+
+
+    public Spatial newObjectSprite(MapObject obj, Material material) {
+        Geometry geometry;
+        switch (obj.getShape()) {
+            case RECTANGLE: {
+                geometry = rectangle(obj);
+                break;
+            }
+            case ELLIPSE: {
+                geometry = ellipse(obj);
+                break;
+            }
+            case POLYGON: {
+                geometry = polygon(obj);
+                break;
+            }
+            case POLYLINE: {
+                geometry = polyline(obj);
+                break;
+            }
+            case POINT: {
+                geometry = point(obj);
+                break;
+            }
+            case IMAGE: {
+                geometry = image(obj);
+                break;
+            }
+            case TILE: {
+                geometry = tile(obj);
+                break;
+            }
+            case TEXT: {
+                geometry = text(obj);
+                break;
+            }
+            default: {
+                geometry = null;
+                break;
+            }
+
+        }
+
+        if (geometry == null) {
+            return null;
+        }
+
+        if (geometry.getMaterial() == null) {
+            geometry.setMaterial(material);
+        }
+
+        double deg = obj.getRotation();
+        if (deg != 0) {
+            float radian = (float) (FastMath.DEG_TO_RAD * deg);
+            // rotate the spatial clockwise
+            geometry.rotate(0, -radian, 0);
+        }
+
+        return geometry;
+    }
+
+    private Geometry rectangle(MapObject obj) {
+        Mesh mesh = meshFactory.newObjectMesh(obj);
+        Geometry geometry = new Geometry(obj.getName(), mesh);
+        geometry.setQueueBucket(RenderQueue.Bucket.Gui);
+        return geometry;
+    }
+
+    private Geometry ellipse(MapObject obj) {
+        Mesh mesh = meshFactory.newObjectMesh(obj);
+        Geometry geometry = new Geometry(obj.getName(), mesh);
+        geometry.setQueueBucket(RenderQueue.Bucket.Gui);
+        return geometry;
+    }
+
+    private Geometry polygon(MapObject obj) {
+        Mesh mesh = meshFactory.newObjectMesh(obj);
+        Geometry geometry = new Geometry(obj.getName(), mesh);
+        geometry.setQueueBucket(RenderQueue.Bucket.Gui);
+        return geometry;
+    }
+
+    private Geometry polyline(MapObject obj) {
+        Mesh mesh = meshFactory.newObjectMesh(obj);
+        Geometry geometry = new Geometry(obj.getName(), mesh);
+        geometry.setQueueBucket(RenderQueue.Bucket.Gui);
+        return geometry;
+    }
+
+    private Geometry point(MapObject obj) {
+        Mesh mesh = meshFactory.newObjectMesh(obj);
+        Geometry geometry = new Geometry(obj.getName(), mesh);
+        geometry.setQueueBucket(RenderQueue.Bucket.Gui);
+        return geometry;
+    }
+
+    private Geometry image(MapObject obj) {
+        Mesh mesh = meshFactory.newObjectMesh(obj);
+        Geometry visual = new Geometry(obj.getName(), mesh);
+        TiledImage image = obj.getImage();
+        visual.setMaterial(image.getMaterial());
+        visual.setQueueBucket(RenderQueue.Bucket.Gui);
+        return visual;
+    }
+
+    private Geometry tile(MapObject obj) {
+        Mesh mesh = meshFactory.newObjectMesh(obj);
+        Geometry geometry = new Geometry(obj.getName(), mesh);
+        geometry.setQueueBucket(RenderQueue.Bucket.Gui);
+
+        Tile tile = obj.getTile();
+        if (tile.getMaterial() != null) {
+            geometry.setMaterial(tile.getMaterial());
+        } else {
+            geometry.setMaterial(tile.getTileset().getMaterial());
+        }
+
+        if (tile.isAnimated()) {
+            AnimatedTileControl control = new AnimatedTileControl(tile);
+            geometry.addControl(control);
+        }
+
+        return geometry;
+    }
+
+    private Geometry text(MapObject obj) {
+        // TODO render text
+        ObjectText objectText = obj.getTextData();
+        return null;
+    }
+
 }

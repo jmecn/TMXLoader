@@ -3,7 +3,6 @@ package io.github.jmecn.tiled.core;
 import java.util.LinkedList;
 import java.util.List;
 
-import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 import io.github.jmecn.tiled.enums.DrawOrder;
 import io.github.jmecn.tiled.math2d.Bound2D;
@@ -21,12 +20,6 @@ public class ObjectGroup extends Layer {
      * The color used to display the objects in this group.
      */
     private ColorRGBA color;
-    
-    /**
-     * This material applies to the shapes in this ObjectGroup using
-     * LineMesh
-     */
-    private Material material;
 
     /**
      * Whether the objects are drawn according to the order of appearance
@@ -53,20 +46,8 @@ public class ObjectGroup extends Layer {
         this.color = color;
     }
     
-    public Material getMaterial() {
-        return this.material;
-    }
-
-    public void setMaterial(Material material) {
-        this.material = material;
-    }
-
     public DrawOrder getDrawOrder() {
         return drawOrder;
-    }
-
-    public void setDrawOrder(String drawOrder) {
-        this.drawOrder = DrawOrder.fromValue(drawOrder);
     }
 
     public void setDrawOrder(DrawOrder drawOrder) {

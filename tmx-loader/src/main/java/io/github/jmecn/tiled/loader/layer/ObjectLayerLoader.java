@@ -3,10 +3,10 @@ package io.github.jmecn.tiled.loader.layer;
 import com.jme3.asset.AssetInfo;
 import com.jme3.asset.AssetKey;
 import com.jme3.asset.AssetManager;
-import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector2f;
 import io.github.jmecn.tiled.core.*;
+import io.github.jmecn.tiled.enums.DrawOrder;
 import io.github.jmecn.tiled.enums.ObjectType;
 import io.github.jmecn.tiled.loader.LayerLoader;
 import io.github.jmecn.tiled.loader.Utils;
@@ -63,13 +63,9 @@ public class ObjectLayerLoader extends LayerLoader {
         }
         layer.setColor(borderColor);
 
-        Material mat = new Material(assetManager, TILED_J3MD);
-        mat.setColor("Color", borderColor);
-        layer.setMaterial(mat);
-
         final String drawOrder = getAttributeValue(node, DRAW_ORDER);
         if (drawOrder != null) {
-            layer.setDrawOrder(drawOrder);
+            layer.setDrawOrder(DrawOrder.fromValue(drawOrder));
         }
 
         // Add all objects from the objects group
