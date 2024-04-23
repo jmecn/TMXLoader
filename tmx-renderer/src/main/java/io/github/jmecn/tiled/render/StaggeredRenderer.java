@@ -22,7 +22,7 @@ public class StaggeredRenderer extends HexagonalRenderer {
     @Override
     public Spatial createTileGrid(Material material) {
         // create a grid
-        Diamond mesh = new Diamond(map.getTileWidth(), map.getTileHeight(), false);
+        Diamond mesh = new Diamond(map.getTileWidth(), map.getTileHeight(), true);
         Geometry geom = new Geometry("TileGrid", mesh);
         geom.setMaterial(material);
         return geom;

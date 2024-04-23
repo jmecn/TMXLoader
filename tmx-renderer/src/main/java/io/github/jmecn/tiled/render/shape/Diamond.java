@@ -12,16 +12,16 @@ import java.util.List;
  */
 public class Diamond extends Polygon {
 
-    public Diamond(int tileWidth, int tileHeight, boolean border) {
+    public Diamond(int tileWidth, int tileHeight, boolean fill) {
         List<Vector2f> polygon = new ArrayList<>(4);
         polygon.add(new Vector2f(0, tileHeight * 0.5f));
         polygon.add(new Vector2f(tileWidth * 0.5f, tileHeight));
         polygon.add(new Vector2f(tileWidth, tileHeight * 0.5f));
         polygon.add(new Vector2f(tileWidth * 0.5f, 0));
-        if (border) {
-            super.polyline(polygon, true);
+        if (fill) {
+            fill(polygon);
         } else {
-            super.fill(polygon);
+            polyline(polygon, true);
         }
     }
 }

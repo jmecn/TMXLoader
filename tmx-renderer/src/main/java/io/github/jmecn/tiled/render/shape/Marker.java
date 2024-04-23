@@ -13,14 +13,14 @@ import java.util.List;
  */
 public class Marker extends Polygon {
 
-    public Marker(float radius, int count, boolean border) {
+    public Marker(float radius, int count, boolean fill) {
         if (count < 3) {
             throw new IllegalArgumentException("count must be greater than 3");
         }
-        if (border) {
-            border(radius, count);
-        } else {
+        if (fill) {
             fill(radius, count);
+        } else {
+            border(radius, count);
         }
     }
 

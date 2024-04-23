@@ -1,7 +1,6 @@
 package io.github.jmecn.tiled.render;
 
 import com.jme3.material.Material;
-import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector2f;
 import com.jme3.renderer.queue.RenderQueue.Bucket;
 import com.jme3.scene.Geometry;
@@ -196,26 +195,7 @@ public abstract class MapRenderer {
 
             layer.setNeedUpdateAt(tx, ty, false);
 
-            // set tint color
-            ColorRGBA tintColor = layer.getTintColor();
-            if (tintColor != null) {
-                applyTintColor(spatial, layer.getTintColor());
-            }
-        }
-    }
-
-    private void applyTintColor(Spatial spatial, ColorRGBA tintColor) {
-        if (spatial instanceof Geometry) {
-            Geometry geometry = (Geometry) spatial;
-            geometry.getMaterial().setColor(MaterialConst.TINT_COLOR, tintColor);
-        } else {
-            Node node = (Node) spatial;
-            for (Spatial child : node.getChildren()) {
-                if (child instanceof Geometry) {
-                    Geometry geometry = (Geometry) child;
-                    geometry.getMaterial().setColor(MaterialConst.TINT_COLOR, tintColor);
-                }
-            }
+            materialFactory.setTintColor(spatial, layer.getTintColor());
         }
     }
 
@@ -265,13 +245,6 @@ public abstract class MapRenderer {
         return rootNode;
     }
 
-    private void setTintColor(Material material, Layer layer) {
-        ColorRGBA tintColor = layer.getTintColor();
-        if (tintColor != null) {
-            material.setColor(MaterialConst.TINT_COLOR, tintColor);
-        }
-    }
-
     protected abstract Spatial render(TileLayer layer);
 
     /**
@@ -300,10 +273,7 @@ public abstract class MapRenderer {
 
 
         Material material = materialFactory.newMaterial(layer.getColor());
-        ColorRGBA tintColor = layer.getTintColor();
-        if (tintColor != null) {
-            material.setColor(MaterialConst.TINT_COLOR, tintColor);
-        }
+        materialFactory.setTintColor(material, layer.getTintColor());
 
         for (int i = 0; i < len; i++) {
             MapObject obj = objects.get(i);
@@ -334,14 +304,12 @@ public abstract class MapRenderer {
         if (layer.isNeedUpdated()) {
             layerNode.detachAllChildren();
 
-            TiledImage image = layer.getImage();
+            Material material = materialFactory.newMaterial(layer.getImage());
+            materialFactory.setTintColor(material, layer.getTintColor());
 
-            Material mat = image.getMaterial();
-            setTintColor(mat, layer);
-
-            Mesh mesh = new Rect(mapSize.getX(), mapSize.getY(), false);
+            Mesh mesh = new Rect(mapSize.getX(), mapSize.getY(), true);
             Geometry geom = new Geometry(layer.getName(), mesh);
-            geom.setMaterial(mat);
+            geom.setMaterial(material);
             geom.setQueueBucket(Bucket.Gui);
 
             layerNode.attachChild(geom);

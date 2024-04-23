@@ -15,14 +15,14 @@ import java.util.List;
  * @author yanmaoyuan
  */
 public class Ellipse extends Polyline {
-    public Ellipse(float width, float height, int count, boolean border) {
+    public Ellipse(float width, float height, int count, boolean fill) {
         if (count < 3) {
             throw new IllegalArgumentException("count must be greater than 3");
         }
-        if (border) {
-            border(width, height, count);
-        } else {
+        if (fill) {
             fill(width, height, count);
+        } else {
+            border(width, height, count);
         }
     }
 

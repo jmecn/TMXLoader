@@ -12,16 +12,16 @@ import java.util.List;
  */
 public class IsoRect extends Polygon {
 
-    public IsoRect(int tileWidth, int tileHeight, boolean border) {
+    public IsoRect(int tileWidth, int tileHeight, boolean fill) {
         List<Vector2f> polygon = new ArrayList<>(4);
         polygon.add(new Vector2f(-tileWidth * 0.5f, tileHeight * 0.5f));
         polygon.add(new Vector2f(0, tileHeight));
         polygon.add(new Vector2f(tileWidth * 0.5f, tileHeight * 0.5f));
         polygon.add(new Vector2f(0, 0));
-        if (border) {
-            super.polyline(polygon, true);
+        if (fill) {
+            fill(polygon);
         } else {
-            super.fill(polygon);
+            polyline(polygon, true);
         }
     }
 }

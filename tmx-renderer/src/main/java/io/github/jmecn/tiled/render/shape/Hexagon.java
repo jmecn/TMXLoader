@@ -21,7 +21,7 @@ import java.util.List;
  */
 public class Hexagon extends Polygon {
 
-    public Hexagon(int mapTileWidth, int mapTileHeight, int hexSideLength, StaggerAxis staggerAxis, boolean border) {
+    public Hexagon(int mapTileWidth, int mapTileHeight, int hexSideLength, StaggerAxis staggerAxis, boolean fill) {
         int sideLengthX = 0;
         int sideLengthY = 0;
         boolean isStaggerX = staggerAxis == StaggerAxis.X;
@@ -58,10 +58,10 @@ public class Hexagon extends Polygon {
             polygon.add(new Vector2f(sideOffsetX, tileHeight));
         }
 
-        if (border) {
-            polyline(polygon, true);
-        } else {
+        if (fill) {
             fill(polygon);
+        } else {
+            polyline(polygon, true);
         }
     }
 }

@@ -13,11 +13,11 @@ import java.util.List;
  */
 public class Rect extends Polyline {
 
-    public Rect(float width, float height, boolean border) {
-        if (border) {
-            border(width, height);
-        } else {
+    public Rect(float width, float height, boolean fill) {
+        if (fill) {
             fill(width, height);
+        } else {
+            border(width, height);
         }
     }
 
