@@ -13,6 +13,8 @@ public class Layer extends Base {
 
     protected Layer parent;
 
+    protected int index = 0;
+
     /**
      * Unique ID of the layer (defaults to 0, with valid IDs being at least 1).
      * Each layer that added to a map gets a unique id. Even if a layer is deleted,
@@ -108,6 +110,14 @@ public class Layer extends Base {
             throw new IllegalArgumentException("Can't set parent to itself!");
         }
         this.parent = parent;
+    }
+
+    public void setIndex(int index) {
+        this.index = index;
+    }
+
+    public int getIndex() {
+        return index;
     }
 
     /**
@@ -445,4 +455,5 @@ public class Layer extends Base {
     public String toString() {
         return name;
     }
+
 }

@@ -178,6 +178,7 @@ public class TiledMap extends Base {
      */
     public void addLayer(Layer layer) {
         layer.setMap(this);
+        layer.setIndex(layers.size());
         layers.add(layer);
         layerMap.put(layer.getName(), layer);
     }
@@ -192,6 +193,7 @@ public class TiledMap extends Base {
         layer.setMap(this);
         layers.set(index, layer);
         layerMap.put(layer.getName(), layer);
+        layer.setIndex(index);
     }
 
     /**
@@ -206,6 +208,10 @@ public class TiledMap extends Base {
         layer.setMap(this);
         layers.add(index, layer);
         layerMap.put(layer.getName(), layer);
+        // reindex
+        for (int i = 0; i < layers.size(); i++) {
+            layers.get(i).setIndex(i);
+        }
     }
 
     /**
@@ -218,7 +224,12 @@ public class TiledMap extends Base {
      */
     public Layer removeLayer(int index) {
         Layer layer = layers.remove(index);
+        layer.setIndex(0);
         layerMap.remove(layer.getName());
+        // reindex
+        for (int i = 0; i < layers.size(); i++) {
+            layers.get(i).setIndex(i);
+        }
         return layer;
     }
 

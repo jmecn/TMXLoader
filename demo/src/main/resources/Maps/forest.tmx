@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.10.2" orientation="orthogonal" renderorder="right-down" width="30" height="20" tilewidth="16" tileheight="16" infinite="0" nextlayerid="5" nextobjectid="16">
+<map version="1.10" tiledversion="1.10.2" orientation="orthogonal" renderorder="right-down" width="30" height="20" tilewidth="16" tileheight="16" infinite="0" nextlayerid="6" nextobjectid="22">
  <tileset firstgid="1" name="jungle" tilewidth="16" tileheight="16" tilecount="462" columns="22">
   <image source="tf_jungle/tf_jungle_tileset.png" width="352" height="336"/>
  </tileset>
@@ -10,19 +10,29 @@
  </layer>
  <layer id="2" name="Plants" width="30" height="20">
   <data encoding="base64" compression="zlib">
-   eJzt1etNAkEUhuGhBlAr4gct0AkoXmhARLwUwEVUKMAFRaQBFLzVoGIJviSQnBhmPWdC8A9f8iSwk2WW/Q6sc/+fHPLYxg4KK9r3ECUcoYzjgM+oJpyrJWzn1FBHAxdoBux7w56Rcd8IHXRxizvleWnPcW1vQzziCSOMFXvuYg/7OEBRrGl7+8AnvjDB9+z49PvUuXeNBfevghOc4gznYm0ZvclkxOtLXOEaLbTFWkhv2m56uEcfDxiItZDetN084wWveMO7WEvSSwob2MSWYs613fhmwhLZm7Wb+dzFzbcmlm7k7zduvjVZdP98/w8ycfP9V7LGa5TpOf98W2K9hrj51iTkuTKNdb4zv96HPFfW8ecHIzpwUQ==
+   eJxjYBh8oHagHTAKUIArkeqIjber5DqEQvABShPrH1oDz4F2AAFwEY1Py3i7hcQWZkSVE0fjUwLeoPE/YFWFH1Aj3urQ+E0k6iclbqiZ3rGFH63zUxSNzScGUOqGW4SVUAWQmr4Hexk01AEAFEIRIw==
   </data>
  </layer>
- <objectgroup id="3" name="Collision" visible="0">
-  <object id="6" x="64.7036" y="96.7252" width="47.2072" height="12.5446"/>
+ <layer id="5" name="Trees" width="30" height="20">
+  <data encoding="base64" compression="zlib">
+   eJzt1VtSwkAQheHJGgRcqwqCbEARBBdgEhVlAQQlXDYACqhr8MIS/PM2D2Sq0xh54VR9T13JVM3pVIzZfY5wjBOUUfmnc89xgQYu0VS848YzxveyPeMjQIhb3CnO7XNmlPHcCAM84RlDxbl2pL3NMMcLXrEQvPsUVdRwhro1k/b2iS984wdraxZwd+GG+2vhCm10cG3N/qK3tNyjiwc8omfNNL1Ju4kxwhgTTK2ZpjdpN0us8IZ3fFizA3opoIgSDgV7Lu3GtROaaL8p135LoukmiWu/JdHen2u/80xs0vc7z7j2WxLNfyXJtvut+a/sk55fh+RsXw==
+  </data>
+ </layer>
+ <objectgroup id="3" name="Collision">
+  <object id="6" x="64.7036" y="96.7252" width="44.5457" height="12.101"/>
   <object id="7" x="111.911" y="207.976" width="47.5373" height="13.2048"/>
-  <object id="8" x="98.8296" y="272.349" width="26.8327" height="10.9869"/>
-  <object id="9" x="272.679" y="160.438" width="45.8867" height="14.1952"/>
-  <object id="10" x="384.59" y="144.263" width="46.5469" height="15.1855"/>
-  <object id="11" x="336.392" y="256.833" width="46.5469" height="14.1952"/>
+  <object id="8" x="99.2732" y="272.349" width="25.0584" height="10.9869"/>
+  <object id="9" x="272.679" y="160.438" width="45.8867" height="12.8645"/>
+  <object id="10" x="387.251" y="144.263" width="41.224" height="12.9676"/>
+  <object id="11" x="336.392" y="256.833" width="46.5469" height="12.4209"/>
   <object id="13" x="323.024" y="47.8674" width="24.674" height="11.9654"/>
+  <object id="16" x="163.68" y="98.9177" width="22.1789" height="10.6458"/>
+  <object id="17" name="top_bound" x="1.73616" y="0.372307" width="478.172" height="7.95519"/>
+  <object id="19" name="bottom_bound" x="0.400799" y="316.304" width="479.516" height="4.01558"/>
+  <object id="20" name="left_bound" x="-0.991547" y="0.90607" width="5.38893" height="318.87"/>
+  <object id="21" name="right_bound" x="475.081" y="0.887075" width="4.52085" height="320.234"/>
  </objectgroup>
- <objectgroup id="4" name="Location">
+ <objectgroup id="4" name="Location" visible="0">
   <object id="15" name="Start" x="255.439" y="254.035">
    <point/>
   </object>

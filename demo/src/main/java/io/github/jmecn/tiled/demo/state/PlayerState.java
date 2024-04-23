@@ -8,8 +8,8 @@ import com.jme3.input.controls.ActionListener;
 import com.jme3.input.controls.KeyTrigger;
 import com.jme3.math.Vector2f;
 import com.jme3.math.Vector3f;
-import com.jme3.scene.Spatial;
-import org.dyn4j.dynamics.Body;
+import org.jbox2d.common.Vec2;
+import org.jbox2d.dynamics.Body;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -95,9 +95,9 @@ public class PlayerState extends BaseAppState implements ActionListener {
     @Override
     public void update(float tpf) {
         updateInput(tpf);
-        body.setLinearVelocity(velocity.x, velocity.z);
-        float x = (float) body.getTransform().getTranslationX();
-        float y = (float) body.getTransform().getTranslationY();
+        body.setLinearVelocity(new Vec2(velocity.x, velocity.z));
+        float x = body.getTransform().position.x;
+        float y = body.getTransform().position.y;
         viewState.moveToPixel(x, y);
         // position.addLocal(displacement);
         // logger.info("position: {}", position);
