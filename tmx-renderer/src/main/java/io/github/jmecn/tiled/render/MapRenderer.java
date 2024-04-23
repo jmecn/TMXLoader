@@ -9,7 +9,6 @@ import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import io.github.jmecn.tiled.core.*;
 import io.github.jmecn.tiled.enums.DrawOrder;
-import io.github.jmecn.tiled.render.factory.MaterialFactory;
 import io.github.jmecn.tiled.render.factory.SpriteFactory;
 import io.github.jmecn.tiled.math2d.Point;
 import io.github.jmecn.tiled.render.shape.Rect;
@@ -62,7 +61,6 @@ public abstract class MapRenderer {
     protected Map<Layer, Spatial[]> layerSpatialMap;// save the layer spatial
 
     protected SpriteFactory spriteFactory;
-    protected MaterialFactory materialFactory;
 
     /**
      * The whole map size in pixel
@@ -135,22 +133,6 @@ public abstract class MapRenderer {
         return spriteFactory;
     }
 
-    /**
-     * Set the material factory
-     * @param materialFactory the material factory
-     */
-    public void setMaterialFactory(MaterialFactory materialFactory) {
-        this.materialFactory = materialFactory;
-    }
-
-    /**
-     * Get the material factory
-     * @return the material factory
-     */
-    public MaterialFactory getMaterialFactory() {
-        return materialFactory;
-    }
-
     public Node getLayerNode(Layer layer) {
         return layerNodeMap.computeIfAbsent(layer, key -> {
             Node node = new Node(layer.getName());
@@ -195,7 +177,7 @@ public abstract class MapRenderer {
 
             layer.setNeedUpdateAt(tx, ty, false);
 
-            materialFactory.setTintColor(spatial, layer.getTintColor());
+            spriteFactory.setTintColor(spatial, layer.getTintColor());
         }
     }
 
@@ -272,8 +254,7 @@ public abstract class MapRenderer {
         }
 
 
-        Material material = materialFactory.newMaterial(layer.getColor());
-        materialFactory.setTintColor(material, layer.getTintColor());
+        Material material = spriteFactory.newMaterial(layer.getColor(), layer.getTintColor());
 
         for (int i = 0; i < len; i++) {
             MapObject obj = objects.get(i);
@@ -304,8 +285,7 @@ public abstract class MapRenderer {
         if (layer.isNeedUpdated()) {
             layerNode.detachAllChildren();
 
-            Material material = materialFactory.newMaterial(layer.getImage());
-            materialFactory.setTintColor(material, layer.getTintColor());
+            Material material = spriteFactory.newMaterial(layer.getImage(), layer.getTintColor());
 
             Mesh mesh = new Rect(mapSize.getX(), mapSize.getY(), true);
             Geometry geom = new Geometry(layer.getName(), mesh);
@@ -385,7 +365,7 @@ public abstract class MapRenderer {
     }
 
     protected void putTileSprite(TileLayer layer, int x, int y, int z, Tile tile, Vector2f pixelCoord) {
-        Material material = materialFactory.newMaterial(tile);
+        Material material = spriteFactory.newMaterial(tile);
         Geometry visual = spriteFactory.newTileSprite(tile, material);
         visual.move(pixelCoord.x, z, pixelCoord.y);
         setSpatialAt(layer, x, y, visual);

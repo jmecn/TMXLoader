@@ -22,6 +22,14 @@ public interface MaterialFactory {
 
     Material newMaterial(ColorRGBA color);
 
+    Material newMaterial(Tileset tileset, ColorRGBA tintColor);
+
+    Material newMaterial(Tile tile, ColorRGBA tintColor);
+
+    Material newMaterial(TiledImage image, ColorRGBA tintColor);
+
+    Material newMaterial(ColorRGBA color, ColorRGBA tintColor);
+
     void setTintColor(Material material, ColorRGBA tintColor);
 
     void setTintColor(Spatial spatial, ColorRGBA tintColor);

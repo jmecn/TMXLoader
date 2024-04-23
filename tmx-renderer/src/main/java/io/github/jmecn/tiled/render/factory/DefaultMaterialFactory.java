@@ -12,7 +12,6 @@ import com.jme3.texture.Texture;
 import io.github.jmecn.tiled.core.Tile;
 import io.github.jmecn.tiled.core.TiledImage;
 import io.github.jmecn.tiled.core.Tileset;
-import io.github.jmecn.tiled.render.MaterialConst;
 import io.github.jmecn.tiled.util.ColorUtil;
 
 import static io.github.jmecn.tiled.render.MaterialConst.*;
@@ -93,6 +92,34 @@ public class DefaultMaterialFactory implements MaterialFactory {
         Material mat = new Material(assetManager, TILED_J3MD);
         mat.setColor(COLOR, color);
         return mat;
+    }
+
+    @Override
+    public Material newMaterial(Tileset tileset, ColorRGBA tintColor) {
+        Material material = newMaterial(tileset);
+        setTintColor(material, tintColor);
+        return material;
+    }
+
+    @Override
+    public Material newMaterial(Tile tile, ColorRGBA tintColor) {
+        Material material = newMaterial(tile);
+        setTintColor(material, tintColor);
+        return material;
+    }
+
+    @Override
+    public Material newMaterial(TiledImage image, ColorRGBA tintColor) {
+        Material material = newMaterial(image);
+        setTintColor(material, tintColor);
+        return material;
+    }
+
+    @Override
+    public Material newMaterial(ColorRGBA color, ColorRGBA tintColor) {
+        Material material = newMaterial(color);
+        setTintColor(material, tintColor);
+        return material;
     }
 
     @Override

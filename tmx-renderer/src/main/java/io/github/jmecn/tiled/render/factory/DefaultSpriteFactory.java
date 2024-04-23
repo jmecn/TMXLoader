@@ -1,6 +1,8 @@
 package io.github.jmecn.tiled.render.factory;
 
+import com.jme3.asset.AssetManager;
 import com.jme3.material.Material;
+import com.jme3.math.ColorRGBA;
 import com.jme3.math.FastMath;
 import com.jme3.renderer.queue.RenderQueue;
 import com.jme3.scene.*;
@@ -21,16 +23,18 @@ public final class DefaultSpriteFactory implements SpriteFactory {
 
     static Logger logger = LoggerFactory.getLogger(DefaultSpriteFactory.class);
 
-    private final MeshFactory meshFactory;
+    private MeshFactory meshFactory;
+    private MaterialFactory materialFactory;
 
     private final IntMap<Geometry> cache;
 
-    public DefaultSpriteFactory(TiledMap tiledMap) {
-        this(tiledMap, new DefaultMeshFactory(tiledMap));
+    public DefaultSpriteFactory(TiledMap tiledMap, AssetManager assetManager) {
+        this(tiledMap, new DefaultMeshFactory(tiledMap), new DefaultMaterialFactory(assetManager));
     }
 
-    public DefaultSpriteFactory(TiledMap tiledMap, MeshFactory meshFactory) {
+    public DefaultSpriteFactory(TiledMap tiledMap, MeshFactory meshFactory, MaterialFactory materialFactory) {
         this.meshFactory = meshFactory;
+        this.materialFactory = materialFactory;
         this.cache = new IntMap<>();
         List<Tileset> tilesets = tiledMap.getTileSets();
 
@@ -38,6 +42,38 @@ public final class DefaultSpriteFactory implements SpriteFactory {
         for (Tileset tileset : tilesets) {
             createVisual(tileset);// TODO remove this when I have a better animation system
         }
+    }
+
+    /**
+     * Get the MaterialFactory for creating tile material.
+     * @return the MaterialFactory
+     */
+    public MaterialFactory getMaterialFactory() {
+        return materialFactory;
+    }
+
+    /**
+     * Set the MaterialFactory for creating tile material.
+     * @param materialFactory the MaterialFactory
+     */
+    public void setMaterialFactory(MaterialFactory materialFactory) {
+        this.materialFactory = materialFactory;
+    }
+
+    /**
+     * Get the MeshFactory for creating tile mesh.
+     * @return the MeshFactory
+     */
+    public MeshFactory getMeshFactory() {
+        return meshFactory;
+    }
+
+    /**
+     * Set the MeshFactory for creating tile mesh.
+     * @param meshFactory the MeshFactory
+     */
+    public void setMeshFactory(MeshFactory meshFactory) {
+        this.meshFactory = meshFactory;
     }
 
     /**
@@ -51,6 +87,57 @@ public final class DefaultSpriteFactory implements SpriteFactory {
             Geometry sprite = getTileSprite(tile);
             tile.setVisual(sprite); // TODO remove it when I have a better animation system
         }
+    }
+
+
+    @Override
+    public void setTintColor(Spatial spatial, ColorRGBA tintColor) {
+        materialFactory.setTintColor(spatial, tintColor);
+    }
+
+    @Override
+    public Material newMaterial(ColorRGBA color) {
+        return materialFactory.newMaterial(color);
+    }
+
+    @Override
+    public Material newMaterial(Tileset tileset) {
+        return materialFactory.newMaterial(tileset);
+    }
+
+    @Override
+    public Material newMaterial(Tile tile) {
+        return materialFactory.newMaterial(tile);
+    }
+
+    @Override
+    public Material newMaterial(TiledImage image) {
+        return materialFactory.newMaterial(image);
+    }
+
+    @Override
+    public Material newMaterial(Tileset tileset, ColorRGBA tintColor) {
+        return materialFactory.newMaterial(tileset, tintColor);
+    }
+
+    @Override
+    public Material newMaterial(Tile tile, ColorRGBA tintColor) {
+        return materialFactory.newMaterial(tile, tintColor);
+    }
+
+    @Override
+    public Material newMaterial(TiledImage image, ColorRGBA tintColor) {
+        return materialFactory.newMaterial(image, tintColor);
+    }
+
+    @Override
+    public Material newMaterial(ColorRGBA color, ColorRGBA tintColor) {
+        return materialFactory.newMaterial(color, tintColor);
+    }
+
+    @Override
+    public void setTintColor(Material material, ColorRGBA tintColor) {
+        materialFactory.setTintColor(material, tintColor);
     }
 
     @Override

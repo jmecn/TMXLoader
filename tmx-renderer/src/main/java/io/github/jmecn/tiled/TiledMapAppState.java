@@ -27,10 +27,7 @@ import io.github.jmecn.tiled.math2d.Point;
 import io.github.jmecn.tiled.core.TiledMap;
 import io.github.jmecn.tiled.enums.ZoomMode;
 import io.github.jmecn.tiled.render.*;
-import io.github.jmecn.tiled.render.factory.DefaultMaterialFactory;
-import io.github.jmecn.tiled.render.factory.DefaultSpriteFactory;
-import io.github.jmecn.tiled.render.factory.MaterialFactory;
-import io.github.jmecn.tiled.render.factory.SpriteFactory;
+import io.github.jmecn.tiled.render.factory.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -309,10 +306,8 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
                 mapRenderer = new OrthogonalRenderer(map);
         }
 
-        SpriteFactory spriteFactory = new DefaultSpriteFactory(map);
-        MaterialFactory materialFactory = new DefaultMaterialFactory(assetManager);
+        SpriteFactory spriteFactory = new DefaultSpriteFactory(map, assetManager);
         mapRenderer.setSpriteFactory(spriteFactory);
-        mapRenderer.setMaterialFactory(materialFactory);
 
         // create the visual part for the map
         rootNode.attachChild(mapRenderer.getRootNode());
