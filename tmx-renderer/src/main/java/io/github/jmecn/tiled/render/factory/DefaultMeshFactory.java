@@ -138,7 +138,7 @@ public class DefaultMeshFactory implements MeshFactory {
     }
 
     public Rect rectangle(MapObject object) {
-        return rectangle((float) object.getWidth(), (float) object.getHeight(), true);
+        return rectangle((float) object.getWidth(), (float) object.getHeight(), false);
     }
 
     public Rect rectangle(float width, float height, boolean fill) {
@@ -150,7 +150,7 @@ public class DefaultMeshFactory implements MeshFactory {
     }
 
     public Ellipse ellipse(MapObject object) {
-        return ellipse((float) object.getWidth(), (float) object.getHeight(), true);
+        return ellipse((float) object.getWidth(), (float) object.getHeight(), false);
     }
 
     public Ellipse ellipse(float width, float height, boolean fill) {
@@ -162,7 +162,7 @@ public class DefaultMeshFactory implements MeshFactory {
     }
 
     public Polygon polygon(MapObject object) {
-        return polygon(object.getPoints(), true);
+        return polygon(object.getPoints(), false);
     }
 
     public Polygon polygon(List<Vector2f> points, boolean fill) {
@@ -186,7 +186,7 @@ public class DefaultMeshFactory implements MeshFactory {
     }
 
     public Marker marker() {
-        return marker(MARKER_RADIUS, true);
+        return marker(MARKER_RADIUS, false);
     }
 
     public Marker marker(float radius, boolean fill) {
