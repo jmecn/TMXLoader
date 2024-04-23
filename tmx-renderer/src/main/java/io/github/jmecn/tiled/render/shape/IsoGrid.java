@@ -1,4 +1,4 @@
-package io.github.jmecn.tiled.shape.debug;
+package io.github.jmecn.tiled.render.shape;
 
 import com.jme3.scene.Mesh;
 import com.jme3.scene.VertexBuffer;

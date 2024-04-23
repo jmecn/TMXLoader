@@ -1,4 +1,4 @@
-package io.github.jmecn.tiled.shape;
+package io.github.jmecn.tiled.render.shape;
 
 import java.util.ArrayList;
 import java.util.List;

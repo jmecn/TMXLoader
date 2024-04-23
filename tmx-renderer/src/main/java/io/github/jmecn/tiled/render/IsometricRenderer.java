@@ -9,8 +9,8 @@ import io.github.jmecn.tiled.core.Tile;
 import io.github.jmecn.tiled.core.TileLayer;
 import io.github.jmecn.tiled.core.TiledMap;
 import io.github.jmecn.tiled.math2d.Point;
-import io.github.jmecn.tiled.shape.debug.IsoGrid;
-import io.github.jmecn.tiled.shape.IsoRect;
+import io.github.jmecn.tiled.render.shape.IsoGrid;
+import io.github.jmecn.tiled.render.shape.IsoRect;
 
 /**
  * Isometric render

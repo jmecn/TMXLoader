@@ -1,4 +1,4 @@
-package io.github.jmecn.tiled.factory;
+package io.github.jmecn.tiled.render.factory;
 
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
@@ -13,7 +13,7 @@ import io.github.jmecn.tiled.animation.AnimatedTileControl;
 import io.github.jmecn.tiled.core.*;
 import io.github.jmecn.tiled.enums.FillMode;
 import io.github.jmecn.tiled.enums.Orientation;
-import io.github.jmecn.tiled.shape.*;
+import io.github.jmecn.tiled.render.shape.*;
 import io.github.jmecn.tiled.util.ObjectMesh;
 
 /**

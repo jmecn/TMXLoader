@@ -9,7 +9,7 @@ import com.jme3.scene.Geometry;
 import com.jme3.system.AppSettings;
 import com.jme3.texture.Texture;
 import com.jme3.texture.Texture2D;
-import io.github.jmecn.tiled.shape.TileMesh;
+import io.github.jmecn.tiled.render.shape.TileMesh;
 
 import static io.github.jmecn.tiled.TiledConst.TILED_J3MD;
 

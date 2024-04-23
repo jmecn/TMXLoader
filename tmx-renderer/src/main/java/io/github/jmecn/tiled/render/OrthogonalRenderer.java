@@ -11,8 +11,8 @@ import io.github.jmecn.tiled.core.TileLayer;
 import io.github.jmecn.tiled.core.TiledMap;
 import io.github.jmecn.tiled.enums.RenderOrder;
 import io.github.jmecn.tiled.math2d.Point;
-import io.github.jmecn.tiled.shape.debug.OrthoGrid;
-import io.github.jmecn.tiled.shape.Rect;
+import io.github.jmecn.tiled.render.shape.OrthoGrid;
+import io.github.jmecn.tiled.render.shape.Rect;
 
 /**
  * Orthogonal render

@@ -1,4 +1,4 @@
-package io.github.jmecn.tiled.factory;
+package io.github.jmecn.tiled.render.factory;
 
 /**
  * desc:

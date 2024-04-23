@@ -5,7 +5,7 @@ import com.jme3.scene.Geometry;
 import com.jme3.scene.Spatial;
 import io.github.jmecn.tiled.core.TiledMap;
 import io.github.jmecn.tiled.math2d.Point;
-import io.github.jmecn.tiled.shape.Diamond;
+import io.github.jmecn.tiled.render.shape.Diamond;
 
 /**
  * Staggered render

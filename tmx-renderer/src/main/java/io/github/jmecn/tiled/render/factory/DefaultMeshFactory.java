@@ -1,4 +1,4 @@
-package io.github.jmecn.tiled.factory;
+package io.github.jmecn.tiled.render.factory;
 
 import com.jme3.math.Vector2f;
 import com.jme3.scene.Mesh;
@@ -7,7 +7,9 @@ import io.github.jmecn.tiled.core.MapObject;
 import io.github.jmecn.tiled.core.Tile;
 import io.github.jmecn.tiled.core.TiledMap;
 import io.github.jmecn.tiled.core.Tileset;
-import io.github.jmecn.tiled.shape.TileMesh;
+import io.github.jmecn.tiled.render.shape.TileMesh;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * desc:
@@ -16,13 +18,15 @@ import io.github.jmecn.tiled.shape.TileMesh;
  */
 public class DefaultMeshFactory implements MeshFactory {
 
+    static Logger logger = LoggerFactory.getLogger(DefaultMeshFactory.class);
+
     private final TiledMap tiledMap;
 
-    private final IntMap<TileMesh> tileMeshes;
+    private final IntMap<TileMesh> cache;
 
     public DefaultMeshFactory(TiledMap tiledMap) {
         this.tiledMap = tiledMap;
-        this.tileMeshes = new IntMap<>();
+        this.cache = new IntMap<>();
     }
 
     @Override
@@ -58,26 +62,27 @@ public class DefaultMeshFactory implements MeshFactory {
 
     @Override
     public TileMesh getTileMesh(int tileId) {
-        if (tileMeshes.containsKey(tileId)) {
-            return tileMeshes.get(tileId);
+        if (cache.containsKey(tileId)) {
+            return cache.get(tileId);
         }
 
         TileMesh mesh = newTileMesh(tileId);
-        tileMeshes.put(tileId, mesh);
+        cache.put(tileId, mesh);
         return mesh;
     }
 
     @Override
     public TileMesh getTileMesh(Tile tile) {
-        if (tileMeshes.containsKey(tile.getGid())) {
-            return tileMeshes.get(tile.getGid());
+        if (cache.containsKey(tile.getGid())) {
+            logger.debug("reuse mesh for gid: {}, cacheSize:{}", tile.getGid(), cache.size());
+            return cache.get(tile.getGid());
+        } else {
+            TileMesh mesh = newTileMesh(tile);
+            cache.put(tile.getGid(), mesh);
+            logger.debug("create mesh for gid:{}, cacheSize:{}", tile.getGid(), cache.size());
+            return mesh;
         }
-
-        TileMesh mesh = newTileMesh(tile);
-        tileMeshes.put(tile.getGid(), mesh);
-        return mesh;
     }
-
 
     @Override
     public Mesh createMesh(MapObject object) {

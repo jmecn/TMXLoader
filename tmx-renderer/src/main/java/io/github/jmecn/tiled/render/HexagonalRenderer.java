@@ -12,9 +12,9 @@ import io.github.jmecn.tiled.core.TiledMap;
 import io.github.jmecn.tiled.enums.StaggerAxis;
 import io.github.jmecn.tiled.enums.StaggerIndex;
 import io.github.jmecn.tiled.math2d.Point;
-import io.github.jmecn.tiled.shape.debug.HexGrid;
-import io.github.jmecn.tiled.shape.Hexagon;
-import io.github.jmecn.tiled.shape.Rect;
+import io.github.jmecn.tiled.render.shape.HexGrid;
+import io.github.jmecn.tiled.render.shape.Hexagon;
+import io.github.jmecn.tiled.render.shape.Rect;
 
 /**
  * Hexagonal render

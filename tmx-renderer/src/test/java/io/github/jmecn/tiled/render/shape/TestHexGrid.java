@@ -1,4 +1,4 @@
-package io.github.jmecn.tiled.shape;
+package io.github.jmecn.tiled.render.shape;
 
 import com.jme3.app.SimpleApplication;
 import com.jme3.material.Material;
@@ -7,7 +7,6 @@ import com.jme3.scene.Geometry;
 import com.jme3.system.AppSettings;
 import io.github.jmecn.tiled.enums.StaggerAxis;
 import io.github.jmecn.tiled.enums.StaggerIndex;
-import io.github.jmecn.tiled.shape.debug.HexGrid;
 
 /**
  * desc:

@@ -1,4 +1,4 @@
-package io.github.jmecn.tiled.factory;
+package io.github.jmecn.tiled.render.factory;
 
 import com.jme3.scene.Mesh;
 import io.github.jmecn.tiled.core.MapObject;

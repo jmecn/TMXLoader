@@ -10,11 +10,11 @@ import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import io.github.jmecn.tiled.core.*;
 import io.github.jmecn.tiled.enums.DrawOrder;
-import io.github.jmecn.tiled.factory.DefaultObjectFactory;
-import io.github.jmecn.tiled.factory.DefaultSpriteFactory;
-import io.github.jmecn.tiled.factory.SpriteFactory;
+import io.github.jmecn.tiled.render.factory.DefaultObjectFactory;
+import io.github.jmecn.tiled.render.factory.DefaultSpriteFactory;
+import io.github.jmecn.tiled.render.factory.SpriteFactory;
 import io.github.jmecn.tiled.math2d.Point;
-import io.github.jmecn.tiled.shape.Rect;
+import io.github.jmecn.tiled.render.shape.Rect;
 
 import java.util.*;
 
@@ -112,8 +112,8 @@ public abstract class MapRenderer {
 
     /**
      * Depth first search to sort layers
-     * @param list
-     * @param group
+     * @param list the list to save sorted layers
+     * @param group the group layer
      */
     private void sortLayers(List<Layer> list, GroupLayer group) {
         for (Layer layer : group.getLayers()) {
@@ -346,9 +346,9 @@ public abstract class MapRenderer {
 
     public abstract void renderGrid(Node gridVisual, Material gridMaterial);
 
-    /******************************
-     * Coordinates System Convert *
-     ******************************/
+    ///////////////////////////////////////////////
+    ///////// Coordinates System Convert //////////
+    ///////////////////////////////////////////////
 
     /**
      * Convert the pixel coordinates to screen coordinates.
@@ -409,13 +409,9 @@ public abstract class MapRenderer {
     }
 
     protected void putTileSprite(TileLayer layer, int x, int y, int z, Tile tile, Vector2f pixelCoord) {
-        Geometry visual = copySprite(tile);
+        Geometry visual = spriteFactory.newTileSprite(tile);
         visual.move(pixelCoord.x, z, pixelCoord.y);
         setSpatialAt(layer, x, y, visual);
-    }
-
-    protected Geometry copySprite(Tile tile) {
-        return spriteFactory.getTileSprite(tile).clone();
     }
 
     /**
