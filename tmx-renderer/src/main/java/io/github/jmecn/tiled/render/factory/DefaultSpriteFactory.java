@@ -145,17 +145,8 @@ public final class DefaultSpriteFactory implements SpriteFactory {
 
     @Override
     public Geometry newTileSprite(Tile tile) {
-        Mesh mesh = meshFactory.getTileMesh(tile);
         Material material = materialFactory.newMaterial(tile);
-
-        String name = "tile#" + tile.getGid();
-        Geometry geometry = new Geometry(name, mesh);
-        geometry.setQueueBucket(RenderQueue.Bucket.Gui);
-        geometry.setMaterial(material);
-        if (tile.isAnimated()) {
-            geometry.addControl(new AnimatedTileControl(tile));
-        }
-        return geometry;
+        return newTileSprite(tile, material);
     }
 
     @Override
@@ -207,6 +198,9 @@ public final class DefaultSpriteFactory implements SpriteFactory {
             case TILE: {
                 Material mat =  materialFactory.newMaterial(obj.getTile());
                 geometry.setMaterial(mat);
+                if (obj.getTile().isAnimated()) {
+                    geometry.addControl(new AnimatedTileControl(obj.getTile()));
+                }
                 break;
             }
             case TEXT: {
