@@ -62,6 +62,8 @@ public class Layer extends Base {
     protected double renderParallaxY = 1;
     private boolean isRenderParallaxUpdated = true;
 
+    protected boolean isNeedUpdate = true;
+
     public Layer() {
         // for serialization
     }
@@ -432,9 +434,12 @@ public class Layer extends Base {
         isRenderParallaxUpdated = false;
     }
 
-    @Override
-    public Node getVisual() {
-        return (Node) visual;
+    public boolean isNeedUpdated() {
+        return isNeedUpdate;
+    }
+
+    public void setNeedUpdated(boolean isSpatialUpdated) {
+        this.isNeedUpdate = isSpatialUpdated;
     }
 
     @Override

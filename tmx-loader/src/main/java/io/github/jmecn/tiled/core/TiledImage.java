@@ -1,6 +1,5 @@
 package io.github.jmecn.tiled.core;
 
-import com.jme3.material.Material;
 import com.jme3.texture.Texture2D;
 
 /**
@@ -16,7 +15,6 @@ public class TiledImage {
     private final int height;
 
     private Texture2D texture;
-    private Material material;
 
     public TiledImage(String source, String trans, String format, int width, int height) {
         this.source = source;
@@ -52,14 +50,6 @@ public class TiledImage {
 
     public void setTexture(Texture2D texture) {
         this.texture = texture;
-    }
-
-    public Material getMaterial() {
-        return material;
-    }
-
-    public void setMaterial(Material material) {
-        this.material = material;
     }
 
     @Override

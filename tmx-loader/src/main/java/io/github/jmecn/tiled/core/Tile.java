@@ -3,13 +3,10 @@ package io.github.jmecn.tiled.core;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.jme3.material.Material;
-import com.jme3.scene.Geometry;
-import com.jme3.texture.Texture;
 import io.github.jmecn.tiled.animation.Animation;
 import io.github.jmecn.tiled.animation.Frame;
 
-public class Tile extends Base implements Cloneable {
+public class Tile extends Base {
 
     /**
      * When you use the tile flipping feature added in Tiled Qt 0.7, the highest
@@ -46,10 +43,6 @@ public class Tile extends Base implements Cloneable {
     private int height;
 
     private TiledImage image;
-
-    private Texture texture;
-
-    private Material material;
 
     // animation
     private final List<Animation> animations = new ArrayList<>();
@@ -181,45 +174,6 @@ public class Tile extends Base implements Cloneable {
     }
 
     /*
-     * This is the visual part of a tile.
-     * 
-     * Texture and Material are set by TMXLoader when loading a tileset.
-     * 
-     * Spatial is created by MapRenderer in <code>createVisual(Tileset)</code>.
-     */
-
-    public Texture getTexture() {
-        return texture;
-    }
-
-    /**
-     * setTexture
-     * 
-     * @param texture The texture of this tile.
-     */
-    public void setTexture(Texture texture) {
-        this.texture = texture;
-    }
-
-    public Material getMaterial() {
-        return material;
-    }
-
-    /**
-     * setMaterial
-     * 
-     * @param material The material for this tile.
-     */
-    public void setMaterial(Material material) {
-        this.material = material;
-    }
-
-    @Override
-    public Geometry getVisual() {
-        return (Geometry) visual;
-    }
-
-    /*
      * This part is about the animation.
      * 
      * As of Tiled 0.10, each tile can have exactly one animation associated
@@ -318,11 +272,6 @@ public class Tile extends Base implements Cloneable {
         tile.gid = gid;
         tile.tileset = tileset;// share the tileset
         tile.image = image;
-
-        // jme3 visual
-        tile.texture = texture;
-        tile.material = material;
-        tile.visual = visual;
 
         // animation
         tile.animations.addAll(animations);// share the animation

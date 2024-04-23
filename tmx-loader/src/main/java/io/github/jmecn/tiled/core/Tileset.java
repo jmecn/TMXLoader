@@ -3,14 +3,10 @@ package io.github.jmecn.tiled.core;
 import java.util.*;
 import java.util.logging.Logger;
 
-import com.jme3.material.Material;
 import com.jme3.math.Vector2f;
-import com.jme3.texture.Texture;
 import io.github.jmecn.tiled.enums.FillMode;
 import io.github.jmecn.tiled.enums.ObjectAlignment;
-import io.github.jmecn.tiled.enums.Orientation;
 import io.github.jmecn.tiled.enums.TileRenderSize;
-import io.github.jmecn.tiled.math2d.Point;
 
 /**
  * If there are multiple &lt;tileset&gt; elements, they are in ascending order of
@@ -120,8 +116,6 @@ public class Tileset extends Base implements Iterable<Tile> {
     // tileset image, in case image-based tileset
     private TiledImage image;
     private String imageSource;
-    private Texture texture;
-    private Material material;
 
     private Transformations transformations;
 
@@ -258,28 +252,6 @@ public class Tileset extends Base implements Iterable<Tile> {
 
     public void setImageSource(String imageSource) {
         this.imageSource = imageSource;
-    }
-
-    public Texture getTexture() {
-        return texture;
-    }
-
-    /**
-     * Creates a tileset from a Texture2D. Tiles are cut by the passed cutter.
-     *
-     * @param texture
-     *            the image to be used, must not be null
-     */
-    public void setTexture(Texture texture) {
-        this.texture = texture;
-    }
-
-    public Material getMaterial() {
-        return material;
-    }
-
-    public void setMaterial(Material material) {
-        this.material = material;
     }
 
     public List<Terrain> getTerrains() {

@@ -258,8 +258,7 @@ public abstract class MapRenderer {
         for (int i = 0; i < len; i++) {
             MapObject obj = objects.get(i);
 
-            if (obj.isVisible() && obj.isNeedUpdated()) {
-
+            if (obj.isVisible()) {
                 Spatial spatial = spriteFactory.newObjectSprite(obj, material);
                 if (spatial == null) {
                     continue;

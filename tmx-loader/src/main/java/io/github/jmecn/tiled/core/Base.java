@@ -19,7 +19,7 @@ import java.util.Properties;
  * @author yanmaoyuan
  * 
  */
-public class Base extends VisualSpatial {
+public class Base {
     
     protected Properties properties;
 

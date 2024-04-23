@@ -90,17 +90,6 @@ public final class ImageLoader {
         TiledImage image = new TiledImage(source, trans, format, width, height);
         image.setTexture(texture);
 
-        // create material
-        Material mat = new Material(assetManager, TILED_J3MD);
-        mat.setTexture("ColorMap", texture);
-        if (trans != null) {
-            ColorRGBA transparentColor = ColorUtil.toColorRGBA(trans);
-            mat.setColor("TransColor", transparentColor);
-        }
-        Vector2f imageSize = new Vector2f(width, height);
-        mat.setVector2("ImageSize", imageSize);
-        image.setMaterial(mat);
-
         return image;
     }
 

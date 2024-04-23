@@ -3,8 +3,6 @@ package io.github.jmecn.tiled.loader;
 import com.jme3.asset.AssetInfo;
 import com.jme3.asset.AssetKey;
 import com.jme3.asset.AssetManager;
-import com.jme3.material.Material;
-import com.jme3.math.Vector4f;
 import io.github.jmecn.tiled.animation.Animation;
 import io.github.jmecn.tiled.animation.Frame;
 import io.github.jmecn.tiled.core.*;
@@ -212,19 +210,12 @@ public final class TilesetLoader {
 
         TiledImage image = imageLoader.load(node);
         tileset.setImage(image);
+        tileset.setImageSource(image.getSource());
 
         int tileWidth = tileset.getTileWidth();
         int tileHeight = tileset.getTileHeight();
         int tileMargin = tileset.getMargin();
         int tileSpacing = tileset.getSpacing();
-
-        Material material = image.getMaterial();
-        material.setBoolean("UseTilesetImage", true);
-        material.setVector4("TileSize", new Vector4f(tileWidth, tileHeight, tileMargin, tileSpacing));
-
-        tileset.setImageSource(image.getSource());
-        tileset.setTexture(image.getTexture());
-        tileset.setMaterial(material);
 
         TileCutter cutter = new TileCutter(image.getWidth(), image.getHeight(), tileWidth, tileHeight, tileMargin, tileSpacing);
         tileset.setColumns(cutter.getColumns());
@@ -423,13 +414,6 @@ public final class TilesetLoader {
             tile.setWidth(image.getWidth());
             tile.setHeight(image.getHeight());
         }
-
-        Material material = image.getMaterial();
-        material.setBoolean("UseTilesetImage", true);
-        material.setVector4("TileSize", new Vector4f(tile.getWidth(), tile.getHeight(), 0f, 0f));
-
-        tile.setTexture(image.getTexture());
-        tile.setMaterial(material);
     }
 
     private void readAnimation(Tile tile, Node parent) {

@@ -5,8 +5,6 @@ import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 import com.jme3.math.ColorRGBA;
-import com.jme3.renderer.queue.RenderQueue.Bucket;
-import com.jme3.scene.Node;
 import io.github.jmecn.tiled.enums.Orientation;
 import io.github.jmecn.tiled.enums.RenderOrder;
 import io.github.jmecn.tiled.enums.StaggerAxis;
@@ -162,10 +160,6 @@ public class TiledMap extends Base {
 
         // Load tilesets first, in case order is munged
         this.tilesetPerFirstGid = new TreeMap<>();
-
-        // in a TiledMap I use Node as the spatial
-        this.visual = new Node("TileMap");
-        this.visual.setQueueBucket(Bucket.Gui);
     }
 
     /**
@@ -645,10 +639,5 @@ public class TiledMap extends Base {
 
     public void setInfinite(boolean infinite) {
         this.infinite = infinite;
-    }
-
-    @Override
-    public Node getVisual() {
-        return (Node) visual;
     }
 }
