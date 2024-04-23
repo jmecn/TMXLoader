@@ -6,10 +6,7 @@ import com.jme3.math.Vector2f;
 import com.jme3.system.awt.AwtPanel;
 import io.github.jmecn.tiled.app.jme3.MyFileLocator;
 import io.github.jmecn.tiled.app.jme3.TiledApp;
-import io.github.jmecn.tiled.core.Layer;
-import io.github.jmecn.tiled.core.Tile;
-import io.github.jmecn.tiled.core.TileLayer;
-import io.github.jmecn.tiled.core.TiledMap;
+import io.github.jmecn.tiled.core.*;
 import io.github.jmecn.tiled.math2d.Point;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -400,6 +397,14 @@ public class MainWnd extends JFrame {
                 Tile t = tileLayer.getTileAt(x, y);
                 propertyTable.setTile(t);
             }
+        } else if (layer instanceof ObjectGroup) {
+            ObjectGroup objectGroup = (ObjectGroup) layer;
+            MapObject object = objectGroup.getObjectAt(pixel.getX(), pixel.getY());
+            if (object != null) {
+                propertyTable.setObject(object);
+            }
+        } else {
+            propertyTable.setLayer(layer);
         }
     }
 }

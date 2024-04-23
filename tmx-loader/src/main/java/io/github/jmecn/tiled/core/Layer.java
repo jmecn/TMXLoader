@@ -1,7 +1,6 @@
 package io.github.jmecn.tiled.core;
 
 import com.jme3.math.ColorRGBA;
-import com.jme3.scene.Node;
 
 /**
  * A layer of a map.

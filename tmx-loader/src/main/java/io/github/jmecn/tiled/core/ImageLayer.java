@@ -1,8 +1,5 @@
 package io.github.jmecn.tiled.core;
 
-import com.jme3.material.Material;
-import com.jme3.texture.Texture;
-
 /**
  * A layer consisting of a single image.
  */

@@ -2,6 +2,7 @@ package io.github.jmecn.tiled.app.swing;
 
 import com.jme3.math.ColorRGBA;
 import io.github.jmecn.tiled.core.Layer;
+import io.github.jmecn.tiled.core.MapObject;
 import io.github.jmecn.tiled.core.Tile;
 import io.github.jmecn.tiled.core.TiledMap;
 import io.github.jmecn.tiled.util.ColorUtil;
@@ -112,6 +113,46 @@ public class PropertyTable extends JTable {
 
         if (tile.getProperties() != null && !tile.getProperties().isEmpty()) {
             tile.getProperties().forEach((k, v) -> add(k.toString(), v));
+        }
+
+        invalidate();
+        repaint();
+    }
+
+
+    public void setObject(MapObject object) {
+        model.clear();
+        if (object == null) {
+            invalidate();
+            repaint();
+            return;
+        }
+        add("id", object.getId());
+        add("name", object.getName());
+        add("x", object.getX());
+        add("y", object.getY());
+        add("width", object.getWidth());
+        add("height", object.getHeight());
+        add("shape", object.getShape());
+        if (object.getTile() != null) {
+            add("gid", String.format("0x%08x", object.getGid()));
+            add("isAnimated", object.getTile().isAnimated());
+        }
+        if (object.getImage() != null) {
+            add("image", object.getImage().getSource());
+        }
+        if (object.getTextData() != null) {
+            add("textData", object.getTextData().getText());
+        }
+        add("class", object.getClazz());
+        add("rotation", object.getRotation());
+        add("visible", object.isVisible());
+        if (object.getTemplate() != null) {
+            add("template", object.getTemplate());
+        }
+
+        if (object.getProperties() != null && !object.getProperties().isEmpty()) {
+            object.getProperties().forEach((k, v) -> add(k.toString(), v));
         }
 
         invalidate();

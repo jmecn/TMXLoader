@@ -89,20 +89,17 @@ public class ObjectGroup extends Layer {
     public MapObject getObjectAt(double x, double y) {
         for (MapObject obj : objects) {
             // Attempt to get an object bordering the point that has no width
-            if (obj.getWidth() == 0 && obj.getX() + this.x == x) {
+            if (obj.getWidth() == 0 && obj.getX() == x) {
                 return obj;
             }
 
             // Attempt to get an object bordering the point that has no height
-            if (obj.getHeight() == 0 && obj.getY() + this.y == y) {
+            if (obj.getHeight() == 0 && obj.getY() == y) {
                 return obj;
             }
 
-            Bound2D rect = new Bound2D(
-                    obj.getX() + this.x * map.getTileWidth(),
-                    obj.getY() + this.y * map.getTileHeight(),
-                    obj.getWidth(),
-                    obj.getHeight());
+            // TODO check if the object is a polygon or polyline, handle rotation
+            Bound2D rect = new Bound2D(obj.getX(), obj.getY(), obj.getWidth(), obj.getHeight());
             if (rect.contains(x, y)) {
                 return obj;
             }

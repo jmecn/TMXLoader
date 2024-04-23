@@ -34,12 +34,11 @@ public class Bound2D {
 	}
 
 	public boolean contains(double x, double y) {
-		double x0 = getX();
-		double y0 = getY();
-		return (x >= x0 &&
-				y >= y0 &&
-				x < x0 + getWidth() &&
-				y < y0 + getHeight());
+		double x0 = this.x;
+		double y0 = this.y;
+		double x1 = x0 + width;
+		double y1 = y0 + height;
+		return (x >= x0 && y >= y0 && x < x1 && y < y1);
 	}
 
 	public void translate(int dx, int dy) {
