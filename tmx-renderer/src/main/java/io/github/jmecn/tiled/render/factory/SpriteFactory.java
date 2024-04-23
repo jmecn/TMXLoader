@@ -40,4 +40,7 @@ public interface SpriteFactory {
 
     Spatial newObjectSprite(MapObject object, Material material);
 
+    void setMeshFactory(MeshFactory meshFactory);
+
+    void setMaterialFactory(MaterialFactory materialFactory);
 }

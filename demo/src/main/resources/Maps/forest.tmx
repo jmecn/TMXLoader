@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.10" tiledversion="1.10.2" orientation="orthogonal" renderorder="right-down" width="30" height="20" tilewidth="16" tileheight="16" infinite="0" nextlayerid="5" nextobjectid="16">
+ <tileset firstgid="1" name="jungle" tilewidth="16" tileheight="16" tilecount="462" columns="22">
+  <image source="tf_jungle/tf_jungle_tileset.png" width="352" height="336"/>
+ </tileset>
+ <layer id="1" name="Ground" width="30" height="20">
+  <data encoding="base64" compression="zlib">
+   eJxTZGBgUKIzVgZicyC2oDO2HLV31N5Re0ftHbV31N5Re0eUvb5A7Edn7A/EAG9vg0E=
+  </data>
+ </layer>
+ <layer id="2" name="Plants" width="30" height="20">
+  <data encoding="base64" compression="zlib">
+   eJzt1etNAkEUhuGhBlAr4gct0AkoXmhARLwUwEVUKMAFRaQBFLzVoGIJviSQnBhmPWdC8A9f8iSwk2WW/Q6sc/+fHPLYxg4KK9r3ECUcoYzjgM+oJpyrJWzn1FBHAxdoBux7w56Rcd8IHXRxizvleWnPcW1vQzziCSOMFXvuYg/7OEBRrGl7+8AnvjDB9+z49PvUuXeNBfevghOc4gznYm0ZvclkxOtLXOEaLbTFWkhv2m56uEcfDxiItZDetN084wWveMO7WEvSSwob2MSWYs613fhmwhLZm7Wb+dzFzbcmlm7k7zduvjVZdP98/w8ycfP9V7LGa5TpOf98W2K9hrj51iTkuTKNdb4zv96HPFfW8ecHIzpwUQ==
+  </data>
+ </layer>
+ <objectgroup id="3" name="Collision" visible="0">
+  <object id="6" x="64.7036" y="96.7252" width="47.2072" height="12.5446"/>
+  <object id="7" x="111.911" y="207.976" width="47.5373" height="13.2048"/>
+  <object id="8" x="98.8296" y="272.349" width="26.8327" height="10.9869"/>
+  <object id="9" x="272.679" y="160.438" width="45.8867" height="14.1952"/>
+  <object id="10" x="384.59" y="144.263" width="46.5469" height="15.1855"/>
+  <object id="11" x="336.392" y="256.833" width="46.5469" height="14.1952"/>
+  <object id="13" x="323.024" y="47.8674" width="24.674" height="11.9654"/>
+ </objectgroup>
+ <objectgroup id="4" name="Location">
+  <object id="15" name="Start" x="255.439" y="254.035">
+   <point/>
+  </object>
+ </objectgroup>
+</map>

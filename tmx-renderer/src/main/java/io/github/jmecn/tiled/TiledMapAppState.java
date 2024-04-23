@@ -179,6 +179,7 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
 
         if (this.map != null) {
             viewPort.setBackgroundColor(map.getBackgroundColor());
+            mapRenderer.getSpriteFactory().setMaterialFactory(materialFactory);
         }
     }
 
