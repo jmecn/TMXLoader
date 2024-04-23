@@ -48,8 +48,8 @@ public class Polyline extends Mesh {
         this.setBuffer(VertexBuffer.Type.Position, 3, BufferUtils.createFloatBuffer(vertex));
         this.setBuffer(VertexBuffer.Type.Normal, 3, BufferUtils.createFloatBuffer(normal));
         this.setBuffer(VertexBuffer.Type.Index, 2, index);
-        this.setStatic();
         this.updateBound();
         this.updateCounts();
+        this.setStatic();
     }
 }

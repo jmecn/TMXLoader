@@ -10,7 +10,7 @@ import com.jme3.math.Vector2f;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Mesh;
 import com.jme3.system.AppSettings;
-import io.github.jmecn.tiled.TiledConst;
+import io.github.jmecn.tiled.render.MaterialConst;
 
 public class TestPolyline extends SimpleApplication {
 
@@ -27,8 +27,8 @@ public class TestPolyline extends SimpleApplication {
         
         Mesh mesh = new Polyline(points, false);
         
-        Material mat = new Material(assetManager, TiledConst.TILED_J3MD);
-        mat.setColor("Color", ColorRGBA.Red);
+        Material mat = new Material(assetManager, MaterialConst.TILED_J3MD);
+        mat.setColor(MaterialConst.COLOR, ColorRGBA.Red);
 
         Geometry geom = new Geometry("polyline", mesh);
         geom.setMaterial(mat);

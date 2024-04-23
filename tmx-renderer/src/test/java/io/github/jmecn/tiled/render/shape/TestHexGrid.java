@@ -7,6 +7,8 @@ import com.jme3.scene.Geometry;
 import com.jme3.system.AppSettings;
 import io.github.jmecn.tiled.enums.StaggerAxis;
 import io.github.jmecn.tiled.enums.StaggerIndex;
+import io.github.jmecn.tiled.render.factory.DefaultMaterialFactory;
+import io.github.jmecn.tiled.render.factory.MaterialFactory;
 
 /**
  * desc:
@@ -19,10 +21,11 @@ public class TestHexGrid extends SimpleApplication {
     public void simpleInitApp() {
         HexGrid grid = new HexGrid(10, 10, 14, 12, 6, StaggerAxis.X, StaggerIndex.EVEN);
 
+        MaterialFactory factory = new DefaultMaterialFactory(assetManager);
+        Material material = factory.newMaterial(ColorRGBA.White);
+
         Geometry gridGeom = new Geometry("grid", grid);
-        Material gridMat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
-        gridMat.setColor("Color", ColorRGBA.White);
-        gridGeom.setMaterial(gridMat);
+        gridGeom.setMaterial(material);
         rootNode.attachChild(gridGeom);
 
         viewPort.setBackgroundColor(ColorRGBA.DarkGray);

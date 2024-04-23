@@ -6,7 +6,7 @@ import com.jme3.math.ColorRGBA;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Mesh;
 import com.jme3.system.AppSettings;
-import io.github.jmecn.tiled.TiledConst;
+import io.github.jmecn.tiled.render.MaterialConst;
 import io.github.jmecn.tiled.util.ObjectMesh;
 
 public class TestIsoRect extends SimpleApplication {
@@ -18,8 +18,8 @@ public class TestIsoRect extends SimpleApplication {
         Mesh mesh = new Rect(66, 66, true);
         ObjectMesh.toIsometric(mesh, tileWidth, tileHeight);
 
-        Material mat = new Material(assetManager, TiledConst.TILED_J3MD);
-        mat.setColor("Color", ColorRGBA.Red);
+        Material mat = new Material(assetManager, MaterialConst.TILED_J3MD);
+        mat.setColor(MaterialConst.COLOR, ColorRGBA.Red);
 
         Geometry geom = new Geometry("rectangle", mesh);
         geom.move(tileWidth * 0.5f, 0, 0f);
@@ -28,10 +28,11 @@ public class TestIsoRect extends SimpleApplication {
         // grid
         IsoGrid grid = new IsoGrid(1, 1, tileWidth, tileHeight);
         Geometry gridGeom = new Geometry("grid", grid);
-        Material gridMat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
-        gridMat.setColor("Color", ColorRGBA.White);
+        Material gridMat = new Material(assetManager, MaterialConst.TILED_J3MD);
+        gridMat.setColor(MaterialConst.COLOR, ColorRGBA.White);
+        gridMat.getAdditionalRenderState().setPolyOffset(1f, 1f);
         gridGeom.setMaterial(gridMat);
-        gridGeom.move(0f, -0.01f, 0f);
+        gridGeom.move(0f, 0f, 0f);
         rootNode.attachChild(gridGeom);
 
         viewPort.setBackgroundColor(ColorRGBA.DarkGray);

@@ -155,6 +155,7 @@ public class DefaultMeshFactory implements MeshFactory {
             fb.put(i, v.x);
             fb.put(i + 2, v.z);
         }
+        mesh.updateBound();
     }
 
     public Rect rectangle(float width, float height, boolean fill) {

@@ -57,8 +57,8 @@ public class Polygon extends Polyline {
         this.setBuffer(VertexBuffer.Type.Normal, 3, BufferUtils.createFloatBuffer(normal));
         this.setBuffer(VertexBuffer.Type.TexCoord, 2, BufferUtils.createFloatBuffer(texCoord));
         this.setBuffer(VertexBuffer.Type.Index, 3, index);
-        this.setStatic();
         this.updateBound();
         this.updateCounts();
+        this.setStatic();
     }
 }

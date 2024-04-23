@@ -9,7 +9,6 @@ import com.jme3.scene.VertexBuffer;
 import com.jme3.util.TempVars;
 import io.github.jmecn.tiled.core.Tile;
 import io.github.jmecn.tiled.enums.Orientation;
-import io.github.jmecn.tiled.math2d.Point;
 
 import java.nio.FloatBuffer;
 
@@ -58,6 +57,7 @@ public class TileMesh extends Mesh {
         this.setBuffer(VertexBuffer.Type.Normal, 3, normals);
         this.setBuffer(VertexBuffer.Type.Index, 3, indexes);
         this.updateBound();
+        this.updateCounts();
         this.setStatic();
     }
 
@@ -104,12 +104,12 @@ public class TileMesh extends Mesh {
         float[] texCoords = new float[]{0f, 0f, 1f, 0f, 1f, 1f, 0f, 1f};
 
         if (isFlipHorizontally) {
-            swap(texCoords, 0, 1, 2);
-            swap(texCoords, 2, 3, 2);
+            swapUV(texCoords, 0, 1);
+            swapUV(texCoords, 2, 3);
         }
         if (isFlipVertically) {
-            swap(texCoords, 0, 3, 2);
-            swap(texCoords, 1, 2, 2);
+            swapUV(texCoords, 0, 3);
+            swapUV(texCoords, 1, 2);
         }
 
         if (orientation == Orientation.HEXAGONAL) {
@@ -125,14 +125,19 @@ public class TileMesh extends Mesh {
             }
         } else {
             if (isFlipAntiDiagonally) {
-                swap(texCoords, 0, 2, 2);
+                swapUV(texCoords, 0, 2);
             }
         }
 
         this.setBuffer(VertexBuffer.Type.TexCoord, 2, texCoords);
+
+        this.updateBound();
+        this.updateCounts();
+        this.setStatic();
     }
 
-    private void swap(float[] buf, int i, int j, int component) {
+    private void swapUV(float[] buf, int i, int j) {
+        int component = 2;
         for (int k = 0; k < component; k++) {
             int a = i * component + k;
             int b = j * component + k;
@@ -172,6 +177,7 @@ public class TileMesh extends Mesh {
 
         this.setBuffer(VertexBuffer.Type.Position, 3, vertices);
     }
+
     public Vector2f getCoord() {
         return coord;
     }

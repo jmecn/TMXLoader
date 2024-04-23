@@ -39,7 +39,9 @@ public final class ObjectMesh {
             fb.put(i, v.x);
             fb.put(i + 2, v.z);
         }
+        mesh.updateBound();
     }
+
     public static Mesh makeRectangleBorder(double width, double height) {
         List<Vector2f> points = new ArrayList<>();
         points.add(new Vector2f(0,0));

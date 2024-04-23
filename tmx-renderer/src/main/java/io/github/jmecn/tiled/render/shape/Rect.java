@@ -53,7 +53,8 @@ public class Rect extends Polyline {
                 0, 1, 2,
                 0, 2, 3
         });
-        this.setStatic();
         this.updateBound();
+        this.updateCounts();
+        this.setStatic();
     }
 }
