@@ -8,8 +8,9 @@ MaterialDef Tiled {
         Color TintColor : 1.0 1.0 1.0 1.0
         Vector2 ImageSize
         Vector4 TileSize
-        Vector2 TilePosition
         Boolean UseTilesetImage
+        // for animation use
+        Vector2 TilePosition
     }
 
     Technique {
@@ -34,6 +35,7 @@ MaterialDef Tiled {
             USE_TINT_COLOR: UseTintColor
             HAS_TINT_COLOR: TintColor
             USE_TILESET_IMAGE: UseTilesetImage
+            USE_TILE_POSITION: TilePosition
         }
     }
 

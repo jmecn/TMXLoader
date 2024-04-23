@@ -438,7 +438,7 @@ public final class TilesetLoader {
             return;
         }
 
-        String name = getAttributeValue(node, NAME);
+        String name = getAttribute(node, NAME, "Default");
 
         Animation animation = new Animation(name);
         NodeList frames = node.getChildNodes();

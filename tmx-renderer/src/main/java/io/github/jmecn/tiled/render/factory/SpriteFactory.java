@@ -38,8 +38,6 @@ public interface SpriteFactory {
 
     Geometry newTileSprite(Tile tile, Material material);
 
-    Geometry getTileSprite(Tile tile);
-
     Spatial newObjectSprite(MapObject object, Material material);
 
 }

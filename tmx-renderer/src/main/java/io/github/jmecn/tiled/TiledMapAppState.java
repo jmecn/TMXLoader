@@ -304,7 +304,11 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
                 mapRenderer = new OrthogonalRenderer(map);
         }
 
-        SpriteFactory spriteFactory = new DefaultSpriteFactory(map, materialFactory);
+        // new sprite factory. the materialFactory is set in initialize()
+        DefaultSpriteFactory spriteFactory = new DefaultSpriteFactory();
+        spriteFactory.setMeshFactory(new DefaultMeshFactory(map));
+        spriteFactory.setMaterialFactory(materialFactory);
+
         mapRenderer.setSpriteFactory(spriteFactory);
 
         // create the visual part for the map

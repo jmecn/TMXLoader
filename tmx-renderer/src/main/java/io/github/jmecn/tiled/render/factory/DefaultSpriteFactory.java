@@ -1,18 +1,14 @@
 package io.github.jmecn.tiled.render.factory;
 
-import com.jme3.asset.AssetManager;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.FastMath;
 import com.jme3.renderer.queue.RenderQueue;
 import com.jme3.scene.*;
-import com.jme3.util.IntMap;
 import io.github.jmecn.tiled.animation.AnimatedTileControl;
 import io.github.jmecn.tiled.core.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.List;
 
 /**
  * desc:
@@ -26,26 +22,13 @@ public final class DefaultSpriteFactory implements SpriteFactory {
     private MeshFactory meshFactory;
     private MaterialFactory materialFactory;
 
-    private final IntMap<Geometry> cache;
-
-    public DefaultSpriteFactory(TiledMap tiledMap, AssetManager assetManager) {
-        this(tiledMap, new DefaultMeshFactory(tiledMap), new DefaultMaterialFactory(assetManager));
+    public DefaultSpriteFactory() {
+        this(null, null);
     }
 
-    public DefaultSpriteFactory(TiledMap tiledMap, MaterialFactory materialFactory) {
-        this(tiledMap, new DefaultMeshFactory(tiledMap), materialFactory);
-    }
-
-    public DefaultSpriteFactory(TiledMap tiledMap, MeshFactory meshFactory, MaterialFactory materialFactory) {
+    public DefaultSpriteFactory(MeshFactory meshFactory, MaterialFactory materialFactory) {
         this.meshFactory = meshFactory;
         this.materialFactory = materialFactory;
-        this.cache = new IntMap<>();
-        List<Tileset> tilesets = tiledMap.getTileSets();
-
-        // create the visual part for the map
-        for (Tileset tileset : tilesets) {
-            createVisual(tileset);// TODO remove this when I have a better animation system
-        }
     }
 
     /**
@@ -78,19 +61,6 @@ public final class DefaultSpriteFactory implements SpriteFactory {
      */
     public void setMeshFactory(MeshFactory meshFactory) {
         this.meshFactory = meshFactory;
-    }
-
-    /**
-     * Create the visual part for every tile of a given Tileset.
-     *
-     * @param tileset the Tileset
-     */
-    public void createVisual(Tileset tileset) {
-        List<Tile> tiles = tileset.getTiles();
-        for (Tile tile : tiles) {
-            Geometry sprite = getTileSprite(tile);
-            tile.setVisual(sprite); // TODO remove it when I have a better animation system
-        }
     }
 
     @Override
@@ -160,17 +130,6 @@ public final class DefaultSpriteFactory implements SpriteFactory {
             geometry.addControl(new AnimatedTileControl(tile));
         }
         return geometry;
-    }
-
-    @Override
-    public Geometry getTileSprite(Tile tile) {
-        if (cache.containsKey(tile.getGid())) {
-            return cache.get(tile.getGid());
-        } else {
-            Geometry sprite = newTileSprite(tile);
-            cache.put(tile.getGid(), sprite);
-            return sprite;
-        }
     }
 
     public Spatial newObjectSprite(MapObject obj, Material material) {

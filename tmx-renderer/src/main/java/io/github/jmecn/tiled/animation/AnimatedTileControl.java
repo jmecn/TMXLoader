@@ -1,14 +1,12 @@
 package io.github.jmecn.tiled.animation;
 
-import java.nio.FloatBuffer;
-
+import com.jme3.math.Vector2f;
 import com.jme3.renderer.RenderManager;
 import com.jme3.renderer.ViewPort;
 import com.jme3.scene.Geometry;
-import com.jme3.scene.Mesh;
-import com.jme3.scene.VertexBuffer.Type;
 import com.jme3.scene.control.AbstractControl;
 import io.github.jmecn.tiled.core.Tile;
+import io.github.jmecn.tiled.render.MaterialConst;
 
 /**
  * This control used to play animation of a tile.
@@ -71,12 +69,10 @@ public class AnimatedTileControl extends AbstractControl {
          */
         if (previousTileId != frame.getTileId()) {
             Geometry geom = (Geometry) spatial;
-            Mesh mesh = geom.getMesh();
 
             Tile t = tile.getTileset().getTile(frame.getTileId());
-            Mesh tMesh = t.getVisual().getMesh();
-            FloatBuffer data = (FloatBuffer)tMesh.getBuffer(Type.TexCoord2).getData();
-            mesh.setBuffer(Type.TexCoord2, 3, data);
+            Vector2f position = new Vector2f(t.getX(), t.getY());
+            geom.getMaterial().setVector2(MaterialConst.TILE_POSITION, position);
         }
     }
 
@@ -84,10 +80,5 @@ public class AnimatedTileControl extends AbstractControl {
     protected void controlRender(RenderManager rm, ViewPort vp) {
         // ignore
     }
-//
-//    public Object clone() {
-//        AnimatedTileControl control = new AnimatedTileControl(tile);
-//        control.anim = anim;
-//        return control;
-//    }
+
 }
