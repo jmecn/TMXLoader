@@ -1,9 +1,9 @@
 package io.github.jmecn.tiled.render.factory;
 
+import com.jme3.material.Material;
 import com.jme3.renderer.queue.RenderQueue;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Mesh;
-import com.jme3.scene.Spatial;
 import com.jme3.util.IntMap;
 import io.github.jmecn.tiled.animation.AnimatedTileControl;
 import io.github.jmecn.tiled.core.Tile;
@@ -57,27 +57,29 @@ public final class DefaultSpriteFactory implements SpriteFactory {
 
     @Override
     public Geometry newTileSprite(Tile tile) {
-        Tileset tileset = tile.getTileset();
+        Mesh mesh = meshFactory.getTileMesh(tile);
+        Material material = getTileMaterial(tile);
 
         String name = "tile#" + tile.getGid();
-
-        Mesh mesh = meshFactory.getTileMesh(tile);
-
         Geometry geometry = new Geometry(name, mesh);
         geometry.setQueueBucket(RenderQueue.Bucket.Gui);
-
-        if (tile.getMaterial() != null) {
-            geometry.setMaterial(tile.getMaterial());
-        } else {
-            geometry.setMaterial(tileset.getMaterial());
-        }
-
+        geometry.setMaterial(material);
         if (tile.isAnimated()) {
-            geometry.setBatchHint(Spatial.BatchHint.Never);
-            AnimatedTileControl control = new AnimatedTileControl(tile);
-            geometry.addControl(control);
+            geometry.addControl(new AnimatedTileControl(tile));
         }
+        return geometry;
+    }
 
+    @Override
+    public Geometry newTileSprite(Tile tile, Material material) {
+        Mesh mesh = meshFactory.getTileMesh(tile);
+        String name = "tile#" + tile.getGid();
+        Geometry geometry = new Geometry(name, mesh);
+        geometry.setQueueBucket(RenderQueue.Bucket.Gui);
+        geometry.setMaterial(material);
+        if (tile.isAnimated()) {
+            geometry.addControl(new AnimatedTileControl(tile));
+        }
         return geometry;
     }
 
@@ -94,9 +96,14 @@ public final class DefaultSpriteFactory implements SpriteFactory {
         }
     }
 
-    @Override
-    public Geometry copyTileSprite(Tile tile) {
-        logger.debug("Copy tile sprite:{}", tile.getGid());
-        return getTileSprite(tile).clone();
+    public Material getTileMaterial(Tile tile) {
+        // TODO make a better material management
+        Material material;
+        if (tile.getMaterial() != null) {
+            material = tile.getMaterial();
+        } else {
+            material = tile.getTileset().getMaterial();
+        }
+        return material;
     }
 }
