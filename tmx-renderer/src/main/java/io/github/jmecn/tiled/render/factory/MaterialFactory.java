@@ -14,17 +14,17 @@ import io.github.jmecn.tiled.core.Tileset;
  */
 public interface MaterialFactory {
 
-    Material newMaterial(Tileset tileset);
-
     Material newMaterial(Tile tile);
+
+    Material newMaterial(Tileset tileset);
 
     Material newMaterial(TiledImage image);
 
     Material newMaterial(ColorRGBA color);
 
-    Material newMaterial(Tileset tileset, ColorRGBA tintColor);
-
     Material newMaterial(Tile tile, ColorRGBA tintColor);
+
+    Material newMaterial(Tileset tileset, ColorRGBA tintColor);
 
     Material newMaterial(TiledImage image, ColorRGBA tintColor);
 

@@ -32,6 +32,10 @@ public final class DefaultSpriteFactory implements SpriteFactory {
         this(tiledMap, new DefaultMeshFactory(tiledMap), new DefaultMaterialFactory(assetManager));
     }
 
+    public DefaultSpriteFactory(TiledMap tiledMap, MaterialFactory materialFactory) {
+        this(tiledMap, new DefaultMeshFactory(tiledMap), materialFactory);
+    }
+
     public DefaultSpriteFactory(TiledMap tiledMap, MeshFactory meshFactory, MaterialFactory materialFactory) {
         this.meshFactory = meshFactory;
         this.materialFactory = materialFactory;
@@ -89,7 +93,6 @@ public final class DefaultSpriteFactory implements SpriteFactory {
         }
     }
 
-
     @Override
     public void setTintColor(Spatial spatial, ColorRGBA tintColor) {
         materialFactory.setTintColor(spatial, tintColor);
@@ -143,7 +146,7 @@ public final class DefaultSpriteFactory implements SpriteFactory {
     @Override
     public Geometry newTileSprite(Tile tile) {
         Mesh mesh = meshFactory.getTileMesh(tile);
-        Material material = getTileMaterial(tile);
+        Material material = materialFactory.newMaterial(tile);
 
         String name = "tile#" + tile.getGid();
         Geometry geometry = new Geometry(name, mesh);
@@ -179,67 +182,14 @@ public final class DefaultSpriteFactory implements SpriteFactory {
         }
     }
 
-    public Material getTileMaterial(Tile tile) {
-        // TODO make a better material management
-        Material material;
-        if (tile.getMaterial() != null) {
-            material = tile.getMaterial();
-        } else {
-            material = tile.getTileset().getMaterial();
-        }
-        return material;
-    }
-
-
     public Spatial newObjectSprite(MapObject obj, Material material) {
-        Geometry geometry;
-        switch (obj.getShape()) {
-            case RECTANGLE: {
-                geometry = rectangle(obj);
-                break;
-            }
-            case ELLIPSE: {
-                geometry = ellipse(obj);
-                break;
-            }
-            case POLYGON: {
-                geometry = polygon(obj);
-                break;
-            }
-            case POLYLINE: {
-                geometry = polyline(obj);
-                break;
-            }
-            case POINT: {
-                geometry = point(obj);
-                break;
-            }
-            case IMAGE: {
-                geometry = image(obj);
-                break;
-            }
-            case TILE: {
-                geometry = tile(obj);
-                break;
-            }
-            case TEXT: {
-                geometry = text(obj);
-                break;
-            }
-            default: {
-                geometry = null;
-                break;
-            }
-
-        }
-
-        if (geometry == null) {
+        Mesh mesh = meshFactory.newObjectMesh(obj);
+        if (mesh == null) {
             return null;
         }
 
-        if (geometry.getMaterial() == null) {
-            geometry.setMaterial(material);
-        }
+        Geometry geometry = new Geometry(obj.getName(), mesh);
+        geometry.setQueueBucket(RenderQueue.Bucket.Gui);
 
         double deg = obj.getRotation();
         if (deg != 0) {
@@ -248,68 +198,26 @@ public final class DefaultSpriteFactory implements SpriteFactory {
             geometry.rotate(0, -radian, 0);
         }
 
-        return geometry;
-    }
-
-    private Geometry rectangle(MapObject obj) {
-        Mesh mesh = meshFactory.newObjectMesh(obj);
-        Geometry geometry = new Geometry(obj.getName(), mesh);
-        geometry.setQueueBucket(RenderQueue.Bucket.Gui);
-        return geometry;
-    }
-
-    private Geometry ellipse(MapObject obj) {
-        Mesh mesh = meshFactory.newObjectMesh(obj);
-        Geometry geometry = new Geometry(obj.getName(), mesh);
-        geometry.setQueueBucket(RenderQueue.Bucket.Gui);
-        return geometry;
-    }
-
-    private Geometry polygon(MapObject obj) {
-        Mesh mesh = meshFactory.newObjectMesh(obj);
-        Geometry geometry = new Geometry(obj.getName(), mesh);
-        geometry.setQueueBucket(RenderQueue.Bucket.Gui);
-        return geometry;
-    }
-
-    private Geometry polyline(MapObject obj) {
-        Mesh mesh = meshFactory.newObjectMesh(obj);
-        Geometry geometry = new Geometry(obj.getName(), mesh);
-        geometry.setQueueBucket(RenderQueue.Bucket.Gui);
-        return geometry;
-    }
-
-    private Geometry point(MapObject obj) {
-        Mesh mesh = meshFactory.newObjectMesh(obj);
-        Geometry geometry = new Geometry(obj.getName(), mesh);
-        geometry.setQueueBucket(RenderQueue.Bucket.Gui);
-        return geometry;
-    }
-
-    private Geometry image(MapObject obj) {
-        Mesh mesh = meshFactory.newObjectMesh(obj);
-        Geometry visual = new Geometry(obj.getName(), mesh);
-        TiledImage image = obj.getImage();
-        visual.setMaterial(image.getMaterial());
-        visual.setQueueBucket(RenderQueue.Bucket.Gui);
-        return visual;
-    }
-
-    private Geometry tile(MapObject obj) {
-        Mesh mesh = meshFactory.newObjectMesh(obj);
-        Geometry geometry = new Geometry(obj.getName(), mesh);
-        geometry.setQueueBucket(RenderQueue.Bucket.Gui);
-
-        Tile tile = obj.getTile();
-        if (tile.getMaterial() != null) {
-            geometry.setMaterial(tile.getMaterial());
-        } else {
-            geometry.setMaterial(tile.getTileset().getMaterial());
-        }
-
-        if (tile.isAnimated()) {
-            AnimatedTileControl control = new AnimatedTileControl(tile);
-            geometry.addControl(control);
+        switch (obj.getShape()) {
+            case IMAGE: {
+                Material mat = materialFactory.newMaterial(obj.getImage());
+                geometry.setMaterial(mat);
+                break;
+            }
+            case TILE: {
+                Material mat =  materialFactory.newMaterial(obj.getTile());
+                geometry.setMaterial(mat);
+                break;
+            }
+            case TEXT: {
+                // TODO not supported yet
+                geometry.setMaterial(material);
+                break;
+            }
+            default: {
+                geometry.setMaterial(material);
+                break;
+            }
         }
 
         return geometry;

@@ -30,7 +30,36 @@ public class DefaultMaterialFactory implements MaterialFactory {
     }
 
     @Override
+    public Material newMaterial(Tile tile) {
+        Tileset tileset = tile.getTileset();
+        if (tileset != null) {
+            if (tileset.isImageBased()) {
+                // this tile comes from a collection of images.
+                return newMaterial(tileset);
+            } else {
+                // this tile comes from an imaged based tileset.
+                Material material = newMaterial(tile.getImage());
+                material.setBoolean(USE_TILESET_IMAGE, true);
+                material.setVector4(TILE_SIZE, new Vector4f(tile.getWidth(), tile.getHeight(), 0f, 0f));
+                return material;
+            }
+        } else {
+            if (tile.getImage() != null) {
+                Material material = newMaterial(tile.getImage());
+                material.setBoolean(USE_TILESET_IMAGE, true);
+                material.setVector4(TILE_SIZE, new Vector4f(tile.getWidth(), tile.getHeight(), 0f, 0f));
+                return material;
+            } else {
+                throw new IllegalArgumentException("Tileset or Image is required!");
+            }
+        }
+    }
+
+    @Override
     public Material newMaterial(Tileset tileset) {
+        if (!tileset.isImageBased()) {
+            throw new IllegalArgumentException("Tileset must be image based!");
+        }
         TiledImage image = tileset.getImage();
         Material material = newMaterial(image);
 
@@ -43,32 +72,6 @@ public class DefaultMaterialFactory implements MaterialFactory {
         material.setVector4(TILE_SIZE, new Vector4f(tileWidth, tileHeight, tileMargin, tileSpacing));
 
         return material;
-    }
-
-    @Override
-    public Material newMaterial(Tile tile) {
-        Tileset tileset = tile.getTileset();
-        if (tileset != null) {
-            if (tileset.isImageBased()) {
-                // this tile comes from a collection of images.
-                return newMaterial(tileset);
-            } else {
-                // this tile comes from an imaged based tileset.
-                Material material = newMaterial(tile.getImage());
-                material.setBoolean(USE_TILESET_IMAGE, true);
-                material.setVector4(TILE_SIZE, new Vector4f(tile.getWidth(), tile.getHeight(), 0f, 0f));
-                return newMaterial(tile);
-            }
-        } else {
-            if (tile.getImage() != null) {
-                Material material = newMaterial(tile.getImage());
-                material.setBoolean(USE_TILESET_IMAGE, true);
-                material.setVector4(TILE_SIZE, new Vector4f(tile.getWidth(), tile.getHeight(), 0f, 0f));
-                return material;
-            } else {
-                throw new IllegalArgumentException("Tileset or Image is required!");
-            }
-        }
     }
 
     @Override
@@ -95,15 +98,15 @@ public class DefaultMaterialFactory implements MaterialFactory {
     }
 
     @Override
-    public Material newMaterial(Tileset tileset, ColorRGBA tintColor) {
-        Material material = newMaterial(tileset);
+    public Material newMaterial(Tile tile, ColorRGBA tintColor) {
+        Material material = newMaterial(tile);
         setTintColor(material, tintColor);
         return material;
     }
 
     @Override
-    public Material newMaterial(Tile tile, ColorRGBA tintColor) {
-        Material material = newMaterial(tile);
+    public Material newMaterial(Tileset tileset, ColorRGBA tintColor) {
+        Material material = newMaterial(tileset);
         setTintColor(material, tintColor);
         return material;
     }

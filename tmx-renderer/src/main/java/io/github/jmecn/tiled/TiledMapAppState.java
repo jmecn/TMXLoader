@@ -46,12 +46,12 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
     public static final String UP = "up";
     public static final String DOWN = "down";
     public static final String DRAG = "dragAndDrop";
-    public static final String ZOOMIN = "zoomin";
-    public static final String ZOOMOUT = "zoomout";
+    public static final String ZOOM_IN = "zoom_in";
+    public static final String ZOOM_OUT = "zoom_out";
     public static final String GRID = "grid";
     public static final String PARALLAX = "parallax";
 
-    private static final String[] MAPPINGS = new String[] { LEFT, RIGHT, UP, DOWN, DRAG, ZOOMIN, ZOOMOUT, GRID, PARALLAX };
+    private static final String[] MAPPINGS = new String[] { LEFT, RIGHT, UP, DOWN, DRAG, ZOOM_IN, ZOOM_OUT, GRID, PARALLAX };
 
     // Tiled Map
     private TiledMap map;
@@ -71,8 +71,6 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
     private Point currentTile;
     private Spatial gridCursor;
     private Material cursorMaterial;
-    private final ColorRGBA cursorColorAvailable = new ColorRGBA(0.7f, 0.7f, 0.9f, 0.5f);
-    private final ColorRGBA cursorColorUnavailable = new ColorRGBA(0.8f, 0.2f, 0.2f, 0.5f);
     private boolean isCursorUpdated = true;
 
     // The parallax
@@ -88,7 +86,7 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
     private Camera cam;
     private ViewPort viewPort;
     private InputManager inputManager;
-    private AssetManager assetManager;
+    private MaterialFactory materialFactory;
     private final Vector2f screenDimension;
     private final Vector2f mapDimension;
 
@@ -155,7 +153,8 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
     @Override
     protected void initialize(Application app) {
         inputManager = app.getInputManager();
-        assetManager = app.getAssetManager();
+        AssetManager assetManager = app.getAssetManager();
+        materialFactory = new DefaultMaterialFactory(assetManager);
         viewPort = app.getViewPort();
         cam = app.getCamera();
 
@@ -175,9 +174,8 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
         cam.setLocation(new Vector3f(halfWidth, 0, halfHeight));
         logger.info("cam: {}, direction:{}", cam.getLocation(), cam.getDirection());
 
-        gridMaterial = createGridMaterial();
-
-        cursorMaterial = createCursorMaterial();
+        gridMaterial = materialFactory.newMaterial(ColorRGBA.DarkGray);
+        cursorMaterial = materialFactory.newMaterial(MaterialConst.CURSOR_AVAILABLE_COLOR);
 
         if (this.map != null) {
             viewPort.setBackgroundColor(map.getBackgroundColor());
@@ -264,7 +262,7 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
         }
 
         currentTile = null;
-        cursorMaterial.setColor("Color", cursorColorAvailable);
+        cursorMaterial.setColor(MaterialConst.COLOR, MaterialConst.CURSOR_AVAILABLE_COLOR);
         gridCursor = mapRenderer.createTileGrid(cursorMaterial);
         mapRenderer.getRootNode().attachChild(gridCursor);
         isCursorUpdated = false;
@@ -306,7 +304,7 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
                 mapRenderer = new OrthogonalRenderer(map);
         }
 
-        SpriteFactory spriteFactory = new DefaultSpriteFactory(map, assetManager);
+        SpriteFactory spriteFactory = new DefaultSpriteFactory(map, materialFactory);
         mapRenderer.setSpriteFactory(spriteFactory);
 
         // create the visual part for the map
@@ -476,8 +474,8 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
         inputManager.addMapping(UP, new KeyTrigger(KeyInput.KEY_W), new KeyTrigger(KeyInput.KEY_UP));
         inputManager.addMapping(DOWN, new KeyTrigger(KeyInput.KEY_S), new KeyTrigger(KeyInput.KEY_DOWN));
 
-        inputManager.addMapping(ZOOMIN, new MouseAxisTrigger(MouseInput.AXIS_WHEEL, false));
-        inputManager.addMapping(ZOOMOUT, new MouseAxisTrigger(MouseInput.AXIS_WHEEL, true));
+        inputManager.addMapping(ZOOM_IN, new MouseAxisTrigger(MouseInput.AXIS_WHEEL, false));
+        inputManager.addMapping(ZOOM_OUT, new MouseAxisTrigger(MouseInput.AXIS_WHEEL, true));
         inputManager.addMapping(DRAG, new MouseButtonTrigger(MouseInput.BUTTON_LEFT));
 
         inputManager.addMapping(GRID, new KeyTrigger(KeyInput.KEY_G));// add key mapping to show/hide grid
@@ -623,9 +621,9 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
             Vector2f loc = mapRenderer.tileToScreenCoords(cursor.getX(), cursor.getY());
             gridCursor.setLocalTranslation(loc.x, 1000f, loc.y);
             if (map.contains(cursor.getX(), cursor.getY())) {
-                cursorMaterial.setColor("Color", cursorColorAvailable);
+                cursorMaterial.setColor(MaterialConst.COLOR, MaterialConst.CURSOR_AVAILABLE_COLOR);
             } else {
-                cursorMaterial.setColor("Color", cursorColorUnavailable);
+                cursorMaterial.setColor(MaterialConst.COLOR, MaterialConst.CURSOR_UNAVAILABLE_COLOR);
             }
         }
     }
@@ -633,6 +631,7 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
     public void setZoomMode(ZoomMode zoomMode) {
         this.zoomMode = zoomMode;
     }
+
     public ZoomMode getZoomMode() {
         return zoomMode;
     }
@@ -684,10 +683,10 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
             case DRAG:
                 drag();
                 break;
-            case ZOOMIN:
+            case ZOOM_IN:
                 zoomCamera(value);
                 break;
-            case ZOOMOUT:
+            case ZOOM_OUT:
                 zoomCamera(-value);
                 break;
             default:
@@ -767,24 +766,6 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
         } else {
             gridVisual.removeFromParent();
         }
-    }
-
-    /**
-     * for display the map grid
-     * @return
-     */
-    private Material createGridMaterial() {
-        Material mat = new Material(assetManager, MaterialConst.TILED_J3MD);
-        mat.setColor("Color", ColorRGBA.DarkGray);
-        mat.getAdditionalRenderState().setWireframe(true);
-        mat.getAdditionalRenderState().setDepthTest(false);
-        return mat;
-    }
-
-    private Material createCursorMaterial() {
-        Material mat = new Material(assetManager, MaterialConst.TILED_J3MD);
-        mat.setColor("Color", cursorColorAvailable);
-        return mat;
     }
 
 }

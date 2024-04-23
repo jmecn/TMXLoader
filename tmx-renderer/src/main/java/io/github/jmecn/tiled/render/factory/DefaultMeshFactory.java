@@ -1,10 +1,7 @@
 package io.github.jmecn.tiled.render.factory;
 
-import com.jme3.math.Matrix3f;
 import com.jme3.math.Vector2f;
-import com.jme3.math.Vector3f;
 import com.jme3.scene.Mesh;
-import com.jme3.scene.VertexBuffer;
 import com.jme3.util.IntMap;
 import io.github.jmecn.tiled.core.MapObject;
 import io.github.jmecn.tiled.core.Tile;
@@ -16,7 +13,6 @@ import io.github.jmecn.tiled.render.shape.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.nio.FloatBuffer;
 import java.util.List;
 
 /**
@@ -101,31 +97,31 @@ public class DefaultMeshFactory implements MeshFactory {
         Mesh mesh;
         switch (obj.getShape()) {
             case RECTANGLE: {
-                mesh = rectangle((float) obj.getWidth(), (float) obj.getHeight(), true);
+                mesh = rectangle(obj);
                 break;
             }
             case ELLIPSE: {
-                mesh = ellipse((float) obj.getWidth(), (float) obj.getHeight(), true);
+                mesh = ellipse(obj);
                 break;
             }
             case POLYGON: {
-                mesh = polygon(obj.getPoints(), true);
+                mesh = polygon(obj);
                 break;
             }
             case POLYLINE: {
-                mesh = polyline(obj.getPoints(), false);
+                mesh = polyline(obj);
                 break;
             }
             case POINT: {
-                mesh = marker(MARKER_RADIUS, true);
+                mesh = marker();
                 break;
             }
             case IMAGE: {
-                mesh = image((float) obj.getWidth(), (float) obj.getHeight());
+                mesh = image(obj);
                 break;
             }
             case TEXT: {
-                mesh = text((float) obj.getWidth(), (float) obj.getHeight());
+                mesh = text(obj);
                 break;
             }
             case TILE: {
@@ -141,61 +137,72 @@ public class DefaultMeshFactory implements MeshFactory {
         return mesh;
     }
 
-    public void toIsometric(Mesh mesh) {
-        Matrix3f mat3 = new Matrix3f(
-                1f, 0f, -1f,
-                0f, 1f, 0f,
-                ratio, 0f, ratio);
-
-        VertexBuffer vb = mesh.getBuffer(VertexBuffer.Type.Position);
-        FloatBuffer fb = (FloatBuffer) vb.getData();
-        for (int i = 0; i < fb.capacity(); i += 3) {
-            Vector3f v = new Vector3f(fb.get(i), 0f, fb.get(i + 2));
-            mat3.multLocal(v);
-            fb.put(i, v.x);
-            fb.put(i + 2, v.z);
-        }
-        mesh.updateBound();
+    public Rect rectangle(MapObject object) {
+        return rectangle((float) object.getWidth(), (float) object.getHeight(), true);
     }
 
     public Rect rectangle(float width, float height, boolean fill) {
         Rect mesh = new Rect(width, height, fill);
         if (orientation == Orientation.ISOMETRIC) {
-            toIsometric(mesh);
+            toIsometric(mesh, ratio);
         }
         return mesh;
+    }
+
+    public Ellipse ellipse(MapObject object) {
+        return ellipse((float) object.getWidth(), (float) object.getHeight(), true);
     }
 
     public Ellipse ellipse(float width, float height, boolean fill) {
         Ellipse mesh = new Ellipse(width, height, ELLIPSE_POINTS, fill);
         if (orientation == Orientation.ISOMETRIC) {
-            toIsometric(mesh);
+            toIsometric(mesh, ratio);
         }
         return mesh;
+    }
+
+    public Polygon polygon(MapObject object) {
+        return polygon(object.getPoints(), true);
     }
 
     public Polygon polygon(List<Vector2f> points, boolean fill) {
         Polygon mesh = new Polygon(points, fill);
         if (orientation == Orientation.ISOMETRIC) {
-            toIsometric(mesh);
+            toIsometric(mesh, ratio);
         }
         return mesh;
+    }
+
+    public Polyline polyline(MapObject object) {
+        return polyline(object.getPoints(), false);
     }
 
     public Polyline polyline(List<Vector2f> points, boolean closePath) {
         Polyline mesh = new Polyline(points, closePath);
         if (orientation == Orientation.ISOMETRIC) {
-            toIsometric(mesh);
+            toIsometric(mesh, ratio);
         }
         return mesh;
+    }
+
+    public Marker marker() {
+        return marker(MARKER_RADIUS, true);
     }
 
     public Marker marker(float radius, boolean fill) {
         return new Marker(radius, ELLIPSE_POINTS, fill);
     }
 
+    public Rect image(MapObject object) {
+        return image((float) object.getWidth(), (float) object.getHeight());
+    }
+
     public Rect image(float width, float height) {
         return new Rect(width, height, true);
+    }
+
+    public Rect text(MapObject object) {
+        return text((float) object.getWidth(), (float) object.getHeight());
     }
 
     public Rect text(float width, float height) {

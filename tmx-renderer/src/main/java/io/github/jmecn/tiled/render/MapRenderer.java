@@ -253,7 +253,6 @@ public abstract class MapRenderer {
             }
         }
 
-
         Material material = spriteFactory.newMaterial(layer.getColor(), layer.getTintColor());
 
         for (int i = 0; i < len; i++) {
@@ -261,17 +260,18 @@ public abstract class MapRenderer {
 
             if (obj.isVisible() && obj.isNeedUpdated()) {
 
-                Spatial visual = spriteFactory.newObjectSprite(obj, material);
-                if (visual == null) {
+                Spatial spatial = spriteFactory.newObjectSprite(obj, material);
+                if (spatial == null) {
                     continue;
                 }
+                spriteFactory.setTintColor(spatial, layer.getTintColor());
 
                 float x = (float) obj.getX();
                 float y = (float) obj.getY();
 
                 Vector2f screenCoord = pixelToScreenCoords(x, y);
-                visual.move(screenCoord.x, i, screenCoord.y);
-                layerNode.attachChild(visual);
+                spatial.move(screenCoord.x, i, screenCoord.y);
+                layerNode.attachChild(spatial);
             }
         }
 

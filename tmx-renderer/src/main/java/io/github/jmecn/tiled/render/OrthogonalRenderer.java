@@ -28,7 +28,7 @@ public class OrthogonalRenderer extends MapRenderer {
 
     @Override
     public Spatial createTileGrid(Material material) {
-        Mesh mesh = new Rect(tileWidth, tileHeight, false);
+        Mesh mesh = new Rect(tileWidth, tileHeight, true);
         Geometry geom = new Geometry("TileGrid", mesh);
         geom.setMaterial(material);
         return geom;
