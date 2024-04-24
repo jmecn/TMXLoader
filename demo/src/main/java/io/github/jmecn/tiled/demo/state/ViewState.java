@@ -101,7 +101,6 @@ public class ViewState extends BaseAppState {
         mapScale = 1f;
 
         rootNode = new Node("Tiled Map Root");
-        rootNode.setQueueBucket(Bucket.Gui);
 
         // translate the scene from XOZ plane to XOY plane
         mapRotation = new Quaternion();

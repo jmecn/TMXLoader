@@ -62,7 +62,7 @@ public class IsometricRenderer extends MapRenderer {
         }
         // make it thinner
         if (tileZIndex > 0) {
-            layerNode.setLocalScale(1, 1f / tileZIndex, 1);
+            layerNode.setLocalScale(1, layerDistance / tileZIndex, 1);
         }
         return layerNode;
     }

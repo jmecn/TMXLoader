@@ -18,7 +18,9 @@ import com.jme3.material.Material;
 import com.jme3.math.*;
 import com.jme3.renderer.Camera;
 import com.jme3.renderer.ViewPort;
-import com.jme3.renderer.queue.RenderQueue.Bucket;
+import com.jme3.renderer.queue.GuiComparator;
+import com.jme3.renderer.queue.RenderQueue;
+import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import io.github.jmecn.tiled.core.GroupLayer;
@@ -59,7 +61,6 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
 
     // The rootNode
     private final Node rootNode;
-    private final Quaternion mapRotation;
 
     // The grid
     private boolean isGridVisible = false;
@@ -134,16 +135,9 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
         mapScale = 1f;
 
         rootNode = new Node("Tiled Map Root");
-        rootNode.setQueueBucket(Bucket.Gui);
 
         gridVisual = new Node("Tiled Map Grid");
-        gridVisual.setQueueBucket(Bucket.Gui);
         gridVisual.setLocalTranslation(0f, 999f, 0f);
-
-        // translate the scene from XOZ plane to XOY plane
-        mapRotation = new Quaternion();
-        mapRotation.fromAngles(FastMath.HALF_PI, 0, 0);
-        rootNode.setLocalRotation(mapRotation);
 
         setMap(map);
 
@@ -152,16 +146,29 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
 
     @Override
     protected void initialize(Application app) {
+
         inputManager = app.getInputManager();
         AssetManager assetManager = app.getAssetManager();
         materialFactory = new DefaultMaterialFactory(assetManager);
+
         viewPort = app.getViewPort();
+        // sort by y-axis
+        viewPort.getQueue().setGeometryComparator(RenderQueue.Bucket.Gui, new GuiComparator() {
+            @Override
+            public int compare(Geometry o1, Geometry o2) {
+                float y1 = o1.getWorldTranslation().getY();
+                float y2 = o2.getWorldTranslation().getY();
+                logger.info("y1:{}, y2:{}, o1:{}, o2:{}", y1, y2, o1.getWorldTranslation(), o2.getWorldTranslation());
+                return Float.compare(y1, y2);
+            }
+        });
+
         cam = app.getCamera();
 
         screenDimension.set(cam.getWidth(), cam.getHeight());
 
         // move the rootNode to top-left corner of the screen
-        rootNode.setLocalTranslation(0, screenDimension.y, 0);
+        // FIXME: rootNode.setLocalTranslation(0, screenDimension.y, 0);
 
         float near = -1000f;
         float far = 1000f;
@@ -434,10 +441,6 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
 
     public Vector3f getMapTranslation() {
         return mapTranslation;
-    }
-
-    public Quaternion getMapRotation() {
-        return mapRotation;
     }
 
     /**

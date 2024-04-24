@@ -66,13 +66,11 @@ public class Demo extends SimpleApplication {
 
                 Node node = new Node("player");
                 node.move((float) obj.getX(), index, (float) obj.getY());
-                node.setQueueBucket(RenderQueue.Bucket.Gui);
                 node.addControl(new BodyControl(body));
 
                 Tile tile = tiledMap.getTileForTileGID(115);// 115 is a flower
                 Geometry player = mapRenderer.getSpriteFactory().newTileSprite(tile);
                 player.move(-8, 0, -8);// center the player
-                player.setQueueBucket(RenderQueue.Bucket.Gui);
                 node.attachChild(player);
 
                 mapRenderer.getRootNode().attachChild(node);

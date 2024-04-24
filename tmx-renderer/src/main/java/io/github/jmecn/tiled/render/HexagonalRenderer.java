@@ -107,7 +107,7 @@ public class HexagonalRenderer extends OrthogonalRenderer {
 
         // make it thinner
         if (tileCount > 0) {
-            layerNode.setLocalScale(1, 1f / tileCount, 1);
+            layerNode.setLocalScale(1, layerDistance / tileCount, 1);
         }
 
         return layerNode;

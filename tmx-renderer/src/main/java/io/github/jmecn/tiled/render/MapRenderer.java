@@ -2,7 +2,7 @@ package io.github.jmecn.tiled.render;
 
 import com.jme3.material.Material;
 import com.jme3.math.Vector2f;
-import com.jme3.renderer.queue.RenderQueue.Bucket;
+import com.jme3.renderer.queue.RenderQueue;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Mesh;
 import com.jme3.scene.Node;
@@ -49,6 +49,8 @@ import java.util.*;
  */
 public abstract class MapRenderer {
 
+    protected float layerDistance = 16f;// the distance between layers
+
     protected TiledMap map;
     protected int width;
     protected int height;
@@ -77,7 +79,7 @@ public abstract class MapRenderer {
         this.mapSize = new Point(width * tileWidth, height * tileHeight);
 
         this.rootNode = new Node("TileMap");
-        this.rootNode.setQueueBucket(Bucket.Gui);
+        this.rootNode.setQueueBucket(RenderQueue.Bucket.Gui);
 
         this.layerNodeMap = new HashMap<>();
         this.layerSpatialMap = new HashMap<>();
@@ -136,7 +138,6 @@ public abstract class MapRenderer {
     public Node getLayerNode(Layer layer) {
         return layerNodeMap.computeIfAbsent(layer, key -> {
             Node node = new Node(layer.getName());
-            node.setQueueBucket(Bucket.Gui);
             rootNode.attachChild(node);
             return node;
         });
@@ -219,7 +220,7 @@ public abstract class MapRenderer {
             if (visual != null) {
                 // this is a little magic to make let top layer block off the
                 // bottom layer
-                visual.setLocalTranslation(0, i, 0);
+                visual.setLocalTranslation(0, i * layerDistance, 0);
                 layer.setNeedUpdated(false);
             }
         }
@@ -274,7 +275,7 @@ public abstract class MapRenderer {
             }
         }
 
-        layerNode.setLocalScale(1f, 1f / len, 1f);
+        layerNode.setLocalScale(1f, layerDistance / len, 1f);
         return layerNode;
     }
 
@@ -289,7 +290,6 @@ public abstract class MapRenderer {
             Mesh mesh = new Rect(mapSize.getX(), mapSize.getY(), true);
             Geometry geom = new Geometry(layer.getName(), mesh);
             geom.setMaterial(material);
-            geom.setQueueBucket(Bucket.Gui);
 
             layerNode.attachChild(geom);
 
