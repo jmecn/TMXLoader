@@ -10,7 +10,7 @@ import org.jbox2d.dynamics.Body;
 
 public class BodyControl extends AbstractControl {
 
-    private Body body;
+    private final Body body;
 
     public BodyControl(final Body body) {
         this.body = body;

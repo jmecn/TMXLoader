@@ -3,6 +3,7 @@ package io.github.jmecn.tiled.demo;
 import com.jme3.app.DetailedProfilerState;
 import com.jme3.app.SimpleApplication;
 import com.jme3.app.StatsAppState;
+import com.jme3.math.Vector3f;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import io.github.jmecn.tiled.TmxLoader;
@@ -34,7 +35,7 @@ public class Demo extends SimpleApplication {
         assetManager.registerLoader(TmxLoader.class, "tmx", "tsx");
         TiledMap tiledMap = (TiledMap) assetManager.loadAsset("Maps/forest.tmx");
 
-        ViewState viewState = new ViewState(tiledMap, 12f);
+        ViewState viewState = new ViewState();
         viewState.initialize(stateManager, this);
         stateManager.attach(viewState);
 
@@ -46,6 +47,7 @@ public class Demo extends SimpleApplication {
         playerState.initialize(stateManager, this);
         stateManager.attach(playerState);
 
+        viewState.setMap(tiledMap);
         MapRenderer mapRenderer = viewState.getMapRenderer();
 
         ObjectGroup objectGroup = (ObjectGroup) tiledMap.getLayer("Collision");
@@ -56,7 +58,7 @@ public class Demo extends SimpleApplication {
         ObjectGroup locations = (ObjectGroup) tiledMap.getLayer("Location");
         for (MapObject obj : locations.getObjects()) {
             if ("Start".equals(obj.getName())) {
-                viewState.moveToPixel((float) obj.getX(), (float) obj.getY());
+                cam.setLocation(new Vector3f((float) obj.getX(), 0, (float) obj.getY()));
 
                 Body body = createPlayBody(physicsState, obj.getX(), obj.getY());
 
@@ -74,7 +76,6 @@ public class Demo extends SimpleApplication {
 
                 mapRenderer.getRootNode().attachChild(node);
 
-                playerState.setPosition((float) obj.getX(), (float) obj.getY());
                 playerState.setBody(body);
                 break;
             }

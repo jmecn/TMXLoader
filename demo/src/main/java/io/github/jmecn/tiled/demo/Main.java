@@ -11,10 +11,9 @@ public class Main {
     public static void main(String[] args) {
         AppSettings settings = new AppSettings(true);
         settings.setTitle("Tiled Demo");
-        settings.setResolution(1280, 720);
+        settings.setResolution(900, 640);
         settings.setGammaCorrection(false);
         settings.setFrameRate(60);
-        settings.setSamples(4);
         settings.setVSync(true);
 
         Demo demo = new Demo();

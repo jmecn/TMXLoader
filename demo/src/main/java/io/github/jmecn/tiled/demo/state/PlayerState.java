@@ -8,6 +8,7 @@ import com.jme3.input.controls.ActionListener;
 import com.jme3.input.controls.KeyTrigger;
 import com.jme3.math.Vector2f;
 import com.jme3.math.Vector3f;
+import com.jme3.renderer.Camera;
 import org.jbox2d.common.Vec2;
 import org.jbox2d.dynamics.Body;
 import org.slf4j.Logger;
@@ -39,29 +40,16 @@ public class PlayerState extends BaseAppState implements ActionListener {
     private final float    inputSensitive = 5f;
 
     // velocity
-    private final Vector3f desiredVelocity = new Vector3f(0f, 0f, 0f);
-    private final float    maxSpeed        = 16f * 5;
-    private final float    maxAcceleration = 16f * 10;
-
-    private final Vector3f displacement = new Vector3f();
+    private final Vector3f velocity = new Vector3f(0f, 0f, 0f);
+    private final float moveSpeed = 16f * 5;
 
     private Body body;
 
-    private final Vector3f position = new Vector3f(0f, 0f, 0f);
-    private final Vector3f velocity = new Vector3f(0f, 0f, 0f);
-
-    private ViewState viewState;
+    private Camera cam;
     @Override
     protected void initialize(Application app) {
-        InputManager inputManager = app.getInputManager();
-        inputManager.addMapping("Left", new KeyTrigger(com.jme3.input.KeyInput.KEY_A));
-        inputManager.addMapping("Right", new KeyTrigger(com.jme3.input.KeyInput.KEY_D));
-        inputManager.addMapping("Up", new KeyTrigger(com.jme3.input.KeyInput.KEY_W));
-        inputManager.addMapping("Down", new KeyTrigger(com.jme3.input.KeyInput.KEY_S));
-
-        viewState = app.getStateManager().getState(ViewState.class);
-        // input
-        registerInput(inputManager);
+        cam = app.getCamera();
+        registerInput(app.getInputManager());
     }
 
     public void registerInput(InputManager inputManager) {
@@ -98,10 +86,7 @@ public class PlayerState extends BaseAppState implements ActionListener {
         body.setLinearVelocity(new Vec2(velocity.x, velocity.z));
         float x = body.getTransform().position.x;
         float y = body.getTransform().position.y;
-        viewState.moveToPixel(x, y);
-        // position.addLocal(displacement);
-        // logger.info("position: {}", position);
-        // viewState.moveToPixel(position.x, position.z);
+        cam.setLocation(new Vector3f(x, 0, y));
     }
 
     public void updateInput(float tpf) {
@@ -134,43 +119,23 @@ public class PlayerState extends BaseAppState implements ActionListener {
         }
 
         // Velocity
-        desiredVelocity.set(playerInput.x, 0f, playerInput.y);
-        desiredVelocity.multLocal(maxSpeed);
-
-        float maxSpeedChange = maxAcceleration * tpf;
-        velocity.x = moveToward(velocity.x, desiredVelocity.x, maxSpeedChange);
-        velocity.z = moveToward(velocity.z, desiredVelocity.z, maxSpeedChange);
-
-        velocity.mult(tpf, displacement);
-    }
-
-    float moveToward(float start, float end, float step) {
-        if (start < end) {
-            start = Math.min(start + step, end);
-        } else if (start > end) {
-            start = Math.max(start - step, end);
-        }
-
-        return start;
+        velocity.set(playerInput.x, 0f, playerInput.y);
+        velocity.multLocal(moveSpeed);
     }
 
     @Override
     protected void cleanup(Application app) {
-
+        // nothing
     }
 
     @Override
     protected void onEnable() {
-
+        // nothing
     }
 
     @Override
     protected void onDisable() {
-
-    }
-
-    public void setPosition(float x, float y) {
-        position.set(x, 0, y);
+        // nothing
     }
 
     public void setBody(Body body) {
