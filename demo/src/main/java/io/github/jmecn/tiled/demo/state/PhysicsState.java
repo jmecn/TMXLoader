@@ -1,14 +1,11 @@
 package io.github.jmecn.tiled.demo.state;
 
-import com.jme3.math.Vector2f;
-
 import com.jme3.app.Application;
 import com.jme3.app.state.BaseAppState;
 import org.jbox2d.common.Vec2;
 import org.jbox2d.dynamics.Body;
 import org.jbox2d.dynamics.BodyDef;
 import org.jbox2d.dynamics.World;
-import org.jbox2d.dynamics.joints.JointDef;
 
 public class PhysicsState extends BaseAppState {
 
@@ -20,6 +17,7 @@ public class PhysicsState extends BaseAppState {
 
 	@Override
 	protected void initialize(Application app) {
+		// do nothing
 	}
 
 	@Override
@@ -29,29 +27,17 @@ public class PhysicsState extends BaseAppState {
 
 	@Override
 	protected void cleanup(Application app) {
-	}
-
-	public void addBody(BodyDef bodyDef) {
-		world.createBody(bodyDef);
-	}
-
-	public void addJoint(JointDef jointDef) {
-		world.createJoint(jointDef);
+		// do nothing
 	}
 
 	@Override
 	protected void onEnable() {
+		// do nothing
 	}
 
 	@Override
 	protected void onDisable() {
-	}
-
-	public void setBounds(Vector2f mapDimensionF) {
-	}
-
-	public World getWorld() {
-		return world;
+		// do nothing
 	}
 
 	public Body createBody(BodyDef bodyDef) {

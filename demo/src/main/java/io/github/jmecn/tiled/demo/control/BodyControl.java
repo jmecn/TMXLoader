@@ -39,6 +39,7 @@ public class BodyControl extends AbstractControl {
 
     @Override
     protected void controlRender(RenderManager rm, ViewPort vp) {
+        // do nothing
     }
 
 }

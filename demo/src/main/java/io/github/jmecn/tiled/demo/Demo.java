@@ -50,8 +50,6 @@ public class Demo extends SimpleApplication {
 
         MapRenderer mapRenderer = viewState.getMapRenderer();
 
-        physicsState.setBounds(mapRenderer.getMapDimensionF());
-
         ObjectGroup objectGroup = (ObjectGroup) tiledMap.getLayer("Collision");
         for (MapObject obj : objectGroup.getObjects()) {
             createBody(physicsState, obj);
@@ -86,7 +84,7 @@ public class Demo extends SimpleApplication {
         }
     }
 
-    private Body createBody(PhysicsState physicsState, MapObject obj) {
+    private void createBody(PhysicsState physicsState, MapObject obj) {
         FixtureDef fixtureDef = new FixtureDef();
         fixtureDef.density = 1.0f;
         fixtureDef.friction = 0.0f;
@@ -103,7 +101,6 @@ public class Demo extends SimpleApplication {
         Body body = physicsState.createBody(bodyDef);
         body.createFixture(fixtureDef);
 
-        return body;
     }
 
     private Body createPlayBody(PhysicsState physicsState, double x, double y) {
