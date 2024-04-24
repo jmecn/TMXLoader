@@ -16,13 +16,15 @@ import com.jme3.input.controls.MouseAxisTrigger;
 import com.jme3.input.controls.MouseButtonTrigger;
 import com.jme3.material.Material;
 import com.jme3.math.*;
+import com.jme3.post.SceneProcessor;
+import com.jme3.profile.AppProfiler;
 import com.jme3.renderer.Camera;
+import com.jme3.renderer.RenderManager;
 import com.jme3.renderer.ViewPort;
-import com.jme3.renderer.queue.GeometryComparator;
 import com.jme3.renderer.queue.RenderQueue;
-import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
+import com.jme3.texture.FrameBuffer;
 import io.github.jmecn.tiled.core.GroupLayer;
 import io.github.jmecn.tiled.core.Layer;
 import io.github.jmecn.tiled.math2d.Point;
@@ -43,7 +45,7 @@ import org.slf4j.LoggerFactory;
  * @author yanmaoyuan
  * 
  */
-public class TiledMapAppState extends BaseAppState implements AnalogListener, ActionListener {
+public class TiledMapAppState extends BaseAppState implements AnalogListener, ActionListener, SceneProcessor {
 
     static Logger logger = LoggerFactory.getLogger(TiledMapAppState.class);
     public static final String LEFT = "left";
@@ -115,22 +117,13 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
     private final Vector3f pos = new Vector3f();
 
     /**
-     * Default constructor
+     * Constructor
      */
     public TiledMapAppState() {
-        this(null);
+        this(12f);
     }
 
-    /**
-     * Constructor
-     * 
-     * @param map the tiled map
-     */
-    public TiledMapAppState(TiledMap map) {
-        this(map, 12f);
-    }
-
-    public TiledMapAppState(TiledMap map, float viewColumns) {
+    public TiledMapAppState(float viewColumns) {
         screenDimension = new Vector2f();
         mapDimension = new Vector2f();
 
@@ -141,8 +134,6 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
 
         gridVisual = new Node("Tiled Map Grid");
         gridVisual.setLocalTranslation(0f, 999f, 0f);
-
-        setMap(map);
 
         this.viewColumns = viewColumns;
     }
@@ -160,11 +151,7 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
 
         // sort by y-axis
         viewPort.getQueue().setGeometryComparator(RenderQueue.Bucket.Opaque, new YAxisComparator());
-
-        // move the rootNode to top-left corner of the screen
-        // FIXME why?
-//        rootNode.setLocalTranslation(0, screenDimension.y, 0);
-//        rootNode.rotate(FastMath.HALF_PI, 0, 0);
+        viewPort.addProcessor(this);
 
         float near = -1000f;
         float far = 1000f;
@@ -179,11 +166,6 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
 
         gridMaterial = materialFactory.newMaterial(ColorRGBA.DarkGray);
         cursorMaterial = materialFactory.newMaterial(MaterialConst.CURSOR_AVAILABLE_COLOR);
-
-        if (this.map != null) {
-            viewPort.setBackgroundColor(map.getBackgroundColor());
-            mapRenderer.getSpriteFactory().setMaterialFactory(materialFactory);
-        }
     }
 
     @Override
@@ -277,14 +259,16 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
      * @param map the tiled map
      */
     public void setMap(TiledMap map) {
-        if (map == null)
+        if (!isInitialized()) {
+            throw new IllegalStateException("TiledMapAppState is not initialized.");
+        }
+        if (map == null) {
             return;
+        }
 
         rootNode.detachAllChildren();
         
-        if (viewPort != null) {
-            viewPort.setBackgroundColor(map.getBackgroundColor());
-        }
+        viewPort.setBackgroundColor(map.getBackgroundColor());
 
         if (this.map != map) {
             this.map = map;
@@ -750,4 +734,42 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
         }
     }
 
+    @Override
+    public void initialize(RenderManager rm, ViewPort vp) {
+        logger.info("initialize: {}", vp.getName());
+    }
+
+    @Override
+    public void reshape(ViewPort vp, int w, int h) {
+        logger.info("reshape: {}, {}", w, h);
+        screenDimension.set(w, h);
+        cam.setLocation(new Vector3f(w * 0.5f, 0, h * 0.5f));
+        setMapScale(mapScale);
+        getMapScale();
+    }
+
+    @Override
+    public void rescale(ViewPort vp, float x, float y) {
+        logger.info("rescale: {}, {}", x, y);
+    }
+
+    @Override
+    public void preFrame(float tpf) {
+        // nothing
+    }
+
+    @Override
+    public void postQueue(RenderQueue rq) {
+        // nothing
+    }
+
+    @Override
+    public void postFrame(FrameBuffer out) {
+        // nothing
+    }
+
+    @Override
+    public void setProfiler(AppProfiler profiler) {
+        // nothing
+    }
 }
