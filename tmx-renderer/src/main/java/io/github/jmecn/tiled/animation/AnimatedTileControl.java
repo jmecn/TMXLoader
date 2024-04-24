@@ -6,7 +6,7 @@ import com.jme3.renderer.ViewPort;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.control.AbstractControl;
 import io.github.jmecn.tiled.core.Tile;
-import io.github.jmecn.tiled.render.MaterialConst;
+import io.github.jmecn.tiled.renderer.MaterialConst;
 
 /**
  * This control used to play animation of a tile.

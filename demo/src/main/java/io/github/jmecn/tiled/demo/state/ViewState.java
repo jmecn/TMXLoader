@@ -8,7 +8,7 @@ import com.jme3.input.InputManager;
 import com.jme3.math.*;
 import com.jme3.renderer.Camera;
 import com.jme3.renderer.ViewPort;
-import com.jme3.renderer.queue.RenderQueue.Bucket;
+import com.jme3.renderer.queue.RenderQueue;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import io.github.jmecn.tiled.core.GroupLayer;
@@ -16,8 +16,12 @@ import io.github.jmecn.tiled.core.Layer;
 import io.github.jmecn.tiled.math2d.Point;
 import io.github.jmecn.tiled.core.TiledMap;
 import io.github.jmecn.tiled.enums.ZoomMode;
-import io.github.jmecn.tiled.render.*;
-import io.github.jmecn.tiled.render.factory.*;
+import io.github.jmecn.tiled.renderer.*;
+import io.github.jmecn.tiled.renderer.factory.DefaultMaterialFactory;
+import io.github.jmecn.tiled.renderer.factory.DefaultMeshFactory;
+import io.github.jmecn.tiled.renderer.factory.DefaultSpriteFactory;
+import io.github.jmecn.tiled.renderer.factory.MaterialFactory;
+import io.github.jmecn.tiled.renderer.queue.YAxisComparator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,7 +42,6 @@ public class ViewState extends BaseAppState {
 
     // The rootNode
     private final Node rootNode;
-    private final Quaternion mapRotation;
 
     // The parallax
     private boolean isParallaxEnabled = true;
@@ -102,11 +105,6 @@ public class ViewState extends BaseAppState {
 
         rootNode = new Node("Tiled Map Root");
 
-        // translate the scene from XOZ plane to XOY plane
-        mapRotation = new Quaternion();
-        mapRotation.fromAngles(FastMath.HALF_PI, 0, 0);
-        rootNode.setLocalRotation(mapRotation);
-
         setMap(map);
 
         this.viewColumns = viewColumns;
@@ -120,20 +118,19 @@ public class ViewState extends BaseAppState {
         viewPort = app.getViewPort();
         cam = app.getCamera();
 
-        screenDimension.set(cam.getWidth(), cam.getHeight());
+        // sort by y-axis
+        viewPort.getQueue().setGeometryComparator(RenderQueue.Bucket.Opaque, new YAxisComparator());
 
-        // move the rootNode to top-left corner of the screen
-        rootNode.setLocalTranslation(0, screenDimension.y, 0);
+        screenDimension.set(cam.getWidth(), cam.getHeight());
 
         float near = -1000f;
         float far = 1000f;
         float halfWidth = screenDimension.x * 0.5f;
         float halfHeight = screenDimension.y * 0.5f;
-        cam.setFrustum(near, far, -halfWidth, halfWidth, halfHeight, -halfHeight);
-
         cam.setParallelProjection(true);
-        cam.lookAtDirection(new Vector3f(0f, -1f, 0f), new Vector3f(0f, 0f, -1f));
+        cam.setFrustum(near, far, -halfWidth, halfWidth, halfHeight, -halfHeight);
         cam.setLocation(new Vector3f(halfWidth, 0, halfHeight));
+        cam.lookAtDirection(new Vector3f(0f, -1f, 0f), new Vector3f(0f, 0f, -1f));
         logger.info("cam: {}, direction:{}", cam.getLocation(), cam.getDirection());
 
         if (this.map != null) {
@@ -331,10 +328,6 @@ public class ViewState extends BaseAppState {
 
     public Vector3f getMapTranslation() {
         return mapTranslation;
-    }
-
-    public Quaternion getMapRotation() {
-        return mapRotation;
     }
 
     /**

@@ -3,7 +3,6 @@ package io.github.jmecn.tiled.demo;
 import com.jme3.app.DetailedProfilerState;
 import com.jme3.app.SimpleApplication;
 import com.jme3.app.StatsAppState;
-import com.jme3.renderer.queue.RenderQueue;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import io.github.jmecn.tiled.TmxLoader;
@@ -15,8 +14,7 @@ import io.github.jmecn.tiled.demo.control.BodyControl;
 import io.github.jmecn.tiled.demo.state.PhysicsState;
 import io.github.jmecn.tiled.demo.state.PlayerState;
 import io.github.jmecn.tiled.demo.state.ViewState;
-import io.github.jmecn.tiled.render.MapRenderer;
-import org.jbox2d.collision.shapes.CircleShape;
+import io.github.jmecn.tiled.renderer.MapRenderer;
 import org.jbox2d.collision.shapes.PolygonShape;
 import org.jbox2d.dynamics.*;
 
@@ -64,8 +62,9 @@ public class Demo extends SimpleApplication {
 
                 int index = tiledMap.getLayer("Trees").getIndex();
 
+                float y = mapRenderer.calculateY(index, (float) obj.getX(), (float) obj.getY());
                 Node node = new Node("player");
-                node.move((float) obj.getX(), index, (float) obj.getY());
+                node.move((float) obj.getX(), y, (float) obj.getY());
                 node.addControl(new BodyControl(body));
 
                 Tile tile = tiledMap.getTileForTileGID(115);// 115 is a flower
@@ -107,13 +106,14 @@ public class Demo extends SimpleApplication {
         fixtureDef.friction = 0.0f;
         fixtureDef.restitution = 0.0f;
 
-        CircleShape shape = new CircleShape();
-        shape.m_radius = 8;
+        PolygonShape shape = new PolygonShape();
+        shape.setAsBox(8, 8);
         fixtureDef.shape = shape;
 
         BodyDef bodyDef = new BodyDef();
         bodyDef.position.set((float) x, (float) y);
         bodyDef.type = BodyType.DYNAMIC;
+        bodyDef.fixedRotation = true;
 
         Body body = physicsState.createBody(bodyDef);
         body.createFixture(fixtureDef);

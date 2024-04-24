@@ -28,8 +28,12 @@ import io.github.jmecn.tiled.core.Layer;
 import io.github.jmecn.tiled.math2d.Point;
 import io.github.jmecn.tiled.core.TiledMap;
 import io.github.jmecn.tiled.enums.ZoomMode;
-import io.github.jmecn.tiled.render.*;
-import io.github.jmecn.tiled.render.factory.*;
+import io.github.jmecn.tiled.renderer.*;
+import io.github.jmecn.tiled.renderer.factory.DefaultMaterialFactory;
+import io.github.jmecn.tiled.renderer.factory.DefaultMeshFactory;
+import io.github.jmecn.tiled.renderer.factory.DefaultSpriteFactory;
+import io.github.jmecn.tiled.renderer.factory.MaterialFactory;
+import io.github.jmecn.tiled.renderer.queue.YAxisComparator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -155,18 +159,7 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
         screenDimension.set(cam.getWidth(), cam.getHeight());
 
         // sort by y-axis
-        viewPort.getQueue().setGeometryComparator(RenderQueue.Bucket.Opaque, new GeometryComparator() {
-            @Override
-            public int compare(Geometry o1, Geometry o2) {
-                float y1 = o1.getWorldTranslation().getY();
-                float y2 = o2.getWorldTranslation().getY();
-                return Float.compare(y2, y1);
-            }
-            @Override
-            public void setCamera(Camera cam) {
-                // nothing
-            }
-        });
+        viewPort.getQueue().setGeometryComparator(RenderQueue.Bucket.Opaque, new YAxisComparator());
 
         // move the rootNode to top-left corner of the screen
         // FIXME why?
