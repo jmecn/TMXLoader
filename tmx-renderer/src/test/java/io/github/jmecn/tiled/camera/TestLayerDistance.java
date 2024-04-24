@@ -3,11 +3,11 @@ package io.github.jmecn.tiled.camera;
 import com.jme3.app.SimpleApplication;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
+import com.jme3.math.Quaternion;
 import com.jme3.math.Vector2f;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.Camera;
 import com.jme3.renderer.ViewPort;
-import com.jme3.renderer.queue.GeometryComparator;
 import com.jme3.renderer.queue.RenderQueue;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
@@ -21,6 +21,7 @@ import com.jme3.texture.Texture;
 import com.jme3.texture.Texture2D;
 import io.github.jmecn.tiled.renderer.factory.DefaultMaterialFactory;
 import io.github.jmecn.tiled.renderer.factory.MaterialFactory;
+import io.github.jmecn.tiled.renderer.queue.YAxisComparator;
 import io.github.jmecn.tiled.renderer.shape.TileMesh;
 
 /**
@@ -32,14 +33,15 @@ public class TestLayerDistance extends SimpleApplication {
 
     public static final int TILE_SIZE = 10;
     // how many tiles?
-    private int w = 16;
-    private int h = 9;
+    private final int w = 16;
+    private final int h = 9;
     // the layer distance
-    private float layerDistance = 20f;
-    private float step = layerDistance / (w * h);
+    private final float layerDistance = 20f;
+    private final float step = layerDistance / (w * h);
 
     public static void main(String[] args) {
         AppSettings settings = new AppSettings(true);
+        settings.setResolution(1280, 720);
         settings.setSamples(4);
 
         TestLayerDistance app = new TestLayerDistance();
@@ -49,6 +51,8 @@ public class TestLayerDistance extends SimpleApplication {
 
     @Override
     public void simpleInitApp() {
+        cam.setLocation(new Vector3f(-4.364303f, 4.856053f, 18.433529f));
+        cam.setRotation(new Quaternion(0.015008871f, 0.95650566f, -0.050019775f, 0.2870012f));
 
         // setup off-screen camera and scene
         Node offScene = createScene();
@@ -160,18 +164,7 @@ public class TestLayerDistance extends SimpleApplication {
         ViewPort offView = renderManager.createPreView("off-screen", camera);
 
         // sort by y-axis
-        offView.getQueue().setGeometryComparator(RenderQueue.Bucket.Opaque, new GeometryComparator() {
-            @Override
-            public int compare(Geometry o1, Geometry o2) {
-                float y1 = o1.getWorldTranslation().getY();
-                float y2 = o2.getWorldTranslation().getY();
-                return Float.compare(y1, y2);
-            }
-            @Override
-            public void setCamera(Camera cam) {
-                // nothing
-            }
-        });
+        offView.getQueue().setGeometryComparator(RenderQueue.Bucket.Opaque, new YAxisComparator());
 
         offView.attachScene(offScene);// attach the scene to the viewport to be rendered
         offView.setClearFlags(true, true, true);
