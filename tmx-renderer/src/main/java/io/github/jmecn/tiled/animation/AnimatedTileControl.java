@@ -18,6 +18,8 @@ public class AnimatedTileControl extends AbstractControl {
 
     private final Tile tile;
     private Animation anim;
+
+    private int previousTileId;
     private int currentFrameIndex;
     private float unusedTime;
 
@@ -28,19 +30,40 @@ public class AnimatedTileControl extends AbstractControl {
     }
 
     public void setAnim(String name) {
-        anim = tile.getAnimation(name);
-        resetAnimation();
+        Animation anim = tile.getAnimation(name);
+        if (anim != null) {
+            if (this.anim != anim) {
+                this.anim = anim;
+                resetAnimation();
+            }
+        } else {
+            if (this.anim != null) {
+                this.anim = null;
+                resetAnimation();
+            }
+        }
     }
 
     public void setAnim(int index) {
-        anim = tile.getAnimations().get(index);
-        resetAnimation();
+        Animation anim = tile.getAnimations().get(index);
+        if (anim != null) {
+            if (this.anim != anim) {
+                this.anim = anim;
+                resetAnimation();
+            }
+        } else {
+            if (this.anim != null) {
+                this.anim = null;
+                resetAnimation();
+            }
+        }
     }
 
     /**
      * Resets the tile animation.
      */
     public void resetAnimation() {
+        previousTileId = -1;
         currentFrameIndex = 0;
         unusedTime = 0f;
     }
@@ -55,7 +78,6 @@ public class AnimatedTileControl extends AbstractControl {
         float ms = tpf * 1000;
         unusedTime += ms;
         Frame frame = anim.getFrame(currentFrameIndex);
-        int previousTileId = frame.getTileId();
 
         while (frame.getDuration() > 0 && unusedTime > frame.getDuration()) {
             unusedTime -= frame.getDuration();
@@ -68,6 +90,7 @@ public class AnimatedTileControl extends AbstractControl {
          * whether this caused the current tileId to change.
          */
         if (previousTileId != frame.getTileId()) {
+            previousTileId = frame.getTileId();
             Geometry geom = (Geometry) spatial;
 
             Tile t = tile.getTileset().getTile(frame.getTileId());
