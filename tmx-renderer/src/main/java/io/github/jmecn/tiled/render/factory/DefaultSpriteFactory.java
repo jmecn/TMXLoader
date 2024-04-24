@@ -3,7 +3,6 @@ package io.github.jmecn.tiled.render.factory;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.FastMath;
-import com.jme3.renderer.queue.RenderQueue;
 import com.jme3.scene.*;
 import io.github.jmecn.tiled.animation.AnimatedTileControl;
 import io.github.jmecn.tiled.core.*;
@@ -124,7 +123,6 @@ public final class DefaultSpriteFactory implements SpriteFactory {
         Mesh mesh = meshFactory.getTileMesh(tile);
         String name = "tile#" + tile.getGid();
         Geometry geometry = new Geometry(name, mesh);
-        geometry.setQueueBucket(RenderQueue.Bucket.Gui);
         geometry.setMaterial(material);
         if (tile.isAnimated()) {
             geometry.addControl(new AnimatedTileControl(tile));
@@ -139,7 +137,6 @@ public final class DefaultSpriteFactory implements SpriteFactory {
         }
 
         Geometry geometry = new Geometry(obj.getName(), mesh);
-        geometry.setQueueBucket(RenderQueue.Bucket.Gui);
 
         double deg = obj.getRotation();
         if (deg != 0) {

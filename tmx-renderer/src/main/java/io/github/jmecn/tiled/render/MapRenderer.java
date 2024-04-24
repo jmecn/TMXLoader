@@ -79,7 +79,7 @@ public abstract class MapRenderer {
         this.mapSize = new Point(width * tileWidth, height * tileHeight);
 
         this.rootNode = new Node("TileMap");
-        this.rootNode.setQueueBucket(RenderQueue.Bucket.Gui);
+        this.rootNode.setQueueBucket(RenderQueue.Bucket.Opaque);
 
         this.layerNodeMap = new HashMap<>();
         this.layerSpatialMap = new HashMap<>();

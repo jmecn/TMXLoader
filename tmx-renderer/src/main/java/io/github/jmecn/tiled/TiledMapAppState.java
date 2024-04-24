@@ -18,7 +18,7 @@ import com.jme3.material.Material;
 import com.jme3.math.*;
 import com.jme3.renderer.Camera;
 import com.jme3.renderer.ViewPort;
-import com.jme3.renderer.queue.GuiComparator;
+import com.jme3.renderer.queue.GeometryComparator;
 import com.jme3.renderer.queue.RenderQueue;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
@@ -152,23 +152,27 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
         materialFactory = new DefaultMaterialFactory(assetManager);
 
         viewPort = app.getViewPort();
+        cam = app.getCamera();
+        screenDimension.set(cam.getWidth(), cam.getHeight());
+
         // sort by y-axis
-        viewPort.getQueue().setGeometryComparator(RenderQueue.Bucket.Gui, new GuiComparator() {
+        viewPort.getQueue().setGeometryComparator(RenderQueue.Bucket.Opaque, new GeometryComparator() {
             @Override
             public int compare(Geometry o1, Geometry o2) {
                 float y1 = o1.getWorldTranslation().getY();
                 float y2 = o2.getWorldTranslation().getY();
-                logger.info("y1:{}, y2:{}, o1:{}, o2:{}", y1, y2, o1.getWorldTranslation(), o2.getWorldTranslation());
-                return Float.compare(y1, y2);
+                return Float.compare(y2, y1);
+            }
+            @Override
+            public void setCamera(Camera cam) {
+                // nothing
             }
         });
 
-        cam = app.getCamera();
-
-        screenDimension.set(cam.getWidth(), cam.getHeight());
-
         // move the rootNode to top-left corner of the screen
-        // FIXME: rootNode.setLocalTranslation(0, screenDimension.y, 0);
+        // FIXME why?
+//        rootNode.setLocalTranslation(0, screenDimension.y, 0);
+//        rootNode.rotate(FastMath.HALF_PI, 0, 0);
 
         float near = -1000f;
         float far = 1000f;
@@ -177,8 +181,8 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
         cam.setFrustum(near, far, -halfWidth, halfWidth, halfHeight, -halfHeight);
 
         cam.setParallelProjection(true);
-        cam.lookAtDirection(new Vector3f(0f, -1f, 0f), new Vector3f(0f, 0f, -1f));
         cam.setLocation(new Vector3f(halfWidth, 0, halfHeight));
+        cam.lookAtDirection(new Vector3f(0f, -1f, 0f), new Vector3f(0f, 0f, -1f));
         logger.info("cam: {}, direction:{}", cam.getLocation(), cam.getDirection());
 
         gridMaterial = materialFactory.newMaterial(ColorRGBA.DarkGray);

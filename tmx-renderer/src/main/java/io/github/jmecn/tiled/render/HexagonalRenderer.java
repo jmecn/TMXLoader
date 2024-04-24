@@ -174,7 +174,7 @@ public class HexagonalRenderer extends OrthogonalRenderer {
 
     @Override
     public void renderGrid(Node gridVisual, Material gridMaterial) {
-        Mesh border = new Rect(mapSize.getX(), mapSize.getY(), true);
+        Mesh border = new Rect(mapSize.getX(), mapSize.getY(), false);
         Geometry rect = new Geometry("GridBorder", border);
         rect.setMaterial(gridMaterial);
         gridVisual.attachChild(rect);
