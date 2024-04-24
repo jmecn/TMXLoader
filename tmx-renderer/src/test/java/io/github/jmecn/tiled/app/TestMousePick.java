@@ -2,9 +2,11 @@ package io.github.jmecn.tiled.app;
 
 import com.jme3.app.SimpleApplication;
 import com.jme3.asset.plugins.FileLocator;
+import com.jme3.input.InputManager;
 import com.jme3.input.MouseInput;
 import com.jme3.input.controls.ActionListener;
 import com.jme3.input.controls.MouseButtonTrigger;
+import com.jme3.math.Vector2f;
 import com.jme3.system.AppSettings;
 import io.github.jmecn.tiled.TiledMapAppState;
 import io.github.jmecn.tiled.TmxLoader;
@@ -27,7 +29,8 @@ public class TestMousePick extends SimpleApplication {
 
     public void click() {
         TiledMapAppState state = stateManager.getState(TiledMapAppState.class);
-        Point point = state.getCursorTileCoordinate();
+        Vector2f cursor = inputManager.getCursorPosition();
+        Point point = state.getCursorTileCoordinate(cursor);
         System.out.println("Click:" + point);
         if (tiledMap.contains(point.getX(), point.getY())) {
             // next tile

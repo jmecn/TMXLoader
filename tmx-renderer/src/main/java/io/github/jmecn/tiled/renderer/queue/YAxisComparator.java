@@ -8,7 +8,6 @@ import com.jme3.scene.Geometry;
  * desc:
  *
  * @author yanmaoyuan
- * @date 2024/4/24
  */
 public class YAxisComparator implements GeometryComparator {
     @Override
