@@ -7,6 +7,7 @@ import com.jme3.input.MouseInput;
 import com.jme3.input.controls.ActionListener;
 import com.jme3.input.controls.KeyTrigger;
 import com.jme3.input.controls.MouseButtonTrigger;
+import com.jme3.math.Vector2f;
 import com.jme3.system.AppSettings;
 import io.github.jmecn.tiled.TiledMapAppState;
 import io.github.jmecn.tiled.TmxLoader;
@@ -22,10 +23,12 @@ public class TestZoom extends SimpleApplication {
     private TiledMapAppState tiledMapState;
 
     public void click() {
+        Vector2f cursor = inputManager.getCursorPosition();
+
         System.out.println("Click! ======");
-        System.out.println("cursor tile: " + tiledMapState.getCursorTileCoordinate());
-        System.out.println("cursor pixel: " + tiledMapState.getCursorPixelCoordinate());
-        System.out.println("cursor screen: " + tiledMapState.getCursorScreenCoordinate());
+        System.out.println("cursor tile: " + tiledMapState.getCursorTileCoordinate(cursor));
+        System.out.println("cursor pixel: " + tiledMapState.getCursorPixelCoordinate(cursor));
+        System.out.println("cursor screen: " + cursor);
         System.out.println("center tile: " + tiledMapState.getCameraTileCoordinate());
         System.out.println("center pixel: " + tiledMapState.getCameraPixelCoordinate());
         System.out.println("center screen: " + tiledMapState.getCameraScreenCoordinate());

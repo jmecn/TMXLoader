@@ -42,7 +42,6 @@ import org.slf4j.LoggerFactory;
 public class TiledMapAppState extends BaseAppState implements AnalogListener, ActionListener {
 
     static Logger logger = LoggerFactory.getLogger(TiledMapAppState.class);
-    public static final String INIT_ERROR = "inputManager is null. Please initialize TiledMapAppState first.";
     public static final String LEFT = "left";
     public static final String RIGHT = "right";
     public static final String UP = "up";
@@ -521,27 +520,18 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
     }
 
     public Point getCameraTileCoordinate() {
-        if (inputManager == null) {
-            throw new IllegalStateException(INIT_ERROR);
-        }
         Vector2f center = new Vector2f(screenDimension.x * 0.5f, screenDimension.y * 0.5f);
         center = center.subtract(mapTranslation.x, mapTranslation.z).divideLocal(mapScale);
         return getMapRenderer().screenToTileCoords(center.x, center.y);
     }
 
     public Vector2f getCameraPixelCoordinate() {
-        if (inputManager == null) {
-            throw new IllegalStateException(INIT_ERROR);
-        }
         Vector2f center = new Vector2f(screenDimension.x * 0.5f, screenDimension.y * 0.5f);
         center = center.subtract(mapTranslation.x, mapTranslation.z).divideLocal(mapScale);
         return getMapRenderer().screenToPixelCoords(center.x, center.y);
     }
 
     public Vector2f getCameraScreenCoordinate() {
-        if (inputManager == null) {
-            throw new IllegalStateException(INIT_ERROR);
-        }
         return new Vector2f(cam.getLocation().x, cam.getLocation().z);
     }
 
@@ -550,12 +540,9 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
      *
      * @return The tile coordinate of the cursor
      */
-    public Point getCursorTileCoordinate() {
-        if (inputManager == null) {
-            throw new IllegalStateException(INIT_ERROR);
-        }
-        Vector2f cursor = getCursorPixelCoordinate();
-        return getMapRenderer().screenToTileCoords(cursor.x, cursor.y);
+    public Point getCursorTileCoordinate(Vector2f cursor) {
+        Vector2f pixel = getCursorPixelCoordinate(cursor);
+        return getMapRenderer().screenToTileCoords(pixel.x, pixel.y);
     }
 
     /**
@@ -563,21 +550,9 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
      *
      * @return The pixel coordinate of the cursor
      */
-    public Vector2f getCursorPixelCoordinate() {
-        if (inputManager == null) {
-            throw new IllegalStateException(INIT_ERROR);
-        }
-        Vector2f cursor = inputManager.getCursorPosition();
-        cursor = new Vector2f(cursor.x, screenDimension.y - cursor.y);
-        return cursor.subtractLocal(mapTranslation.x, mapTranslation.z).divideLocal(mapScale);
-    }
-
-    public Vector2f getCursorScreenCoordinate() {
-        if (inputManager == null) {
-            throw new IllegalStateException(INIT_ERROR);
-        }
-        Vector2f cursor = inputManager.getCursorPosition();
-        return new Vector2f(cursor.x, cursor.y);
+    public Vector2f getCursorPixelCoordinate(Vector2f cursor) {
+        Vector2f pixel = new Vector2f(cursor.x, screenDimension.y - cursor.y);
+        return pixel.subtractLocal(mapTranslation.x, mapTranslation.z).divideLocal(mapScale);
     }
 
     /**
@@ -622,7 +597,9 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
 
     private void moveCursor() {
         if (gridCursor != null) {
-            Point cursor = getCursorTileCoordinate();
+            Vector2f input = inputManager.getCursorPosition();
+
+            Point cursor = getCursorTileCoordinate(input);
             if (currentTile == null) {
                 currentTile = cursor;
             } else if (!currentTile.equals(cursor)) {

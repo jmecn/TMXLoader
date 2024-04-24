@@ -79,8 +79,9 @@ public class TiledApp extends SimpleApplication {
 
     private void doClick() {
         if (tiledMapState != null && tiledMapState.getMapRenderer() != null) {
-            Point tile = tiledMapState.getCursorTileCoordinate();
-            Vector2f pixel = tiledMapState.getCursorPixelCoordinate();
+            Vector2f cursor = inputManager.getCursorPosition();
+            Point tile = tiledMapState.getCursorTileCoordinate(cursor);
+            Vector2f pixel = tiledMapState.getCursorPixelCoordinate(cursor);
             wnd.onPick(tile, pixel);
         }
     }
@@ -88,9 +89,10 @@ public class TiledApp extends SimpleApplication {
     @Override
     public void simpleUpdate(float tpf) {
         if (tiledMapState != null && tiledMapState.getMapRenderer() != null) {
-            Point tile = tiledMapState.getCursorTileCoordinate();
-            Vector2f pixel = tiledMapState.getCursorPixelCoordinate();
-            Vector2f cursor = tiledMapState.getCursorScreenCoordinate();
+            Vector2f cursor = inputManager.getCursorPosition();
+
+            Point tile = tiledMapState.getCursorTileCoordinate(cursor);
+            Vector2f pixel = tiledMapState.getCursorPixelCoordinate(cursor);
             String status = String.format("Tile: (%d,%d), Pixel: (%.0f, %.0f), Cursor: (%.0f,%.0f), Camera:(%d, %d)",
                     tile.getX(), tile.getY(), pixel.x, pixel.y, cursor.x, cursor.y,
                     cam.getWidth(), cam.getHeight());
