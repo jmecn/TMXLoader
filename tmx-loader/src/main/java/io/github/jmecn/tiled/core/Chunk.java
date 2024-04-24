@@ -71,46 +71,39 @@ public class Chunk implements TileContainer {
      *            the Tile to be removed
      */
     public void removeTile(Tile tile) {
-        for (int row = 0; row < this.height; row++) {
-            for (int col = 0; col < this.width; col++) {
+        for (int row = 0; row < height; row++) {
+            for (int col = 0; col < width; col++) {
                 if (map[row][col] == tile) {
-                    setTileAt(col + this.x, row + this.y, null);
+                    setTileAt(col, row, null);
                 }
             }
         }
     }
 
     /**
-     * Returns whether the given tile coordinates fall within the map
-     * boundaries.
+     * Returns whether the given tile coordinates fall within the map boundaries.
      *
-     * @param tx
-     *            The tile-space x-coordinate
-     * @param ty
-     *            The tile-space y-coordinate
-     * @return <code>true</code> if the point is within the map boundaries,
-     *         <code>false</code> otherwise
+     * @param x The tile-space x-coordinate
+     * @param y The tile-space y-coordinate
+     * @return <code>true</code> if the point is within the map boundaries, <code>false</code> otherwise
      */
-    public boolean contains(int tx, int ty) {
-        return tx >= x && ty >= y && tx < x + width && ty < y + height;
+    public boolean contains(int x, int y) {
+        return x >= 0 && y >= 0 && x < width && y < height;
     }
 
     /**
-     * Sets the tile at the specified position. Does nothing if (tx, ty) falls
+     * Sets the tile at the specified position. Does nothing if (x, y) falls
      * outside of this layer.
      *
-     * @param tx
-     *            x position of tile
-     * @param ty
-     *            y position of tile
-     * @param ti
-     *            the tile object to place
+     * @param x x position of tile
+     * @param y y position of tile
+     * @param tile the tile object to place
      */
     @Override
-    public void setTileAt(int tx, int ty, Tile ti) {
-        if (contains(tx, ty)) {
-            map[ty - y][tx - x] = ti;
-            needUpdateSpatial[ty - y][tx - x] = true;
+    public void setTileAt(int x, int y, Tile tile) {
+        if (contains(x, y)) {
+            map[y][x] = tile;
+            needUpdateSpatial[y][x] = true;
 
             // tell map renderer to update it
             setNeedUpdated(true);
@@ -120,31 +113,26 @@ public class Chunk implements TileContainer {
     /**
      * Returns the tile at the specified position.
      *
-     * @param tx
-     *            Tile-space x coordinate
-     * @param ty
-     *            Tile-space y coordinate
-     * @return tile at position (tx, ty) or <code>null</code> when (tx, ty) is
-     *         outside this layer
+     * @param x Tile-space x coordinate
+     * @param y Tile-space y coordinate
+     * @return tile at position (x, y) or <code>null</code> when (x, y) is outside this layer
      */
     @Override
-    public Tile getTileAt(int tx, int ty) {
-        return (contains(tx, ty)) ? map[ty - y][tx - x] : null;
+    public Tile getTileAt(int x, int y) {
+        return (contains(x, y)) ? map[y][x] : null;
     }
 
     /**
      * Returns the first occurrence (using top down, left to right search) of
      * the given tile.
      *
-     * @param t
-     *            the {@link io.github.jmecn.tiled.core.Tile} to look for
-     * @return A {@link com.jme3.math.Vector2f} instance of the first instance
-     *         of t, or <code>null</code> if it is not found
+     * @param tile the {@link io.github.jmecn.tiled.core.Tile} to look for
+     * @return A {@link com.jme3.math.Vector2f} instance of the first tile, or <code>null</code> if it is not found
      */
-    public Point locationOf(Tile t) {
-        for (int row = this.y; row < this.height + this.y; row++) {
-            for (int col = this.x; col < this.width + this.x; col++) {
-                if (getTileAt(col, row) == t) {
+    public Point locationOf(Tile tile) {
+        for (int row = 0; row < height; row++) {
+            for (int col = 0; col < width; col++) {
+                if (getTileAt(col, row) == tile) {
                     return new Point(col, row);
                 }
             }
@@ -156,14 +144,12 @@ public class Chunk implements TileContainer {
      * Replaces all occurrences of the Tile <code>find</code> with the Tile
      * <code>replace</code> in the entire layer
      *
-     * @param find
-     *            the tile to replace
-     * @param replace
-     *            the replacement tile
+     * @param find the tile to replace
+     * @param replace the replacement tile
      */
     public void replaceTile(Tile find, Tile replace) {
-        for (int row = this.y; row < this.y + this.height; row++) {
-            for (int col = this.x; col < this.x + this.width; col++) {
+        for (int row = 0; row < height; row++) {
+            for (int col = 0; col < width; col++) {
                 if (getTileAt(col, row) == find) {
                     setTileAt(col, row, replace);
                 }
@@ -172,28 +158,26 @@ public class Chunk implements TileContainer {
     }
 
     /**
-     * Tell if the spatial at position(tx, ty) should be updated.
+     * Tell if the spatial at position(x, y) should be updated.
      *
-     * @param tx
-     *            Tile-space x coordinate
-     * @param ty
-     *            Tile-space y coordinate
+     * @param x Tile-space x coordinate
+     * @param y Tile-space y coordinate
      *
      * @return true if the spatial should be updated.
      */
-    public boolean isNeedUpdateAt(int tx, int ty) {
-        return contains(tx, ty) && needUpdateSpatial[ty - y][tx - x];
+    public boolean isNeedUpdateAt(int x, int y) {
+        return contains(x, y) && needUpdateSpatial[y][x];
     }
 
     /**
-     * Set the needUpdate flag at position(tx, ty).
-     * @param tx Tile-space x coordinate
-     * @param ty Tile-space y coordinate
+     * Set the needUpdate flag at position(x, y).
+     * @param x Tile-space x coordinate
+     * @param y Tile-space y coordinate
      * @param needUpdate true if the spatial should be updated.
      */
-    public void setNeedUpdateAt(int tx, int ty, boolean needUpdate) {
-        if (contains(tx, ty)) {
-            needUpdateSpatial[ty - y][tx - x] = needUpdate;
+    public void setNeedUpdateAt(int x, int y, boolean needUpdate) {
+        if (contains(x, y)) {
+            needUpdateSpatial[y][x] = needUpdate;
         }
     }
 
