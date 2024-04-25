@@ -3,6 +3,7 @@ package io.github.jmecn.tiled.demo;
 import com.jme3.app.DetailedProfilerState;
 import com.jme3.app.SimpleApplication;
 import com.jme3.app.StatsAppState;
+import com.jme3.app.state.ScreenshotAppState;
 import com.jme3.asset.TextureKey;
 import com.jme3.scene.Geometry;
 import com.jme3.texture.Texture;
@@ -33,13 +34,13 @@ import static io.github.jmecn.tiled.demo.Const.*;
 public class Demo extends SimpleApplication {
 
     Demo() {
-        super(new DetailedProfilerState(), new StatsAppState());
+        super(new StatsAppState(), new ScreenshotAppState());
     }
 
     @Override
     public void simpleInitApp() {
         assetManager.registerLoader(TmxLoader.class, "tmx", "tsx");
-        TiledMap tiledMap = (TiledMap) assetManager.loadAsset("Maps/forest.tmx");
+        TiledMap tiledMap = (TiledMap) assetManager.loadAsset("Maps/jungle.tmx");
 
         // Load tileset by code
         Tileset tileset = buildTileset();
