@@ -1,33 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.10.2" orientation="orthogonal" renderorder="right-down" width="30" height="20" tilewidth="16" tileheight="16" infinite="0" nextlayerid="7" nextobjectid="39">
- <tileset firstgid="1" name="jungle" tilewidth="16" tileheight="16" tilecount="462" columns="22">
-  <image source="tf_jungle_tileset.png" width="352" height="336"/>
- </tileset>
- <tileset firstgid="463" name="objects" tilewidth="80" tileheight="80" tilecount="3" columns="0">
-  <grid orientation="orthogonal" width="1" height="1"/>
-  <tile id="0" x="160" y="80" width="80" height="80">
-   <image width="352" height="336" source="tf_jungle_tileset.png"/>
-   <objectgroup draworder="index" id="2">
-    <object id="5" x="3.2694" y="5.08573" width="75.1962" height="52.3104">
-     <properties>
-      <property name="isTrigger" type="bool" value="true"/>
-     </properties>
-     <ellipse/>
-    </object>
-    <object id="6" x="29.7879" y="56.6696" width="22.8858" height="22.8858">
-     <properties>
-      <property name="isTrigger" type="bool" value="true"/>
-     </properties>
-    </object>
-   </objectgroup>
-  </tile>
-  <tile id="1" x="240" y="80" width="80" height="80">
-   <image width="352" height="336" source="tf_jungle_tileset.png"/>
-  </tile>
-  <tile id="3" x="240" y="160" width="80" height="16">
-   <image width="352" height="336" source="tf_jungle_tileset.png"/>
-  </tile>
- </tileset>
+<map version="1.10" tiledversion="1.10.2" orientation="orthogonal" renderorder="right-down" width="30" height="20" tilewidth="16" tileheight="16" infinite="0" nextlayerid="7" nextobjectid="42">
+ <tileset firstgid="1" source="jungle.tsx"/>
+ <tileset firstgid="463" source="tree.tsx"/>
  <layer id="1" name="Ground" width="30" height="20">
   <data encoding="base64" compression="zlib">
    eJxTZGBgUKIzVgZicyC2oDO2HLV31N5Re0ftHbV31N5Re0eUvb5A7Edn7A/EAG9vg0E=
@@ -39,39 +13,29 @@
   </data>
  </layer>
  <objectgroup id="6" name="Trees">
-  <object id="25" gid="218" x="194.282" y="77.7674" width="16" height="16"/>
+  <object id="25" gid="218" x="196" y="80" width="16" height="16"/>
   <object id="29" gid="463" x="48" y="96" width="80" height="80"/>
   <object id="30" gid="463" x="96" y="208" width="80" height="80"/>
-  <object id="31" gid="466" x="48" y="112" width="80" height="16"/>
-  <object id="32" gid="466" x="96" y="224" width="80" height="16"/>
-  <object id="33" gid="466" x="256" y="176" width="80" height="16"/>
-  <object id="34" gid="466" x="320" y="272" width="80" height="16"/>
-  <object id="35" gid="466" x="368" y="160" width="80" height="16"/>
+  <object id="31" gid="465" x="48" y="112" width="80" height="16"/>
+  <object id="32" gid="465" x="96" y="224" width="80" height="16"/>
+  <object id="33" gid="465" x="256" y="176" width="80" height="16"/>
+  <object id="34" gid="465" x="320" y="272" width="80" height="16"/>
+  <object id="35" gid="465" x="368" y="160" width="80" height="16"/>
   <object id="36" gid="464" x="256" y="160" width="80" height="80"/>
   <object id="37" gid="463" x="368" y="144" width="80" height="80"/>
   <object id="38" gid="464" x="320" y="256" width="80" height="80"/>
+  <object id="39" gid="467" x="160" y="112" width="32" height="16"/>
+  <object id="40" gid="466" x="320" y="64" width="32" height="32"/>
+  <object id="41" gid="466" x="96" y="288" width="32" height="32"/>
  </objectgroup>
- <layer id="5" name="Trees" width="30" height="20">
-  <data encoding="base64" compression="zlib">
-   eJzt1VtSwkAQheHJGgRcqwqCbEARBBdgEhVlAQQlXDYACqhr8MIS/PM2D2Sq0xh54VR9T13JVM3pVIzZfY5wjBOUUfmnc89xgQYu0VS848YzxveyPeMjQIhb3CnO7XNmlPHcCAM84RlDxbl2pL3NMMcLXrEQvPsUVdRwhro1k/b2iS984wdraxZwd+GG+2vhCm10cG3N/qK3tNyjiwc8omfNNL1Ju4kxwhgTTK2ZpjdpN0us8IZ3fFizA3opoIgSDgV7Lu3GtROaaL8p135LoukmiWu/JdHen2u/80xs0vc7z7j2WxLNfyXJtvut+a/sk55fh+RsXw==
-  </data>
- </layer>
- <objectgroup id="3" name="Collision" visible="0">
-  <object id="6" x="64.7036" y="96.7252" width="44.5457" height="12.101"/>
-  <object id="7" x="111.911" y="207.976" width="47.5373" height="13.2048"/>
-  <object id="8" x="99.2732" y="272.349" width="25.0584" height="10.9869"/>
-  <object id="9" x="272.679" y="160.438" width="45.8867" height="12.8645"/>
-  <object id="10" x="387.251" y="144.263" width="41.224" height="12.9676"/>
-  <object id="11" x="336.392" y="256.833" width="46.5469" height="12.4209"/>
-  <object id="13" x="323.024" y="47.8674" width="24.674" height="11.9654"/>
-  <object id="16" x="163.68" y="98.9177" width="22.1789" height="10.6458"/>
-  <object id="17" name="top_bound" x="1.73616" y="0.372307" width="478.172" height="7.95519"/>
-  <object id="19" name="bottom_bound" x="0.400799" y="316.304" width="479.516" height="4.01558"/>
-  <object id="20" name="left_bound" x="-0.991547" y="0.90607" width="5.38893" height="318.87"/>
-  <object id="21" name="right_bound" x="475.081" y="0.887075" width="4.52085" height="320.234"/>
+ <objectgroup id="3" name="Collision">
+  <object id="17" name="top_bound" x="0" y="0" width="480" height="8"/>
+  <object id="19" name="bottom_bound" x="0" y="316" width="480" height="4"/>
+  <object id="20" name="left_bound" x="0" y="0" width="6" height="320"/>
+  <object id="21" name="right_bound" x="476" y="0" width="4" height="320"/>
  </objectgroup>
- <objectgroup id="4" name="Location" visible="0">
-  <object id="15" name="Start" x="255.439" y="254.035">
+ <objectgroup id="4" name="Location">
+  <object id="15" name="Start" x="256.0" y="254.0">
    <point/>
   </object>
  </objectgroup>
