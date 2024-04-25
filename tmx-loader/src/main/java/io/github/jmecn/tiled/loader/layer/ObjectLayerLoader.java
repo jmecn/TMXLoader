@@ -1,8 +1,6 @@
 package io.github.jmecn.tiled.loader.layer;
 
-import com.jme3.asset.AssetInfo;
-import com.jme3.asset.AssetKey;
-import com.jme3.asset.AssetManager;
+import com.jme3.asset.*;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector2f;
 import io.github.jmecn.tiled.core.*;
@@ -23,10 +21,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-import java.util.StringTokenizer;
+import java.util.*;
 
 import static io.github.jmecn.tiled.TiledConst.*;
 import static io.github.jmecn.tiled.loader.Utils.*;
@@ -41,6 +36,10 @@ public class ObjectLayerLoader extends LayerLoader {
     private static final Logger logger = LoggerFactory.getLogger(ObjectLayerLoader.class);
     private final TiledMap map;
 
+    public ObjectLayerLoader(AssetManager assetManager, AssetKey<?> key) {
+        this(assetManager, key, null);
+    }
+
     public ObjectLayerLoader(AssetManager assetManager, AssetKey<?> key, TiledMap map) {
         super(assetManager, key);
         this.map = map;
@@ -48,8 +47,10 @@ public class ObjectLayerLoader extends LayerLoader {
 
     @Override
     public ObjectGroup load(Node node) {
-        final int width = getAttribute(node, WIDTH, map.getWidth());
-        final int height = getAttribute(node, HEIGHT, map.getHeight());
+        int defWidth = map == null ? 0 : map.getWidth();
+        int defHeight = map == null ? 0 : map.getHeight();
+        final int width = getAttribute(node, WIDTH, defWidth);
+        final int height = getAttribute(node, HEIGHT, defHeight);
 
         ObjectGroup layer = new ObjectGroup(width, height);
         readLayerBase(node, layer);
@@ -88,28 +89,34 @@ public class ObjectLayerLoader extends LayerLoader {
      * @param inputStream the input stream of the template file
      * @return the loaded ObjectTemplate
      */
-    private ObjectTemplate loadObjectTemplate(final InputStream inputStream) throws IOException, ParserConfigurationException, SAXException {
+    public ObjectTemplate loadObjectTemplate(final InputStream inputStream) {
         ObjectTemplate template;
         Node root;
 
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        factory.setFeature("http://xml.org/sax/features/external-general-entities", false);
-        factory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+        DocumentBuilderFactory factory;
+        try {
+            factory = DocumentBuilderFactory.newInstance();
+            factory.setFeature("http://xml.org/sax/features/external-general-entities", false);
+            factory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
 
-        DocumentBuilder builder = factory.newDocumentBuilder();
-        Document doc = builder.parse(inputStream);
+            DocumentBuilder builder = factory.newDocumentBuilder();
+            Document doc = builder.parse(inputStream);
 
-        NodeList nodeList = doc.getElementsByTagName(TEMPLATE);
+            NodeList nodeList = doc.getElementsByTagName(TEMPLATE);
 
-        // There can be only one template in a .tx file.
-        root = nodeList.item(0);
+            // There can be only one template in a .tx file.
+            root = nodeList.item(0);
 
-        if (root != null) {
+            if (root == null) {
+                logger.warn("Not a valid template file.");
+                throw new IllegalArgumentException("Not a valid template file");
+            }
+
             template = readObjectTemplate(root);
+            template.setSource(assetKey.getName());
             return template;
-        } else {
-            logger.warn("Not a valid template file.");
-            throw new IllegalArgumentException("Not a valid template file");
+        } catch (Exception e) {
+            throw new AssetLoadException("Error while parsing template file.", e);
         }
     }
 
@@ -122,23 +129,28 @@ public class ObjectLayerLoader extends LayerLoader {
     private ObjectTemplate loadObjectTemplate(String source) {
         String assetPath = toJmeAssetPath(assetManager, assetKey, source);
 
-        ObjectTemplate objectTemplate = map.getObjectTemplate(assetPath);
-        if (objectTemplate != null) {
-            return objectTemplate;
+        ObjectTemplate objectTemplate;
+
+        // try to load cached objectTemplate from the map
+        if (map != null) {
+            objectTemplate = map.getObjectTemplate(assetPath);
+            if (objectTemplate != null) {
+                return objectTemplate;
+            }
         }
 
         // load it with assetManager
         try {
             logger.info("Loading template: {}", assetPath);
-            AssetInfo info = assetManager.locateAsset(new AssetKey<>(assetPath));
-            objectTemplate = loadObjectTemplate(info.openStream());
-            objectTemplate.setSource(assetPath);
-            map.addObjectTemplate(objectTemplate);
+            objectTemplate = assetManager.loadAsset(new AssetKey<>(assetPath));
+            if (map != null) {// cache the objectTemplate
+                map.addObjectTemplate(objectTemplate);
+            }
+            return objectTemplate;
         } catch (Exception e) {
             logger.error("Template {} was not loaded correctly!", source, e);
+            throw new AssetLoadException("Template not found: " + source);
         }
-
-        return objectTemplate;
     }
 
     private ObjectTemplate readObjectTemplate(Node node) {
@@ -210,17 +222,14 @@ public class ObjectLayerLoader extends LayerLoader {
         String templateSource = getAttributeValue(node, TEMPLATE);
         if (templateSource != null) {
             template = loadObjectTemplate(templateSource);
-            if (template == null) {
-                logger.warn("template not found:{}", templateSource);
-            } else {
-                obj.setTemplate(templateSource);
-                template.copyTo(obj);
 
-                // merge the properties, behavior like inheritance.
-                Properties props = propertiesLoader.readProperties(node);
-                obj.getProperties().putAll(props);
-                return obj;
-            }
+            obj.setTemplate(templateSource);
+            template.copyTo(obj);
+
+            // merge the properties, behavior like inheritance.
+            Properties props = propertiesLoader.readProperties(node);
+            obj.getProperties().putAll(props);
+            return obj;
         }
 
         Properties props = propertiesLoader.readProperties(node);
@@ -244,15 +253,13 @@ public class ObjectLayerLoader extends LayerLoader {
      * @param id the gid
      */
     private void setTileByGid(MapObject obj, String id) {
-        obj.setShape(ObjectType.TILE);
-
         int gid = (int) Long.parseLong(id);
+        obj.setShape(ObjectType.TILE);
+        obj.setGid(gid);
 
         // clear the flag
         int tileId = gid & ~Tile.FLIPPED_MASK;
-
         Tile tile = map.getTileForTileGID(tileId);
-
         Tile t = tile.copy();
         t.setGid(gid);
         obj.setTile(t);

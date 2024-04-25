@@ -443,7 +443,8 @@ public class TiledMap extends Base {
         }
 
         if (gid > 0 && tile == null) {
-            logger.warn("can't find tile with gid:{}", gid);
+            logger.warn("Tile not found id:{}", gid);
+            throw new IllegalArgumentException("Tile not found id:" + gid);
         }
         return tile;
     }

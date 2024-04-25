@@ -60,7 +60,7 @@ public class TestZoom extends SimpleApplication {
 
     @Override
     public void simpleInitApp() {
-        assetManager.registerLoader(TmxLoader.class, "tmx", "tsx");
+        TmxLoader.registerLoader(assetManager);
         assetManager.registerLocator("examples", FileLocator.class);
 
         TiledMap tiledMap = (TiledMap) assetManager.loadAsset("Isometric/01.tmx");
@@ -68,6 +68,7 @@ public class TestZoom extends SimpleApplication {
 
         tiledMapState = new TiledMapAppState();
         stateManager.attach(tiledMapState);
+        tiledMapState.initialize(stateManager, this);
 
         tiledMapState.setMap(tiledMap);
 

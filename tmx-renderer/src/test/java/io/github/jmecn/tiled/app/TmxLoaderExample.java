@@ -17,18 +17,18 @@ public class TmxLoaderExample extends SimpleApplication {
     @Override
     public void simpleInitApp() {
         // register it
-        assetManager.registerLoader(TmxLoader.class, "tmx", "tsx");
+        TmxLoader.registerLoader(assetManager);
         assetManager.registerLocator("examples", FileLocator.class);
 
         // load tmx with it
         TiledMap map = (TiledMap) assetManager.loadAsset("Desert/desert.tmx");
 
         // render it with TiledMapAppState
-        stateManager.attach(new TiledMapAppState());
+        TiledMapAppState tiledMapState = new TiledMapAppState();
+        stateManager.attach(tiledMapState);
+        tiledMapState.initialize(stateManager, this);
 
-        TiledMapAppState tiledMap = stateManager.getState(TiledMapAppState.class);
-        tiledMap.setMap(map);
-        //tiledMap.setViewColumn(20);
+        tiledMapState.setMap(map);
     }
 
     public static void main(String[] args) {

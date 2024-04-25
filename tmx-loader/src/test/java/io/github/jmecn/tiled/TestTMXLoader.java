@@ -35,7 +35,7 @@ class TestTMXLoader {
         assetManager.registerLoader(J3MLoader.class, "j3md");
         assetManager.registerLoader(GLSLLoader.class, "vert", "frag", "geom", "tsctrl", "tseval", "glsl", "glsllib");
         assetManager.registerLoader(AWTLoader.class, "jpg", "bmp", "gif", "png", "jpeg");
-        assetManager.registerLoader(TmxLoader.class, "tmx", "tsx");
+        assetManager.registerLoader(TmxLoader.class, "tmx", "tsx", "tx");
     }
 
     @Test void testReadingExampleMap() {

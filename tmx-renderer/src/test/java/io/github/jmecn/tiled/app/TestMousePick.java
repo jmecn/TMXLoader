@@ -54,7 +54,7 @@ public class TestMousePick extends SimpleApplication {
 
     @Override
     public void simpleInitApp() {
-        assetManager.registerLoader(TmxLoader.class, "tmx", "tsx");
+        TmxLoader.registerLoader(assetManager);
         assetManager.registerLocator("examples", FileLocator.class);
 
         tiledMap = (TiledMap) assetManager.loadAsset("Orthogonal/01.tmx");
@@ -63,6 +63,7 @@ public class TestMousePick extends SimpleApplication {
 
         TiledMapAppState tiledMapState = new TiledMapAppState();
         stateManager.attach(tiledMapState);
+        tiledMapState.initialize(stateManager, this);
 
         tiledMapState.setMap(tiledMap);
 

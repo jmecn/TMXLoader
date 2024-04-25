@@ -2,6 +2,7 @@ package io.github.jmecn.tiled.loader;
 
 import com.jme3.asset.AssetInfo;
 import com.jme3.asset.AssetKey;
+import com.jme3.asset.AssetLoadException;
 import com.jme3.asset.AssetManager;
 import io.github.jmecn.tiled.animation.Animation;
 import io.github.jmecn.tiled.animation.Frame;
@@ -10,6 +11,7 @@ import io.github.jmecn.tiled.enums.FillMode;
 import io.github.jmecn.tiled.enums.ObjectAlignment;
 import io.github.jmecn.tiled.enums.Orientation;
 import io.github.jmecn.tiled.enums.TileRenderSize;
+import io.github.jmecn.tiled.loader.layer.ObjectLayerLoader;
 import io.github.jmecn.tiled.util.ColorUtil;
 import io.github.jmecn.tiled.util.TileCutter;
 import org.slf4j.Logger;
@@ -57,7 +59,6 @@ public final class TilesetLoader {
      * @return the loaded tileset
      */
     public Tileset load(final InputStream inputStream) {
-        Tileset set = null;
         Node root;
 
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
@@ -73,20 +74,22 @@ public final class TilesetLoader {
 
             // There can be only one tileset in a .tsx file.
             root = nodeList.item(0);
-
-            if (root != null) {
-                set = readTileset(root);
-                if (set.getSource() != null) {
-                    logger.warn("Recursive external tilesets are not supported.{}", set.getSource());
-                } else {
-                    set.setSource(assetKey.getName());
-                }
+            if (root == null) {
+                logger.warn("No tileset found in file.");
+                throw new AssetLoadException("No tileset found in file.");
             }
-        } catch (Exception e) {
-            logger.error("Failed loading tileset", e);
-        }
 
-        return set;
+            // parse tileset xml
+            Tileset tileset = readTileset(root);
+            if (tileset.getSource() != null) {
+                logger.warn("Recursive external tilesets are not supported.{}", tileset.getSource());
+            } else {
+                tileset.setSource(assetKey.getName());
+            }
+            return tileset;
+        } catch (Exception e) {
+            throw new AssetLoadException("Failed loading tileset", e);
+        }
     }
 
     /**
@@ -399,6 +402,7 @@ public final class TilesetLoader {
 
         readTileImage(tile, node);
         readAnimation(tile, node);
+        readCollision(tile, node);
     }
 
     private void readTileImage(Tile tile, Node parent) {
@@ -436,4 +440,21 @@ public final class TilesetLoader {
         }
         tile.addAnimation(animation);
     }
+
+    /**
+     * Tile collision is stored in the objectgroup of the tile.
+     * @param tile the tile
+     * @param parent the parent node
+     */
+    private void readCollision(Tile tile, Node parent) {
+        Node node = getChildByTag(parent, OBJECT_GROUP);
+        if (node == null) {
+            return;
+        }
+
+        ObjectLayerLoader loader = new ObjectLayerLoader(assetManager, assetKey);
+        ObjectGroup objectGroup = loader.load(node);
+        logger.info("Load collision for tile: {}, objects:{}", tile.getId(), objectGroup.getObjects());
+    }
+
 }

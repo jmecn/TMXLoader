@@ -11,8 +11,9 @@ public final class TiledConst {
 
     public static final String TILED_J3MD = "Shader/Tiled.j3md";
     public static final String EMPTY = "";
-    public static final String TMX_EXTENSION = "tmx";
-    public static final String TSX_EXTENSION = "tsx";
+    public static final String TMX_EXTENSION = "tmx";// tiled map xml file
+    public static final String TSX_EXTENSION = "tsx";// tileset xml file
+    public static final String TX_EXTENSION = "tx";// object template xml file
     public static final String MAP = "map";
     public static final String NAME = "name";
     public static final String VALUE = "value";
@@ -109,4 +110,5 @@ public final class TiledConst {
     public static final String FRAME = "frame";
     public static final String TILE_ID = "tileid";
     public static final String DURATION = "duration";
+    public static final String OBJECT_GROUP = "objectgroup";
 }

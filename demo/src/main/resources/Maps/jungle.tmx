@@ -22,7 +22,7 @@
   <object id="34" gid="465" x="320" y="272" width="80" height="16"/>
   <object id="35" gid="465" x="368" y="160" width="80" height="16"/>
   <object id="36" gid="464" x="256" y="160" width="80" height="80"/>
-  <object id="37" gid="463" x="368" y="144" width="80" height="80"/>
+  <object id="37" template="tree.tx" x="368" y="144"/>
   <object id="38" gid="464" x="320" y="256" width="80" height="80"/>
   <object id="39" gid="467" x="160" y="112" width="32" height="16"/>
   <object id="40" gid="466" x="320" y="64" width="32" height="32"/>
@@ -35,7 +35,7 @@
   <object id="21" name="right_bound" x="476" y="0" width="4" height="320"/>
  </objectgroup>
  <objectgroup id="4" name="Location">
-  <object id="15" name="Start" x="256.0" y="254.0">
+  <object id="15" name="Start" x="256" y="254">
    <point/>
   </object>
  </objectgroup>

@@ -39,7 +39,7 @@ public class Demo extends SimpleApplication {
 
     @Override
     public void simpleInitApp() {
-        assetManager.registerLoader(TmxLoader.class, "tmx", "tsx");
+        TmxLoader.registerLoader(assetManager);
         TiledMap tiledMap = (TiledMap) assetManager.loadAsset("Maps/jungle.tmx");
 
         // Load tileset by code

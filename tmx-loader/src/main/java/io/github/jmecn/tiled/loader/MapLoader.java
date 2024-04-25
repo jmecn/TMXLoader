@@ -202,7 +202,13 @@ public final class MapLoader {
             if (!TILESET.equals(childName) && !PROPERTIES.equals(childName) && !TEXT_EMPTY.equals(childName)) {
                 LayerLoader layerLoader = layerLoaders.create(childName);
                 if (layerLoader != null) {
-                    map.addLayer(layerLoader.load(child));
+                    Layer layer = layerLoader.load(child);
+                    // in case the layer has no dimensions, set the map dimensions
+                    if (layer.getWidth() == 0 && layer.getHeight() == 0) {
+                        layer.setWidth(map.getWidth());
+                        layer.setHeight(map.getHeight());
+                    }
+                    map.addLayer(layer);
                 }
             }
             child = child.getNextSibling();

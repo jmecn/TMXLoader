@@ -50,7 +50,7 @@ public class TiledApp extends SimpleApplication {
 
     @Override
     public void simpleInitApp() {
-        assetManager.registerLoader(TmxLoader.class, "tmx", "tsx");
+        TmxLoader.registerLoader(assetManager);
 
         stateManager.attach(tiledMapState);
 
