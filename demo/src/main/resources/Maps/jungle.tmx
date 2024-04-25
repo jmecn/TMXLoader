@@ -13,7 +13,6 @@
   </data>
  </layer>
  <objectgroup id="6" name="Trees">
-  <object id="25" gid="218" x="196" y="80" width="16" height="16"/>
   <object id="29" gid="463" x="48" y="96" width="80" height="80"/>
   <object id="30" gid="463" x="96" y="208" width="80" height="80"/>
   <object id="31" gid="465" x="48" y="112" width="80" height="16"/>

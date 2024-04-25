@@ -57,7 +57,7 @@ public class CharacterAnimControl extends AbstractControl {
         String anim;
         if (Math.abs(velocity.x) > Math.abs(velocity.y)) {
             if (velocity.x > 0) {
-                anim = ANIM_IDLE_RIGHT;
+                anim = ANIM_WALK_RIGHT;
             } else {
                 anim = ANIM_WALK_LEFT;
             }
@@ -65,7 +65,7 @@ public class CharacterAnimControl extends AbstractControl {
             if (velocity.y > 0) {
                 anim = ANIM_WALK_DOWN;
             } else {
-                anim = ANIM_WALK_RIGHT;
+                anim = ANIM_WALK_UP;
             }
         }
         setAnimation(anim);

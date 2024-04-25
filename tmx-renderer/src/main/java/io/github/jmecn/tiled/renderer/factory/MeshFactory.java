@@ -1,6 +1,7 @@
 package io.github.jmecn.tiled.renderer.factory;
 
 import com.jme3.math.Matrix3f;
+import com.jme3.math.Vector2f;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Mesh;
 import com.jme3.scene.VertexBuffer;
@@ -8,6 +9,7 @@ import io.github.jmecn.tiled.core.MapObject;
 import io.github.jmecn.tiled.core.Tile;
 
 import java.nio.FloatBuffer;
+import java.util.List;
 
 /**
  * Mesh factory for creating tile mesh and object mesh.
@@ -67,4 +69,28 @@ public interface MeshFactory {
      * @return the mesh
      */
     Mesh newObjectMesh(MapObject object);
+
+    Mesh rectangle(MapObject object);
+
+    Mesh rectangle(float width, float height, boolean fill);
+
+    Mesh ellipse(MapObject object);
+
+    Mesh ellipse(float width, float height, boolean fill);
+
+    Mesh polygon(MapObject object);
+
+    Mesh polygon(List<Vector2f> points, boolean fill);
+
+    Mesh polyline(MapObject object);
+
+    Mesh polyline(List<Vector2f> points, boolean closePath);
+
+    Mesh marker();
+
+    Mesh marker(float radius, boolean fill);
+
+    Mesh image(MapObject object);
+
+    Mesh image(float width, float height);
 }

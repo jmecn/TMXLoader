@@ -32,10 +32,26 @@ public class DefaultMeshFactory implements MeshFactory {
     private final float ratio;
     private final IntMap<TileMesh> cache;
 
+    public DefaultMeshFactory() {
+        this(null);
+    }
+
+    public DefaultMeshFactory(Orientation orientation, float ratio) {
+        this.tiledMap = null;
+        this.orientation = orientation;
+        this.ratio = ratio;
+        this.cache = new IntMap<>();
+    }
+
     public DefaultMeshFactory(TiledMap tiledMap) {
         this.tiledMap = tiledMap;
-        this.orientation = tiledMap.getOrientation();
-        this.ratio = (float) tiledMap.getTileWidth() / tiledMap.getTileHeight();
+        if (tiledMap != null) {
+            this.orientation = tiledMap.getOrientation();
+            this.ratio = (float) tiledMap.getTileWidth() / tiledMap.getTileHeight();
+        } else {
+            this.orientation = Orientation.ORTHOGONAL;
+            this.ratio = 1f;
+        }
         this.cache = new IntMap<>();
     }
 
@@ -137,10 +153,12 @@ public class DefaultMeshFactory implements MeshFactory {
         return mesh;
     }
 
+    @Override
     public Rect rectangle(MapObject object) {
         return rectangle((float) object.getWidth(), (float) object.getHeight(), false);
     }
 
+    @Override
     public Rect rectangle(float width, float height, boolean fill) {
         Rect mesh = new Rect(width, height, fill);
         if (orientation == Orientation.ISOMETRIC) {
@@ -149,10 +167,12 @@ public class DefaultMeshFactory implements MeshFactory {
         return mesh;
     }
 
+    @Override
     public Ellipse ellipse(MapObject object) {
         return ellipse((float) object.getWidth(), (float) object.getHeight(), false);
     }
 
+    @Override
     public Ellipse ellipse(float width, float height, boolean fill) {
         Ellipse mesh = new Ellipse(width, height, ELLIPSE_POINTS, fill);
         if (orientation == Orientation.ISOMETRIC) {
@@ -161,10 +181,12 @@ public class DefaultMeshFactory implements MeshFactory {
         return mesh;
     }
 
+    @Override
     public Polygon polygon(MapObject object) {
         return polygon(object.getPoints(), false);
     }
 
+    @Override
     public Polygon polygon(List<Vector2f> points, boolean fill) {
         Polygon mesh = new Polygon(points, fill);
         if (orientation == Orientation.ISOMETRIC) {
@@ -173,10 +195,12 @@ public class DefaultMeshFactory implements MeshFactory {
         return mesh;
     }
 
+    @Override
     public Polyline polyline(MapObject object) {
         return polyline(object.getPoints(), false);
     }
 
+    @Override
     public Polyline polyline(List<Vector2f> points, boolean closePath) {
         Polyline mesh = new Polyline(points, closePath);
         if (orientation == Orientation.ISOMETRIC) {
@@ -185,18 +209,22 @@ public class DefaultMeshFactory implements MeshFactory {
         return mesh;
     }
 
+    @Override
     public Marker marker() {
         return marker(MARKER_RADIUS, false);
     }
 
+    @Override
     public Marker marker(float radius, boolean fill) {
         return new Marker(radius, ELLIPSE_POINTS, fill);
     }
 
+    @Override
     public Rect image(MapObject object) {
         return image((float) object.getWidth(), (float) object.getHeight());
     }
 
+    @Override
     public Rect image(float width, float height) {
         return new Rect(width, height, true);
     }
