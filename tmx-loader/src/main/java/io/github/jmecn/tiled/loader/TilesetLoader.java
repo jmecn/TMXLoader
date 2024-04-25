@@ -454,7 +454,9 @@ public final class TilesetLoader {
 
         ObjectLayerLoader loader = new ObjectLayerLoader(assetManager, assetKey);
         ObjectGroup objectGroup = loader.load(node);
-        logger.info("Load collision for tile: {}, objects:{}", tile.getId(), objectGroup.getObjects());
+        if (objectGroup != null && !objectGroup.getObjects().isEmpty()) {
+            tile.setCollisions(objectGroup);
+        }
     }
 
 }

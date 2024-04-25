@@ -1,10 +1,10 @@
 package io.github.jmecn.tiled.demo;
 
-import com.jme3.app.DetailedProfilerState;
 import com.jme3.app.SimpleApplication;
 import com.jme3.app.StatsAppState;
 import com.jme3.app.state.ScreenshotAppState;
 import com.jme3.asset.TextureKey;
+import com.jme3.math.Vector2f;
 import com.jme3.scene.Geometry;
 import com.jme3.texture.Texture;
 import com.jme3.texture.Texture2D;
@@ -12,17 +12,20 @@ import io.github.jmecn.tiled.TmxLoader;
 import io.github.jmecn.tiled.animation.Animation;
 import io.github.jmecn.tiled.animation.Frame;
 import io.github.jmecn.tiled.core.*;
-import io.github.jmecn.tiled.demo.control.AnimStateControl;
+import io.github.jmecn.tiled.demo.control.CharacterAnimControl;
 import io.github.jmecn.tiled.demo.control.BodyControl;
 import io.github.jmecn.tiled.demo.control.YSortControl;
 import io.github.jmecn.tiled.demo.state.PhysicsState;
 import io.github.jmecn.tiled.demo.state.PlayerState;
 import io.github.jmecn.tiled.demo.state.ViewState;
+import io.github.jmecn.tiled.enums.ObjectType;
 import io.github.jmecn.tiled.renderer.MapRenderer;
 import io.github.jmecn.tiled.util.TileCutter;
 import org.jbox2d.collision.shapes.PolygonShape;
 import org.jbox2d.common.Vec2;
 import org.jbox2d.dynamics.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static io.github.jmecn.tiled.demo.Const.*;
 
@@ -32,6 +35,8 @@ import static io.github.jmecn.tiled.demo.Const.*;
  * @author yanmaoyuan
  */
 public class Demo extends SimpleApplication {
+
+    static Logger logger = LoggerFactory.getLogger(Demo.class);
 
     Demo() {
         super(new StatsAppState(), new ScreenshotAppState());
@@ -65,6 +70,37 @@ public class Demo extends SimpleApplication {
             createBody(physicsState, obj);
         }
 
+        // generate collisions
+        for (Layer layer : mapRenderer.getSortedLayers()) {
+            if (layer instanceof TileLayer) {
+                TileLayer tileLayer = (TileLayer) layer;
+                for (int y = 0; y < tileLayer.getHeight(); y++) {
+                    for (int x = 0; x < tileLayer.getWidth(); x++) {
+                        Tile tile = tileLayer.getTileAt(x, y);
+                        if (tile != null && tile.getCollisions() != null) {
+                            Vector2f pos = mapRenderer.tileToPixelCoords(x, y);
+                            for (MapObject obj : tile.getCollisions().getObjects()) {
+                                createBody(physicsState, pos, obj);
+                            }
+                        }
+                    }
+                }
+            }
+            if (layer instanceof ObjectGroup) {
+                ObjectGroup objGroup = (ObjectGroup) layer;
+                for (MapObject obj : objGroup.getObjects()) {
+                    if (obj.getShape() == ObjectType.TILE) {
+                        Tile tile = obj.getTile();
+                        if (tile != null && tile.getCollisions() != null) {
+                            Vector2f pos = new Vector2f((float) obj.getX(), (float) obj.getY());
+                            for (MapObject collision : tile.getCollisions().getObjects()) {
+                                createBody(physicsState, pos, collision);
+                            }
+                        }
+                    }
+                }
+            }
+        }
         ObjectGroup locations = (ObjectGroup) tiledMap.getLayer("Location");
         for (MapObject obj : locations.getObjects()) {
             if ("Start".equals(obj.getName())) {
@@ -81,7 +117,7 @@ public class Demo extends SimpleApplication {
                 Tile tile = buildAnimatedTile(tileset, CHAR_GIRL);
                 Geometry player = mapRenderer.getSpriteFactory().newTileSprite(tile);
                 player.setLocalTranslation(sx, y, sy);
-                player.addControl(new AnimStateControl());
+                player.addControl(new CharacterAnimControl());
                 player.addControl(new BodyControl(body));
                 player.addControl(new YSortControl(mapRenderer, layerIndex));
 
@@ -92,6 +128,27 @@ public class Demo extends SimpleApplication {
                 break;
             }
         }
+    }
+
+    private void createBody(PhysicsState physicsState, Vector2f pos, MapObject obj) {
+        FixtureDef fixtureDef = new FixtureDef();
+        fixtureDef.density = 1.0f;
+        fixtureDef.friction = 0.0f;
+        fixtureDef.restitution = 0.0f;
+
+        PolygonShape shape = new PolygonShape();
+        shape.setAsBox((float) obj.getWidth() / 2, (float) obj.getHeight() / 2);
+        fixtureDef.shape = shape;
+
+        BodyDef bodyDef = new BodyDef();
+        bodyDef.position.set((float) (obj.getX() + pos.x + obj.getWidth() * 0.5f), (float) (obj.getY() + pos.y + obj.getHeight() * 0.5f));
+        bodyDef.type = BodyType.STATIC;
+
+        logger.info("Create body at: " + bodyDef.position.x + ", " + bodyDef.position.y);
+
+        Body body = physicsState.createBody(bodyDef);
+        body.createFixture(fixtureDef);
+
     }
 
     private void createBody(PhysicsState physicsState, MapObject obj) {

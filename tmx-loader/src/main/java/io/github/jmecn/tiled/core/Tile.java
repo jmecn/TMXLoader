@@ -62,6 +62,8 @@ public class Tile extends Base {
      */
     private float probability = -1;
 
+    private ObjectGroup collisions;
+
     /**
      * Default constructor
      */
@@ -260,6 +262,14 @@ public class Tile extends Base {
         this.probability = probability;
     }
 
+    public ObjectGroup getCollisions() {
+        return collisions;
+    }
+
+    public void setCollisions(ObjectGroup collisions) {
+        this.collisions = collisions;
+    }
+
     /**
      * Tile was cloned when TileLayer and ObjectGroup need a tile as a part of
      * them.
@@ -280,6 +290,7 @@ public class Tile extends Base {
         tile.terrain = terrain;
         tile.probability = probability;
         tile.properties = properties;
+        tile.collisions = collisions;
 
         return tile;
     }

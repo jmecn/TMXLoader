@@ -16,6 +16,9 @@ import org.jbox2d.dynamics.Body;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static io.github.jmecn.tiled.demo.Const.ANIM_IDLE_DOWN;
+import static io.github.jmecn.tiled.demo.Const.VELOCITY;
+
 /**
  * desc:
  *
@@ -49,10 +52,11 @@ public class PlayerState extends BaseAppState implements ActionListener {
     private Spatial player;
 
     private Camera cam;
+    private InputManager inputManager;
     @Override
     protected void initialize(Application app) {
         cam = app.getCamera();
-        registerInput(app.getInputManager());
+        inputManager = app.getInputManager();
     }
 
     public void registerInput(InputManager inputManager) {
@@ -62,6 +66,15 @@ public class PlayerState extends BaseAppState implements ActionListener {
         inputManager.addMapping(MOVE_BACKWARD, new KeyTrigger(KeyInput.KEY_S));
 
         inputManager.addListener(this, MAPPINGS);
+    }
+
+    public void unregisterInput(InputManager inputManager) {
+        inputManager.deleteMapping(MOVE_LEFT);
+        inputManager.deleteMapping(MOVE_RIGHT);
+        inputManager.deleteMapping(MOVE_FORWARD);
+        inputManager.deleteMapping(MOVE_BACKWARD);
+
+        inputManager.removeListener(this);
     }
 
     @Override
@@ -94,51 +107,7 @@ public class PlayerState extends BaseAppState implements ActionListener {
             cam.setLocation(new Vector3f(x, 0, y));
         }
 
-        player.setUserData("velocity", playerInput);
-    }
-
-    public static final int ANIM_IDLE = -1;
-    public static final int ANIM_WALK_UP = 0;
-    public static final int ANIM_WALK_LEFT = 1;
-    public static final int ANIM_WALK_RIGHT = 2;
-    public static final int ANIM_WALK_DOWN = 3;
-
-    String currentAnim = "idle_down";
-    private void updatePlayerState() {
-
-        String anim;
-        if (playerInput.lengthSquared() <= 0.01f) {
-            if ("walk_left".equals(currentAnim)) {
-                anim = "idle_left";
-            } else if ("walk_right".equals(currentAnim)) {
-                anim = "idle_right";
-            } else if ("walk_up".equals(currentAnim)) {
-                anim = "idle_up";
-            } else if ("walk_down".equals(currentAnim)) {
-                anim = "idle_down";
-            } else {
-                anim = currentAnim;// keep current animation
-            }
-        } else {
-            if (Math.abs(playerInput.x) > Math.abs(playerInput.y)) {
-                if (playerInput.x > 0) {
-                    anim = "walk_right";
-                } else {
-                    anim = "walk_left";
-                }
-            } else {
-                if (playerInput.y > 0) {
-                    anim = "walk_down";
-                } else {
-                    anim = "walk_up";
-                }
-            }
-        }
-        if (anim.equals(currentAnim)) {
-            return;
-        }
-        currentAnim = anim;
-        setAnimation(anim);
+        player.setUserData(VELOCITY, velocity);
     }
 
     private void setAnimation(String anim) {
@@ -190,12 +159,12 @@ public class PlayerState extends BaseAppState implements ActionListener {
 
     @Override
     protected void onEnable() {
-        // nothing
+        registerInput(inputManager);
     }
 
     @Override
     protected void onDisable() {
-        // nothing
+        unregisterInput(inputManager);
     }
 
     public void setBody(Body body) {
@@ -204,6 +173,6 @@ public class PlayerState extends BaseAppState implements ActionListener {
 
     public void setPlayer(Spatial player) {
         this.player = player;
-        setAnimation("idle_down");
+        setAnimation(ANIM_IDLE_DOWN);
     }
 }
