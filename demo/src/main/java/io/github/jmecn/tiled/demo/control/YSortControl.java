@@ -11,17 +11,17 @@ import io.github.jmecn.tiled.renderer.MapRenderer;
  */
 public class YSortControl extends AbstractControl {
     private final MapRenderer mapRenderer;
-    private final int layer;// layer index
+    private final int layerIndex;// layer index
 
-    public YSortControl(MapRenderer mapRenderer, int layer) {
+    public YSortControl(MapRenderer mapRenderer, int layerIndex) {
         this.mapRenderer = mapRenderer;
-        this.layer = layer;
+        this.layerIndex = layerIndex;
     }
 
     @Override
     protected void controlUpdate(float tpf) {
         Vector3f position = spatial.getLocalTranslation();
-        float y = mapRenderer.getLayerBaseHeight(layer, position.z);
+        float y = mapRenderer.getLayerBaseHeight(layerIndex) + mapRenderer.getObjectTopDownHeight(position.z);
         spatial.setLocalTranslation(position.x, y, position.z);
     }
 

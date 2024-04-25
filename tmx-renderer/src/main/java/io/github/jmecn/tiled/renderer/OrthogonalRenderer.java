@@ -94,7 +94,7 @@ public class OrthogonalRenderer extends MapRenderer {
                         removeTileSprite(layer, x, y);
                     } else {
                         Vector2f pixelCoord = tileToScreenCoords(x, y);
-                        float z = getLayerBaseHeight(0, x, y);
+                        float z = getTileHeight(x, y);
                         putTileSprite(layer, x, y, z, tile, pixelCoord);
                     }
                 }

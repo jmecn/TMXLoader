@@ -4,9 +4,7 @@ import com.jme3.app.DetailedProfilerState;
 import com.jme3.app.SimpleApplication;
 import com.jme3.app.StatsAppState;
 import com.jme3.asset.TextureKey;
-import com.jme3.math.Vector3f;
 import com.jme3.scene.Geometry;
-import com.jme3.scene.Node;
 import com.jme3.texture.Texture;
 import com.jme3.texture.Texture2D;
 import io.github.jmecn.tiled.TmxLoader;
@@ -20,9 +18,6 @@ import io.github.jmecn.tiled.demo.state.PhysicsState;
 import io.github.jmecn.tiled.demo.state.PlayerState;
 import io.github.jmecn.tiled.demo.state.ViewState;
 import io.github.jmecn.tiled.renderer.MapRenderer;
-import io.github.jmecn.tiled.renderer.factory.DefaultMaterialFactory;
-import io.github.jmecn.tiled.renderer.factory.DefaultMeshFactory;
-import io.github.jmecn.tiled.renderer.factory.DefaultSpriteFactory;
 import io.github.jmecn.tiled.util.TileCutter;
 import org.jbox2d.collision.shapes.PolygonShape;
 import org.jbox2d.common.Vec2;
@@ -78,8 +73,8 @@ public class Demo extends SimpleApplication {
 
                 Body body = createPlayBody(physicsState, obj.getX(), obj.getY());
 
-                int index = tiledMap.getLayer("Plants").getIndex();
-                float y = mapRenderer.getLayerBaseHeight(index, sx, sy);
+                int layerIndex = tiledMap.getLayer("Plants").getIndex();
+                float y = mapRenderer.getLayerBaseHeight(layerIndex) + mapRenderer.getTileHeight(sx, sy);
 
                 // Create player
                 Tile tile = buildAnimatedTile(tileset, CHAR_GIRL);
@@ -87,7 +82,7 @@ public class Demo extends SimpleApplication {
                 player.setLocalTranslation(sx, y, sy);
                 player.addControl(new AnimStateControl());
                 player.addControl(new BodyControl(body));
-                player.addControl(new YSortControl(mapRenderer, index));
+                player.addControl(new YSortControl(mapRenderer, layerIndex));
 
                 mapRenderer.getRootNode().attachChild(player);
 

@@ -245,8 +245,6 @@ public abstract class MapRenderer {
         int len = objects.size();
 
         if (len > 0) {
-            layerNode.setLocalScale(1f, 1f / len, 1f);
-
             // sort draw order
             if (Objects.requireNonNull(layer.getDrawOrder()) == DrawOrder.TOPDOWN) {
                 objects.sort(new CompareTopdown());
@@ -256,8 +254,6 @@ public abstract class MapRenderer {
         }
 
         Material material = spriteFactory.newMaterial(layer.getColor(), layer.getTintColor());
-
-        int tileHeight = map.getTileHeight();
 
         for (int i = 0; i < len; i++) {
             MapObject obj = objects.get(i);
@@ -272,8 +268,9 @@ public abstract class MapRenderer {
                 float x = (float) obj.getX();
                 float y = (float) obj.getY();
 
-                // sort by y
-                float z = layerDistance * y / tileHeight / map.getHeight();
+                // sort top-down
+                // don't support sorting by index
+                float z = getObjectTopDownHeight(y);
 
                 Vector2f screenCoord = pixelToScreenCoords(x, y);
                 spatial.move(screenCoord.x, z, screenCoord.y);
@@ -281,7 +278,6 @@ public abstract class MapRenderer {
             }
         }
 
-        layerNode.setLocalScale(1f, layerDistance / len, 1f);
         return layerNode;
     }
 
@@ -388,16 +384,16 @@ public abstract class MapRenderer {
         return index * layerDistance;
     }
 
-    public float getLayerBaseHeight(int index, float y) {
+    public float getObjectTopDownHeight(float y) {
         float tileY = y / mapSize.getY();
-        return index * layerDistance + tileY * layerDistance;
+        return tileY * layerDistance;
     }
 
-    public float getLayerBaseHeight(int index, float x, float y) {
+    public float getTileHeight(float x, float y) {
         x = x / tileWidth;
         y = y / tileHeight;
         float z = (y * width + x) * step;
-        return (z < 0f) ? 0f : Math.min(z, layerDistance) + index * layerDistance;
+        return (z < 0f) ? 0f : Math.min(z, layerDistance);
     }
 
     private static final class CompareTopdown implements Comparator<MapObject> {
