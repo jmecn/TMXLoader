@@ -83,8 +83,6 @@ public class OrthogonalRenderer extends MapRenderer {
         endX += incX;
         endY += incY;
 
-        int tileZIndex = 0;
-
         // instance the layer node
         Node layerNode = getLayerNode(layer);
 
@@ -96,15 +94,11 @@ public class OrthogonalRenderer extends MapRenderer {
                         removeTileSprite(layer, x, y);
                     } else {
                         Vector2f pixelCoord = tileToScreenCoords(x, y);
-                        putTileSprite(layer, x, y, tileZIndex, tile, pixelCoord);
+                        float z = getLayerBaseHeight(0, x, y);
+                        putTileSprite(layer, x, y, z, tile, pixelCoord);
                     }
                 }
-                tileZIndex++;
             }
-        }
-        // make it thinner
-        if (tileZIndex > 0) {
-            layerNode.setLocalScale(1, layerDistance / tileZIndex, 1);
         }
 
         return layerNode;

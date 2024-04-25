@@ -50,6 +50,7 @@ import java.util.*;
 public abstract class MapRenderer {
 
     protected float layerDistance = 16f;// the distance between layers
+    protected float step;
 
     protected TiledMap map;
     protected int width;
@@ -75,7 +76,7 @@ public abstract class MapRenderer {
         this.height = map.getHeight();
         this.tileWidth = map.getTileWidth();
         this.tileHeight = map.getTileHeight();
-
+        this.step = layerDistance / (height * width);
         this.mapSize = new Point(width * tileWidth, height * tileHeight);
 
         this.rootNode = new Node("TileMap");
@@ -256,6 +257,8 @@ public abstract class MapRenderer {
 
         Material material = spriteFactory.newMaterial(layer.getColor(), layer.getTintColor());
 
+        int tileHeight = map.getTileHeight();
+
         for (int i = 0; i < len; i++) {
             MapObject obj = objects.get(i);
 
@@ -269,8 +272,11 @@ public abstract class MapRenderer {
                 float x = (float) obj.getX();
                 float y = (float) obj.getY();
 
+                // sort by y
+                float z = layerDistance * y / tileHeight / map.getHeight();
+
                 Vector2f screenCoord = pixelToScreenCoords(x, y);
-                spatial.move(screenCoord.x, i, screenCoord.y);
+                spatial.move(screenCoord.x, z, screenCoord.y);
                 layerNode.attachChild(spatial);
             }
         }
@@ -363,7 +369,7 @@ public abstract class MapRenderer {
         }
     }
 
-    protected void putTileSprite(TileLayer layer, int x, int y, int z, Tile tile, Vector2f pixelCoord) {
+    protected void putTileSprite(TileLayer layer, int x, int y, float z, Tile tile, Vector2f pixelCoord) {
         Material material = spriteFactory.newMaterial(tile);
         Geometry visual = spriteFactory.newTileSprite(tile, material);
         visual.move(pixelCoord.x, z, pixelCoord.y);
@@ -378,10 +384,20 @@ public abstract class MapRenderer {
         return rootNode;
     }
 
-    public float calculateY(int index, float x, float y) {
-        // TODO calculate the z position
-        pixelToTileCoords(x, y);
+    public float getLayerBaseHeight(int index) {
         return index * layerDistance;
+    }
+
+    public float getLayerBaseHeight(int index, float y) {
+        float tileY = y / mapSize.getY();
+        return index * layerDistance + tileY * layerDistance;
+    }
+
+    public float getLayerBaseHeight(int index, float x, float y) {
+        x = x / tileWidth;
+        y = y / tileHeight;
+        float z = (y * width + x) * step;
+        return (z < 0f) ? 0f : Math.min(z, layerDistance) + index * layerDistance;
     }
 
     private static final class CompareTopdown implements Comparator<MapObject> {

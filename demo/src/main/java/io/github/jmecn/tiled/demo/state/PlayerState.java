@@ -94,9 +94,7 @@ public class PlayerState extends BaseAppState implements ActionListener {
             cam.setLocation(new Vector3f(x, 0, y));
         }
 
-        if (player != null) {
-            updatePlayerState();
-        }
+        player.setUserData("velocity", playerInput);
     }
 
     public static final int ANIM_IDLE = -1;

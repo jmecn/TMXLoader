@@ -40,10 +40,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * TiledMapAppState will create a Spatial for com.jme3.tmx.core.TiledMap
+ * TiledMapAppState manage a {@link MapRenderer} for {@link TiledMap} and render it.
  * 
  * @author yanmaoyuan
- * 
  */
 public class TiledMapAppState extends BaseAppState implements AnalogListener, ActionListener, SceneProcessor {
 
@@ -327,11 +326,6 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
         return mapRenderer;
     }
 
-    public Vector3f getLocation(float x, float y) {
-        Vector2f loc = mapRenderer.tileToScreenCoords(x, y);
-        return new Vector3f(loc.x, loc.y, 999f - map.getLayerCount());
-    }
-
     public void moveToTile(float x, float y) {
         Vector2f tilePos = mapRenderer.tileToScreenCoords(x, y).multLocal(getMapScale());
         Vector2f camPos = new Vector2f(cam.getLocation().x, screenDimension.y - cam.getLocation().z);
@@ -497,14 +491,14 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
     }
 
     public Point getCameraTileCoordinate() {
-        Vector2f center = new Vector2f(screenDimension.x * 0.5f, screenDimension.y * 0.5f);
-        center = center.subtract(mapTranslation.x, mapTranslation.z).divideLocal(mapScale);
+        Vector2f center = getCameraScreenCoordinate();
+        center.subtractLocal(mapTranslation.x, mapTranslation.z).divideLocal(mapScale);
         return getMapRenderer().screenToTileCoords(center.x, center.y);
     }
 
     public Vector2f getCameraPixelCoordinate() {
-        Vector2f center = new Vector2f(screenDimension.x * 0.5f, screenDimension.y * 0.5f);
-        center = center.subtract(mapTranslation.x, mapTranslation.z).divideLocal(mapScale);
+        Vector2f center = getCameraScreenCoordinate();
+        center.subtractLocal(mapTranslation.x, mapTranslation.z).divideLocal(mapScale);
         return getMapRenderer().screenToPixelCoords(center.x, center.y);
     }
 
@@ -528,7 +522,8 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
      * @return The pixel coordinate of the cursor
      */
     public Vector2f getCursorPixelCoordinate(Vector2f cursor) {
-        Vector2f pixel = new Vector2f(cursor.x, screenDimension.y - cursor.y);
+        Vector3f worldPos = cam.getWorldCoordinates(cursor, 0);
+        Vector2f pixel = new Vector2f(worldPos.x, worldPos.z);
         return pixel.subtractLocal(mapTranslation.x, mapTranslation.z).divideLocal(mapScale);
     }
 
@@ -575,7 +570,6 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
     private void moveCursor() {
         if (gridCursor != null) {
             Vector2f input = inputManager.getCursorPosition();
-
             Point cursor = getCursorTileCoordinate(input);
             if (currentTile == null) {
                 currentTile = cursor;
