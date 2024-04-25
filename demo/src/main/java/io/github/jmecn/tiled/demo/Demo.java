@@ -23,9 +23,6 @@ import io.github.jmecn.tiled.demo.state.ViewState;
 import io.github.jmecn.tiled.enums.ObjectType;
 import io.github.jmecn.tiled.renderer.MapRenderer;
 import io.github.jmecn.tiled.util.TileCutter;
-import org.jbox2d.callbacks.ContactImpulse;
-import org.jbox2d.callbacks.ContactListener;
-import org.jbox2d.collision.Manifold;
 import org.jbox2d.collision.shapes.CircleShape;
 import org.jbox2d.collision.shapes.PolygonShape;
 import org.jbox2d.common.Vec2;
@@ -92,8 +89,9 @@ public class Demo extends SimpleApplication {
                         Tile tile = tileLayer.getTileAt(x, y);
                         if (tile != null && tile.getCollisions() != null) {
                             Vector2f pos = mapRenderer.tileToPixelCoords(x, y);
+                            Vector2f size = new Vector2f(tile.getWidth(), tile.getHeight());
                             for (MapObject obj : tile.getCollisions().getObjects()) {
-                                createBody(physicsState, pos, obj);
+                                createTileBody(physicsState, pos, size, obj);
                             }
                         }
                     }
@@ -111,7 +109,7 @@ public class Demo extends SimpleApplication {
 
                                 boolean isSensor = Boolean.TRUE.equals(collision.getProperties().get("is_sensor"));
                                 String sensorBehavior = (String) collision.getProperties().get("sensor_behavior");
-                                Body body = createObjectBody(physicsState, obj, pos, size, collision, isSensor);
+                                Body body = createObjectBody(physicsState, pos, size, collision, isSensor);
                                 if (isSensor) {
                                     SensorControl control = new SensorControl(body, sensorBehavior);// TODO cache for later use
                                     physicsState.addContactListener(control);
@@ -124,7 +122,7 @@ public class Demo extends SimpleApplication {
         }
         ObjectGroup locations = (ObjectGroup) tiledMap.getLayer("Location");
         for (MapObject obj : locations.getObjects()) {
-            if ("Start".equals(obj.getName())) {
+            if ("出生点".equals(obj.getName())) {
 
                 float sx = (float) obj.getX();
                 float sy = (float) obj.getY();
@@ -151,27 +149,72 @@ public class Demo extends SimpleApplication {
         }
     }
 
-    private void createBody(PhysicsState physicsState, Vector2f pos, MapObject obj) {
+    /**
+     * Tile coordinate origin is on left-top corner.
+     * @param physicsState
+     * @param pos
+     * @param size
+     * @param obj
+     */
+    private Body createTileBody(PhysicsState physicsState, Vector2f pos, Vector2f size, MapObject obj) {
         FixtureDef fixtureDef = new FixtureDef();
         fixtureDef.density = 1.0f;
         fixtureDef.friction = 0.0f;
         fixtureDef.restitution = 0.0f;
 
-        PolygonShape shape = new PolygonShape();
-        shape.setAsBox((float) obj.getWidth() / 2, (float) obj.getHeight() / 2);
-        fixtureDef.shape = shape;
-
         BodyDef bodyDef = new BodyDef();
-        bodyDef.position.set((float) (obj.getX() + pos.x + obj.getWidth() * 0.5f), (float) (obj.getY() + pos.y + obj.getHeight() * 0.5f));
+
+        float delta = (float) (size.y - obj.getHeight());
+        switch (obj.getShape()) {
+            case RECTANGLE: {
+                float hx = (float) (obj.getWidth() * 0.5);
+                float hy = (float) (obj.getHeight() * 0.5);
+                PolygonShape shape = new PolygonShape();
+                shape.setAsBox(hx, hy, new Vec2(hx, hy), 0);
+                fixtureDef.shape = shape;
+                break;
+            }
+            case POLYGON: {
+                List<Vec2> vertices = new ArrayList<>();
+                for (Vector2f v : obj.getPoints()) {
+                    vertices.add(new Vec2(v.x, v.y));
+                }
+                PolygonShape shape = new PolygonShape();
+                shape.set(vertices.toArray(new Vec2[0]), vertices.size());
+                fixtureDef.shape = shape;
+                break;
+            }
+            case ELLIPSE: {// box2d dose not support ellipse, use circle instead
+                float hx = (float) (obj.getWidth() * 0.5);
+                float hy = (float) (obj.getHeight() * 0.5);
+                CircleShape shape = new CircleShape();
+                shape.m_radius = Math.min(hx, hy);
+                shape.m_p.set(hx, -hy);
+                fixtureDef.shape = shape;
+                break;
+            }
+            default: {
+                logger.warn("Unsupported shape: {}", obj.getShape());
+                return null;
+            }
+        }
+
+        bodyDef.position.set((float) (obj.getX() + pos.x), (float) (obj.getY() + pos.y));
         bodyDef.type = BodyType.STATIC;
 
-        logger.info("Create body at: " + bodyDef.position.x + ", " + bodyDef.position.y);
+        logger.info("Create body at: {}, {}", bodyDef.position.x, bodyDef.position.y);
 
-        physicsState.createBody(bodyDef, fixtureDef);
+        return physicsState.createBody(bodyDef, fixtureDef);
     }
 
-
-    private Body createObjectBody(PhysicsState physicsState, MapObject mapObject, Vector2f pos, Vector2f size, MapObject obj, boolean isSensor) {
+    /**
+     * MapObject coordinate origin is on left-bottom corner.
+     * @param physicsState
+     * @param pos
+     * @param size
+     * @param obj
+     */
+    private Body createObjectBody(PhysicsState physicsState, Vector2f pos, Vector2f size, MapObject obj, boolean isSensor) {
         FixtureDef fixtureDef = new FixtureDef();
         fixtureDef.density = 1.0f;
         fixtureDef.friction = 0.0f;
@@ -186,57 +229,39 @@ public class Demo extends SimpleApplication {
                 float hx = (float) (obj.getWidth() * 0.5);
                 float hy = (float) (obj.getHeight() * 0.5);
                 PolygonShape shape = new PolygonShape();
-                shape.setAsBox(hx, hy, new Vec2(hx, -hy - delta), 0);
+                shape.setAsBox(hx, hy, new Vec2(hx, -hy), 0);
                 fixtureDef.shape = shape;
                 break;
             }
             case POLYGON: {
                 List<Vec2> vertices = new ArrayList<>();
                 for (Vector2f v : obj.getPoints()) {
-                    vertices.add(new Vec2(v.x, v.y - delta));
+                    vertices.add(new Vec2(v.x, v.y));
                 }
                 PolygonShape shape = new PolygonShape();
                 shape.set(vertices.toArray(new Vec2[0]), vertices.size());
                 fixtureDef.shape = shape;
                 break;
             }
-            case ELLIPSE: {// box2d not support ellipse, use circle instead
+            case ELLIPSE: {// box2d dose not support ellipse, use circle instead
                 float hx = (float) (obj.getWidth() * 0.5);
                 float hy = (float) (obj.getHeight() * 0.5);
                 CircleShape shape = new CircleShape();
                 shape.m_radius = Math.min(hx, hy);
-                shape.m_p.set(hx, -hy - delta);
+                shape.m_p.set(hx, -hy);
                 fixtureDef.shape = shape;
                 break;
             }
             default: {
-                logger.warn("Unsupported shape: " + obj.getShape());
+                logger.warn("Unsupported shape: {}", obj.getShape());
                 return null;
             }
         }
 
-        bodyDef.position.set((float) (pos.x + obj.getX()), (float) (pos.y + obj.getY()));
+        bodyDef.position.set((float) (pos.x + obj.getX()), (float) (pos.y + obj.getY() - delta));
         bodyDef.type = BodyType.STATIC;
 
         return physicsState.createBody(bodyDef, fixtureDef);
-    }
-
-    private Body createBody(PhysicsState physicsState, MapObject obj) {
-        FixtureDef fixtureDef = new FixtureDef();
-        fixtureDef.density = 1.0f;
-        fixtureDef.friction = 0.0f;
-        fixtureDef.restitution = 0.0f;
-
-        PolygonShape shape = new PolygonShape();
-        shape.setAsBox((float) obj.getWidth() / 2, (float) obj.getHeight() / 2);
-        fixtureDef.shape = shape;
-
-        BodyDef bodyDef = new BodyDef();
-        bodyDef.position.set((float) (obj.getX() + obj.getWidth() * 0.5f), (float) (obj.getY() + obj.getHeight() * 0.5f));
-        bodyDef.type = BodyType.STATIC;
-
-        return physicsState.createBody(bodyDef, fixtureDef);
-
     }
 
     private Body createPlayBody(PhysicsState physicsState, double x, double y, float width, float height) {
@@ -248,8 +273,11 @@ public class Demo extends SimpleApplication {
         float hx = width / 2;
         float hy = height / 2;
 
-        PolygonShape shape = new PolygonShape();
-        shape.setAsBox(hx, hy, new Vec2(hx, hy), 0);
+//        PolygonShape shape = new PolygonShape();
+//        shape.setAsBox(hx, hy, new Vec2(hx, hy), 0);
+        CircleShape shape = new CircleShape();
+        shape.m_radius = hx;
+        shape.m_p.set(hx, hy);
         fixtureDef.shape = shape;
 
         BodyDef bodyDef = new BodyDef();

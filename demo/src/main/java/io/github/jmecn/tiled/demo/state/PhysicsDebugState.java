@@ -3,6 +3,10 @@ package io.github.jmecn.tiled.demo.state;
 import com.jme3.app.Application;
 import com.jme3.app.SimpleApplication;
 import com.jme3.app.state.BaseAppState;
+import com.jme3.input.InputManager;
+import com.jme3.input.KeyInput;
+import com.jme3.input.controls.ActionListener;
+import com.jme3.input.controls.KeyTrigger;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector2f;
@@ -28,11 +32,16 @@ import java.util.List;
  *
  * @author yanmaoyuan
  */
-public class PhysicsDebugState extends BaseAppState {
+public class PhysicsDebugState extends BaseAppState implements ActionListener {
 
     private final Node rootNode;
 
     private final SpriteFactory spriteFactory;
+
+    public static final String DEBUG_SHAPE = "debug_shape";
+
+    private InputManager inputManager;
+    private boolean show = false;
 
     public PhysicsDebugState(SpriteFactory spriteFactory) {
         this.spriteFactory = spriteFactory;
@@ -42,6 +51,16 @@ public class PhysicsDebugState extends BaseAppState {
     @Override
     protected void initialize(Application app) {
         // nothing
+        inputManager = app.getInputManager();
+    }
+
+    public void show() {
+        SimpleApplication simpleApp = (SimpleApplication) getApplication();
+        simpleApp.getRootNode().attachChild(rootNode);
+    }
+
+    public void hide() {
+        rootNode.removeFromParent();
     }
 
     @Override
@@ -51,13 +70,24 @@ public class PhysicsDebugState extends BaseAppState {
 
     @Override
     protected void onEnable() {
-        SimpleApplication simpleApp = (SimpleApplication) getApplication();
-        simpleApp.getRootNode().attachChild(rootNode);
+        registerInput(inputManager);
     }
 
     @Override
     protected void onDisable() {
-        rootNode.removeFromParent();
+        unregisterInput(inputManager);
+        show = false;
+        hide();
+    }
+
+    public void registerInput(InputManager inputManager) {
+        inputManager.addMapping(DEBUG_SHAPE, new KeyTrigger(KeyInput.KEY_P));
+        inputManager.addListener(this, DEBUG_SHAPE);
+    }
+
+    public void unregisterInput(InputManager inputManager) {
+        inputManager.deleteMapping(DEBUG_SHAPE);
+        inputManager.removeListener(this);
     }
 
     public void addDebugShape(Body body, FixtureDef fixtureDef) {
@@ -97,6 +127,18 @@ public class PhysicsDebugState extends BaseAppState {
             Material material = spriteFactory.newMaterial(ColorRGBA.Blue);
             geometry.setMaterial(material);
             node.attachChild(geometry);
+        }
+    }
+
+    @Override
+    public void onAction(String name, boolean isPressed, float tpf) {
+        if (isPressed && DEBUG_SHAPE.equals(name)) {
+            show = !show;
+            if (show) {
+                show();
+            } else {
+                hide();
+            }
         }
     }
 }
