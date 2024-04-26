@@ -10,7 +10,6 @@ import com.jme3.input.controls.MouseButtonTrigger;
 import com.jme3.math.Vector2f;
 import com.jme3.system.awt.AwtPanel;
 
-import io.github.jmecn.tiled.TiledMapAppState;
 import io.github.jmecn.tiled.TmxLoader;
 import io.github.jmecn.tiled.app.swing.MainWnd;
 import io.github.jmecn.tiled.core.TiledMap;
@@ -33,10 +32,10 @@ public class TiledApp extends SimpleApplication {
     private AwtPanel panel;
     private MainWnd wnd;
 
-    private final TiledMapAppState tiledMapState;
+    private final ViewAppState tiledMapState;
 
     public TiledApp(CountDownLatch latch) {
-        tiledMapState = new TiledMapAppState();
+        tiledMapState = new ViewAppState();
         tiledMapState.setZoomMode(ZoomMode.MAP);
         this.latch = latch;
     }

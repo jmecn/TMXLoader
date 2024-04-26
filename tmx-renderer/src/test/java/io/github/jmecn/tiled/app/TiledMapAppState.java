@@ -1,4 +1,4 @@
-package io.github.jmecn.tiled;
+package io.github.jmecn.tiled.app;
 
 import com.jme3.app.Application;
 import com.jme3.app.FlyCamAppState;
