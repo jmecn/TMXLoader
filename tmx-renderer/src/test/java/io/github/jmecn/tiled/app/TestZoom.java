@@ -33,7 +33,6 @@ public class TestZoom extends SimpleApplication {
         System.out.println("center pixel: " + tiledMapState.getCameraPixelCoordinate());
         System.out.println("center screen: " + tiledMapState.getCameraScreenCoordinate());
         System.out.println("map scare: " + tiledMapState.getMapScale());
-        System.out.println("map translation: " + tiledMapState.getMapTranslation());
     }
 
     public void initInput() {

@@ -7,6 +7,7 @@ import io.github.jmecn.tiled.core.*;
 import io.github.jmecn.tiled.enums.DrawOrder;
 import io.github.jmecn.tiled.enums.ObjectType;
 import io.github.jmecn.tiled.loader.LayerLoader;
+import io.github.jmecn.tiled.loader.TiledMapKey;
 import io.github.jmecn.tiled.loader.Utils;
 import io.github.jmecn.tiled.util.ColorUtil;
 import org.slf4j.Logger;
@@ -42,7 +43,16 @@ public class ObjectLayerLoader extends LayerLoader {
 
     public ObjectLayerLoader(AssetManager assetManager, AssetKey<?> key, TiledMap map) {
         super(assetManager, key);
-        this.map = map;
+
+        if (map != null) {// use the map from the constructor
+            this.map = map;
+        } else {
+            if (key instanceof TiledMapKey) {// use the map from the key
+                this.map = ((TiledMapKey<?>) key).getTiledMap();
+            } else {
+                this.map = null;
+            }
+        }
     }
 
     @Override
@@ -115,7 +125,7 @@ public class ObjectLayerLoader extends LayerLoader {
             template = readObjectTemplate(root);
             template.setSource(assetKey.getName());
             return template;
-        } catch (Exception e) {
+        } catch (SAXException | ParserConfigurationException | IOException e) {
             throw new AssetLoadException("Error while parsing template file.", e);
         }
     }
@@ -127,13 +137,12 @@ public class ObjectLayerLoader extends LayerLoader {
      * @return the loaded template
      */
     private ObjectTemplate loadObjectTemplate(String source) {
-        String assetPath = toJmeAssetPath(assetManager, assetKey, source);
 
         ObjectTemplate objectTemplate;
 
         // try to load cached objectTemplate from the map
         if (map != null) {
-            objectTemplate = map.getObjectTemplate(assetPath);
+            objectTemplate = map.getObjectTemplate(source);
             if (objectTemplate != null) {
                 return objectTemplate;
             }
@@ -141,8 +150,9 @@ public class ObjectLayerLoader extends LayerLoader {
 
         // load it with assetManager
         try {
-            logger.info("Loading template: {}", assetPath);
-            objectTemplate = assetManager.loadAsset(new AssetKey<>(assetPath));
+            logger.info("Loading template: {}", source);
+            objectTemplate = assetManager.loadAsset(new TiledMapKey<>(assetKey.getFolder() + source, map));
+            objectTemplate.setSource(source);
             if (map != null) {// cache the objectTemplate
                 map.addObjectTemplate(objectTemplate);
             }
@@ -178,9 +188,31 @@ public class ObjectLayerLoader extends LayerLoader {
             tileset = obj.getTile().getTileset();
         }
 
-        // for debug, in case the tileset is different from the tileset in the map.
-        if (tileset != null && firstGid != tileset.getFirstGid()) {
-            logger.warn("Template firstGid:{}, source:{}, Tileset firstGid:{}, source:{}", firstGid, source, tileset.getFirstGid(), tileset.getSource());
+        // notice: the tileset may be null if the object is not a tile object.
+        // the obj.getTile() may be null if the template is not loaded from a .tmx file.
+
+        if (obj.getShape() == ObjectType.TILE && tileset == null) {
+            if (source == null) {
+                throw new IllegalArgumentException("Template must have a tileset source.");
+            }
+
+            // user does not load template from a .tmx, but load it directly from a .tx file.
+
+            // the source may be like "../obj.tsx", should calculate the actual path
+            String tilesetPath = AssetKey.reducePath(assetKey.getFolder() + source);
+            tileset = (Tileset) assetManager.loadAsset(tilesetPath);
+            tileset.updateFirstGid(firstGid);
+            tileset.setSource(source);
+
+            // set MapObject tile
+            if (obj.getShape() == ObjectType.TILE) {
+                Tile t = tileset.getTile(obj.getGid() - firstGid);
+                if (t == null) {
+                    logger.warn("Tile not found in tileset: {}, gid: {}", source, obj.getGid());
+                    throw new AssetLoadException("Tile not found in tileset: " + source + ", gid: " + obj.getGid());
+                }
+                obj.setTile(t);
+            }
         }
 
         ObjectTemplate template = new ObjectTemplate();
@@ -257,12 +289,14 @@ public class ObjectLayerLoader extends LayerLoader {
         obj.setShape(ObjectType.TILE);
         obj.setGid(gid);
 
-        // clear the flag
-        int tileId = gid & ~Tile.FLIPPED_MASK;
-        Tile tile = map.getTileForTileGID(tileId);
-        Tile t = tile.copy();
-        t.setGid(gid);
-        obj.setTile(t);
+        if (map != null) {
+            // clear the flag
+            int tileId = gid & ~Tile.FLIPPED_MASK;
+            Tile tile = map.getTileForTileGID(tileId);
+            Tile t = tile.copy();
+            t.setGid(gid);
+            obj.setTile(t);
+        }
     }
 
     /**

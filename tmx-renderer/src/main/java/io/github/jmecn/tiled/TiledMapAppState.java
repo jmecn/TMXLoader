@@ -84,7 +84,7 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
     private final Vector2f parallaxDistance = new Vector2f(0, 0);
 
     // The mapNode
-    private final Vector3f mapTranslation;
+//    private final Vector3f mapTranslation;
     private float mapScale;
 
     // The camera
@@ -108,6 +108,7 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
 
     // variables used to drag map
     private final Vector3f startLoc = new Vector3f();
+    private final Vector3f stopLoc = new Vector3f();
     private final Vector2f startPos = new Vector2f();
     private final Vector2f stopPos = new Vector2f();
 
@@ -126,7 +127,7 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
         screenDimension = new Vector2f();
         mapDimension = new Vector2f();
 
-        mapTranslation = new Vector3f();
+//        mapTranslation = new Vector3f();
         mapScale = 1f;
 
         rootNode = new Node("Tiled Map Root");
@@ -157,9 +158,7 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
         float halfWidth = screenDimension.x * 0.5f;
         float halfHeight = screenDimension.y * 0.5f;
         cam.setFrustum(near, far, -halfWidth, halfWidth, halfHeight, -halfHeight);
-
         cam.setParallelProjection(true);
-        cam.setLocation(new Vector3f(halfWidth, 0, halfHeight));
         cam.lookAtDirection(new Vector3f(0f, -1f, 0f), new Vector3f(0f, 0f, -1f));
         logger.info("cam: {}, direction:{}", cam.getLocation(), cam.getDirection());
 
@@ -217,9 +216,9 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
             if (isMapUpdated) {
                 // move it to the left bottom of screen space
                 mapDimension.set(mapRenderer.getMapDimensionF());
-                mapTranslation.set(screenDimension.x * 0.5f, 0, screenDimension.y * 0.5f);
+//                mapTranslation.set(screenDimension.x * 0.5f, 0, screenDimension.y * 0.5f);
                 mapScale = getMapScale();
-                spatial.setLocalTranslation(mapTranslation);
+//                spatial.setLocalTranslation(mapTranslation);
                 spatial.setLocalScale(mapScale, 1f, mapScale);
                 calculateMapParallax();
                 
@@ -302,7 +301,8 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
         rootNode.attachChild(mapRenderer.getRootNode());
 
         Vector2f loc = mapRenderer.pixelToScreenCoords(map.getParallaxOriginX(), map.getParallaxOriginY());
-        mapTranslation.set(loc.x, 0, loc.y);
+//        mapTranslation.set(loc.x, 0, loc.y);
+        cam.setLocation(new Vector3f(loc.x, 0, loc.y));
         isMapUpdated = true;
 
         if (gridMaterial != null) {
@@ -330,7 +330,7 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
         Vector2f tilePos = mapRenderer.tileToScreenCoords(x, y).multLocal(getMapScale());
         Vector2f camPos = new Vector2f(cam.getLocation().x, screenDimension.y - cam.getLocation().z);
         camPos.subtract(tilePos, tilePos);
-        mapTranslation.set(tilePos.x, 0, tilePos.y);
+        // mapTranslation.set(tilePos.x, 0, tilePos.y);
         moveMapVisual();
     }
 
@@ -338,15 +338,15 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
         Vector2f pixelPos = mapRenderer.pixelToScreenCoords(x, y).multLocal(getMapScale());
         Vector2f camPos = new Vector2f(cam.getLocation().x, screenDimension.y - cam.getLocation().z);
         camPos.subtract(pixelPos, pixelPos);
-        mapTranslation.set(pixelPos.x, 0, pixelPos.y);
+//        mapTranslation.set(pixelPos.x, 0, pixelPos.y);
         moveMapVisual();
     }
 
     private void moveMapVisual() {
-        float x = (float) Math.floor(mapTranslation.x);
-        float y = (float) Math.floor(mapTranslation.y);
-        float z = (float) Math.floor(mapTranslation.z);
-        mapRenderer.getRootNode().setLocalTranslation(x, y, z);
+//        float x = (float) Math.floor(mapTranslation.x);
+//        float y = (float) Math.floor(mapTranslation.y);
+//        float z = (float) Math.floor(mapTranslation.z);
+//        mapRenderer.getRootNode().setLocalTranslation(x, y, z);
 
         calculateMapParallax();
     }
@@ -413,9 +413,9 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
         return mapScale;
     }
 
-    public Vector3f getMapTranslation() {
-        return mapTranslation;
-    }
+//    public Vector3f getMapTranslation() {
+//        return mapTranslation;
+//    }
 
     /**
      * Set view columns. It changes the number of tiles you can see in a row.
@@ -491,15 +491,12 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
     }
 
     public Point getCameraTileCoordinate() {
-        Vector2f center = getCameraScreenCoordinate();
-        center.subtractLocal(mapTranslation.x, mapTranslation.z).divideLocal(mapScale);
-        return getMapRenderer().screenToTileCoords(center.x, center.y);
+        Vector2f center = getCameraPixelCoordinate();
+        return getMapRenderer().pixelToTileCoords(center.x, center.y);
     }
 
     public Vector2f getCameraPixelCoordinate() {
-        Vector2f center = getCameraScreenCoordinate();
-        center.subtractLocal(mapTranslation.x, mapTranslation.z).divideLocal(mapScale);
-        return getMapRenderer().screenToPixelCoords(center.x, center.y);
+        return getCameraScreenCoordinate().divideLocal(mapScale);
     }
 
     public Vector2f getCameraScreenCoordinate() {
@@ -523,8 +520,7 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
      */
     public Vector2f getCursorPixelCoordinate(Vector2f cursor) {
         Vector3f worldPos = cam.getWorldCoordinates(cursor, 0);
-        Vector2f pixel = new Vector2f(worldPos.x, worldPos.z);
-        return pixel.subtractLocal(mapTranslation.x, mapTranslation.z).divideLocal(mapScale);
+        return new Vector2f(worldPos.x, worldPos.z).divideLocal(mapScale);
     }
 
     /**
@@ -534,18 +530,18 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
      * @param sideways move up-down or right-left
      */
     public void move(float value, boolean sideways) {
-        pos.set(mapTranslation);
+        pos.set(cam.getLocation());
 
         if (sideways) {
             vel.set(1f, 0f, 0f);
         } else {
-            vel.set(0f, 0f, -1f);
+            vel.set(0f, 0f, 1f);
         }
         vel.multLocal(value * moveSpeed * map.getTileWidth() * mapScale);
 
         pos.addLocal(vel);
 
-        mapTranslation.set(pos);
+        cam.setLocation(pos);
         moveMapVisual();
     }
 
@@ -563,7 +559,7 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
         stopPos.subtractLocal(startPos);
 
         // move camera
-        mapTranslation.set(startLoc.add(stopPos.x, 0, -stopPos.y));
+        cam.setLocation(new Vector3f(startLoc.x - stopPos.x, cam.getLocation().y, startLoc.z + stopPos.y));
         moveMapVisual();
     }
 
@@ -635,10 +631,10 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
                 move(tpf, false);
                 break;
             case LEFT:
-                move(tpf, true);
+                move(-tpf, true);
                 break;
             case RIGHT:
-                move(-tpf, true);
+                move(tpf, true);
                 break;
             case DRAG:
                 drag();
@@ -660,7 +656,7 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
             if (isPressed) {
                 // record the mouse position
                 startPos.set(inputManager.getCursorPosition());
-                startLoc.set(mapTranslation);
+                startLoc.set(cam.getLocation());
             } else {
                 drag();
             }
@@ -737,7 +733,6 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
     public void reshape(ViewPort vp, int w, int h) {
         logger.info("reshape: {}, {}", w, h);
         screenDimension.set(w, h);
-        cam.setLocation(new Vector3f(w * 0.5f, 0, h * 0.5f));
         setMapScale(mapScale);
         getMapScale();
     }
