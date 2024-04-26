@@ -20,7 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * ViewState will create a Spatial for com.jme3.tmx.core.TiledMap
+ * ViewState will create a Spatial for {@link io.github.jmecn.tiled.core.TiledMap}
  * 
  * @author yanmaoyuan
  * 
@@ -38,14 +38,8 @@ public class ViewState extends BaseAppState {
 
     private ViewPort viewPort;
     private MaterialFactory materialFactory;
-    private final Vector2f mapDimension;
-
-    // update scene when the map updated
-    private boolean isMapUpdated = true;
 
     public ViewState() {
-        mapDimension = new Vector2f();
-
         rootNode = new Node("Tiled Map Root");
     }
 
@@ -99,11 +93,6 @@ public class ViewState extends BaseAppState {
     public void update(float tpf) {
         if (mapRenderer != null) {
             mapRenderer.render();
-            if (isMapUpdated) {
-                // move it to the left bottom of screen space
-                mapDimension.set(mapRenderer.getMapDimensionF());
-                isMapUpdated = false;
-            }
         }
     }
     /**
@@ -115,12 +104,11 @@ public class ViewState extends BaseAppState {
         if (!isInitialized()) {
             throw new IllegalStateException("ViewState is not initialized.");
         }
+        rootNode.detachAllChildren();
+
         if (map == null) {
-            // TODO clear the map
             return;
         }
-
-        rootNode.detachAllChildren();
         
         viewPort.setBackgroundColor(map.getBackgroundColor());
 
@@ -155,8 +143,6 @@ public class ViewState extends BaseAppState {
 
         // create the visual part for the map
         rootNode.attachChild(mapRenderer.getRootNode());
-
-        isMapUpdated = true;
     }
 
     public MapRenderer getMapRenderer() {

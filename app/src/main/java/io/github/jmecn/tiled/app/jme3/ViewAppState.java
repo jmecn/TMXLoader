@@ -188,6 +188,8 @@ public class ViewAppState extends BaseAppState implements AnalogListener, Action
             }
 
             moveCursor();
+
+            calculateMapParallax();
         }
     }
 
@@ -264,7 +266,6 @@ public class ViewAppState extends BaseAppState implements AnalogListener, Action
 
         Vector2f loc = mapRenderer.pixelToScreenCoords(map.getParallaxOriginX(), map.getParallaxOriginY());
         cam.setLocation(new Vector3f(loc.x, 0, loc.y));
-        calculateMapParallax();
 
         if (gridMaterial != null) {
             createGird();
@@ -290,13 +291,11 @@ public class ViewAppState extends BaseAppState implements AnalogListener, Action
     public void moveToTile(float x, float y) {
         Vector2f tilePos = mapRenderer.tileToScreenCoords(x, y).multLocal(mapScale);
         cam.setLocation(new Vector3f(tilePos.x, cam.getLocation().y, tilePos.y));
-        calculateMapParallax();
     }
 
     public void moveToPixel(float x, float y) {
         Vector2f pixelPos = mapRenderer.pixelToScreenCoords(x, y).multLocal(mapScale);
         cam.setLocation(new Vector3f(pixelPos.x, cam.getLocation().y, pixelPos.y));
-        calculateMapParallax();
     }
 
     private void calculateMapParallax() {
@@ -475,7 +474,6 @@ public class ViewAppState extends BaseAppState implements AnalogListener, Action
         pos.addLocal(vel);
 
         cam.setLocation(pos);
-        calculateMapParallax();
     }
 
     /**
@@ -493,8 +491,6 @@ public class ViewAppState extends BaseAppState implements AnalogListener, Action
         // move camera
         cam.setLocation(new Vector3f(startLoc.x + dir.x, cam.getLocation().y, startLoc.z + dir.z));
         vars.release();
-
-        calculateMapParallax();
     }
 
     private void moveCursor() {
@@ -632,8 +628,7 @@ public class ViewAppState extends BaseAppState implements AnalogListener, Action
             isGridVisible = !isGridVisible;
             toggleGrid();
         } else if (PARALLAX.equals(name) && isPressed) {
-            isParallaxEnabled = !isParallaxEnabled;
-            calculateMapParallax();
+            setParallaxEnabled(!isParallaxEnabled);
         }
     }
 
