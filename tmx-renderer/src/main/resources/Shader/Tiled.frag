@@ -12,6 +12,14 @@ uniform vec4 m_TintColor;
 uniform vec4 m_Color;
 #endif
 
+#ifdef HAS_OPACITY
+uniform float m_Opacity;
+#endif
+
+#ifdef HAS_LAYER_OPACITY
+uniform float m_LayerOpacity;
+#endif
+
 #ifdef HAS_COLOR_MAP
 uniform sampler2D m_ColorMap;
 #endif
@@ -58,6 +66,14 @@ void main(){
 
     #if defined(USE_TINT_COLOR) && defined(HAS_TINT_COLOR)
     color *= m_TintColor;
+    #endif
+
+    #ifdef HAS_LAYER_OPACITY
+    color.a *= m_LayerOpacity;
+    #endif
+
+    #ifdef HAS_OPACITY
+    color.a *= m_Opacity;
     #endif
 
     gl_FragColor = color;

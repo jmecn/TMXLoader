@@ -150,4 +150,46 @@ public class DefaultMaterialFactory implements MaterialFactory {
             }
         }
     }
+
+    @Override
+    public void setLayerOpacity(Material material, float opacity) {
+        material.setFloat(LAYER_OPACITY, opacity);
+    }
+
+    @Override
+    public void setLayerOpacity(Spatial spatial, float opacity) {
+        if (spatial instanceof Geometry) {
+            Geometry geometry = (Geometry) spatial;
+            setLayerOpacity(geometry.getMaterial(), opacity);
+        } else {
+            Node node = (Node) spatial;
+            for (Spatial child : node.getChildren()) {
+                if (child instanceof Geometry) {
+                    Geometry geometry = (Geometry) child;
+                    setLayerOpacity(geometry.getMaterial(), opacity);
+                }
+            }
+        }
+    }
+
+    @Override
+    public void setOpacity(Material material, float opacity) {
+        material.setFloat(OPACITY, opacity);
+    }
+
+    @Override
+    public void setOpacity(Spatial spatial, float opacity) {
+        if (spatial instanceof Geometry) {
+            Geometry geometry = (Geometry) spatial;
+            setOpacity(geometry.getMaterial(), opacity);
+        } else {
+            Node node = (Node) spatial;
+            for (Spatial child : node.getChildren()) {
+                if (child instanceof Geometry) {
+                    Geometry geometry = (Geometry) child;
+                    setOpacity(geometry.getMaterial(), opacity);
+                }
+            }
+        }
+    }
 }

@@ -180,6 +180,7 @@ public abstract class MapRenderer {
             layer.setNeedUpdateAt(tx, ty, false);
 
             spriteFactory.setTintColor(spatial, layer.getTintColor());
+            spriteFactory.setLayerOpacity(spatial, (float) layer.getOpacity());
         }
     }
 
@@ -264,6 +265,7 @@ public abstract class MapRenderer {
                     continue;
                 }
                 spriteFactory.setTintColor(spatial, layer.getTintColor());
+                spriteFactory.setLayerOpacity(spatial, (float) layer.getOpacity());
 
                 float x = (float) obj.getX();
                 float y = (float) obj.getY();
@@ -292,6 +294,9 @@ public abstract class MapRenderer {
             Mesh mesh = new Rect(mapSize.getX(), mapSize.getY(), true);
             Geometry geom = new Geometry(layer.getName(), mesh);
             geom.setMaterial(material);
+
+            spriteFactory.setTintColor(geom, layer.getTintColor());
+            spriteFactory.setLayerOpacity(geom, (float) layer.getOpacity());
 
             layerNode.attachChild(geom);
 
