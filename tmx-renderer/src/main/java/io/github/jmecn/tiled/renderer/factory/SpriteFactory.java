@@ -18,6 +18,10 @@ public interface SpriteFactory {
 
     void setTintColor(Spatial spatial, ColorRGBA tintColor);
 
+    void setLayerOpacity(Spatial spatial, float opacity);
+
+    void setOpacity(Spatial spatial, float opacity);
+
     Material newMaterial(ColorRGBA color);
 
     Material newMaterial(Tileset tileset);

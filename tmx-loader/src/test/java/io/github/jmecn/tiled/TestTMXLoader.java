@@ -2,8 +2,7 @@ package io.github.jmecn.tiled;
 
 import com.jme3.asset.plugins.ClasspathLocator;
 import com.jme3.asset.plugins.FileLocator;
-import io.github.jmecn.tiled.core.TileLayer;
-import io.github.jmecn.tiled.core.TiledMap;
+import io.github.jmecn.tiled.core.*;
 import io.github.jmecn.tiled.enums.Orientation;
 import io.github.jmecn.tiled.enums.StaggerAxis;
 import io.github.jmecn.tiled.enums.StaggerIndex;
@@ -103,5 +102,55 @@ class TestTMXLoader {
         assertEquals(64, map.getTileWidth());
         assertEquals(32, map.getTileHeight());
         assertEquals(1, map.getLayerCount());
+    }
+
+    @Test void testTemplateLoader() {
+        ObjectTemplate block = (ObjectTemplate) assetManager.loadAsset("sticker-knight/map/templates/block.tx");
+        assertNotNull(block);
+        assertEquals("sticker-knight/map/templates/block.tx", block.getSource());
+
+        MapObject object = block.getObject();
+        assertNotNull(object);
+        assertEquals("block", object.getName());
+        assertEquals(44, object.getGid());
+        assertEquals(96, object.getWidth());
+        assertEquals(96, object.getHeight());
+
+        Tileset tileset = block.getTileset();
+        assertNotNull(tileset);
+        assertFalse(tileset.isImageBased());
+        assertEquals("../objs.tsx", tileset.getSource());
+
+        Tile tile = object.getTile();
+        assertNotNull(tile);
+        assertEquals(44, tile.getGid());
+        assertEquals(96, tile.getWidth());
+        assertEquals(96, tile.getHeight());
+        assertNotNull(tile.getImage());
+    }
+
+    @Test void testTiledMapWithTemplate() {
+        TiledMap tiledMap = (TiledMap) assetManager.loadAsset("sticker-knight/map/sandbox.tmx");
+        ObjectTemplate block = tiledMap.getObjectTemplate("templates/block.tx");
+        assertNotNull(block);
+
+        MapObject object = block.getObject();
+        assertNotNull(object);
+        assertEquals("block", object.getName());
+        assertEquals(44, object.getGid());
+        assertEquals(96, object.getWidth());
+        assertEquals(96, object.getHeight());
+
+        Tileset tileset = block.getTileset();
+        assertNotNull(tileset);
+        assertFalse(tileset.isImageBased());
+        assertEquals("objs.tsx", tileset.getSource());
+
+        Tile tile = object.getTile();
+        assertNotNull(tile);
+        assertEquals(44, tile.getGid());
+        assertEquals(96, tile.getWidth());
+        assertEquals(96, tile.getHeight());
+        assertNotNull(tile.getImage());
     }
 }

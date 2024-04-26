@@ -129,7 +129,7 @@ public class Demo extends SimpleApplication {
 
 
                 int layerIndex = tiledMap.getLayer("Plants").getIndex();
-                float y = mapRenderer.getLayerBaseHeight(layerIndex) + mapRenderer.getTileHeight(sx, sy);
+                float y = mapRenderer.getLayerYIndex(layerIndex) + mapRenderer.getTileYIndex(sx, sy);
 
                 // Create player
                 Tile tile = buildAnimatedTile(tileset, CHAR_GIRL);

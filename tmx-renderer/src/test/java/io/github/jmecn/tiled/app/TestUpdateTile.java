@@ -3,7 +3,6 @@ package io.github.jmecn.tiled.app;
 import com.jme3.app.SimpleApplication;
 import com.jme3.asset.plugins.FileLocator;
 import com.jme3.system.AppSettings;
-import io.github.jmecn.tiled.TiledMapAppState;
 import io.github.jmecn.tiled.TmxLoader;
 import io.github.jmecn.tiled.core.TileLayer;
 import io.github.jmecn.tiled.core.TiledMap;

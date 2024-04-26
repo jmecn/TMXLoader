@@ -68,6 +68,16 @@ public final class DefaultSpriteFactory implements SpriteFactory {
     }
 
     @Override
+    public void setLayerOpacity(Spatial spatial, float opacity) {
+        materialFactory.setLayerOpacity(spatial, opacity);
+    }
+
+    @Override
+    public void setOpacity(Spatial spatial, float opacity) {
+        materialFactory.setOpacity(spatial, opacity);
+    }
+
+    @Override
     public Material newMaterial(ColorRGBA color) {
         return materialFactory.newMaterial(color);
     }

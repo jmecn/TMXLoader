@@ -9,7 +9,6 @@ import com.jme3.input.controls.KeyTrigger;
 import com.jme3.input.controls.MouseButtonTrigger;
 import com.jme3.math.Vector2f;
 import com.jme3.system.AppSettings;
-import io.github.jmecn.tiled.TiledMapAppState;
 import io.github.jmecn.tiled.TmxLoader;
 import io.github.jmecn.tiled.core.TiledMap;
 import io.github.jmecn.tiled.enums.ZoomMode;
@@ -33,7 +32,6 @@ public class TestZoom extends SimpleApplication {
         System.out.println("center pixel: " + tiledMapState.getCameraPixelCoordinate());
         System.out.println("center screen: " + tiledMapState.getCameraScreenCoordinate());
         System.out.println("map scare: " + tiledMapState.getMapScale());
-        System.out.println("map translation: " + tiledMapState.getMapTranslation());
     }
 
     public void initInput() {

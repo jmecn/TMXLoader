@@ -11,6 +11,8 @@ MaterialDef Tiled {
         Boolean UseTilesetImage
         // for animation use
         Vector2 TilePosition
+        Float Opacity : 1.0
+        Float LayerOpacity : 1.0
     }
 
     Technique {
@@ -36,6 +38,8 @@ MaterialDef Tiled {
             HAS_TINT_COLOR: TintColor
             USE_TILESET_IMAGE: UseTilesetImage
             USE_TILE_POSITION: TilePosition
+            HAS_OPACITY : Opacity
+            HAS_LAYER_OPACITY : LayerOpacity
         }
     }
 

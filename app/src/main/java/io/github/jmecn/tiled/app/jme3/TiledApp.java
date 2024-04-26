@@ -10,7 +10,6 @@ import com.jme3.input.controls.MouseButtonTrigger;
 import com.jme3.math.Vector2f;
 import com.jme3.system.awt.AwtPanel;
 
-import io.github.jmecn.tiled.TiledMapAppState;
 import io.github.jmecn.tiled.TmxLoader;
 import io.github.jmecn.tiled.app.swing.MainWnd;
 import io.github.jmecn.tiled.core.TiledMap;
@@ -33,11 +32,11 @@ public class TiledApp extends SimpleApplication {
     private AwtPanel panel;
     private MainWnd wnd;
 
-    private final TiledMapAppState tiledMapState;
+    private final ViewAppState tiledMapState;
 
     public TiledApp(CountDownLatch latch) {
-        tiledMapState = new TiledMapAppState();
-        tiledMapState.setZoomMode(ZoomMode.CAMERA);
+        tiledMapState = new ViewAppState();
+        tiledMapState.setZoomMode(ZoomMode.MAP);
         this.latch = latch;
     }
 
@@ -93,9 +92,10 @@ public class TiledApp extends SimpleApplication {
 
             Point tile = tiledMapState.getCursorTileCoordinate(cursor);
             Vector2f pixel = tiledMapState.getCursorPixelCoordinate(cursor);
-            String status = String.format("Tile: (%d,%d), Pixel: (%.0f, %.0f), Cursor: (%.0f,%.0f), Camera:(%d, %d)",
+            Vector2f camPixel = tiledMapState.getCameraPixelCoordinate();
+            String status = String.format("Tile: (%d,%d), Pixel: (%.0f, %.0f), Cursor: (%.0f,%.0f), Camera:(%d, %d), Camera Center Pixel:(%.0f, %.0f)",
                     tile.getX(), tile.getY(), pixel.x, pixel.y, cursor.x, cursor.y,
-                    cam.getWidth(), cam.getHeight());
+                    cam.getWidth(), cam.getHeight(), camPixel.x, camPixel.y);
             wnd.setCursorStatus(status);
 
             float scale = tiledMapState.getMapScale();

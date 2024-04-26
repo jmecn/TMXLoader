@@ -33,4 +33,12 @@ public interface MaterialFactory {
     void setTintColor(Material material, ColorRGBA tintColor);
 
     void setTintColor(Spatial spatial, ColorRGBA tintColor);
+
+    void setLayerOpacity(Material material, float opacity);
+
+    void setLayerOpacity(Spatial spatial, float opacity);
+
+    void setOpacity(Material material, float opacity);
+
+    void setOpacity(Spatial spatial, float opacity);
 }
