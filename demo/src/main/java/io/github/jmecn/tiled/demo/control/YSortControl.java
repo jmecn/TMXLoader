@@ -21,7 +21,7 @@ public class YSortControl extends AbstractControl {
     @Override
     protected void controlUpdate(float tpf) {
         Vector3f position = spatial.getLocalTranslation();
-        float y = mapRenderer.getLayerBaseHeight(layerIndex) + mapRenderer.getObjectTopDownHeight(position.z);
+        float y = mapRenderer.getLayerYIndex(layerIndex) + mapRenderer.getObjectTopDownYIndex(position.z);
         spatial.setLocalTranslation(position.x, y, position.z);
     }
 

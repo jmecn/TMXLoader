@@ -23,9 +23,6 @@ import io.github.jmecn.tiled.demo.state.ViewState;
 import io.github.jmecn.tiled.enums.ObjectType;
 import io.github.jmecn.tiled.renderer.MapRenderer;
 import io.github.jmecn.tiled.util.TileCutter;
-import org.jbox2d.callbacks.ContactImpulse;
-import org.jbox2d.callbacks.ContactListener;
-import org.jbox2d.collision.Manifold;
 import org.jbox2d.collision.shapes.CircleShape;
 import org.jbox2d.collision.shapes.PolygonShape;
 import org.jbox2d.common.Vec2;
@@ -131,7 +128,7 @@ public class Demo extends SimpleApplication {
 
 
                 int layerIndex = tiledMap.getLayer("Plants").getIndex();
-                float y = mapRenderer.getLayerBaseHeight(layerIndex) + mapRenderer.getTileHeight(sx, sy);
+                float y = mapRenderer.getLayerYIndex(layerIndex) + mapRenderer.getTileYIndex(sx, sy);
 
                 // Create player
                 Tile tile = buildAnimatedTile(tileset, CHAR_GIRL);

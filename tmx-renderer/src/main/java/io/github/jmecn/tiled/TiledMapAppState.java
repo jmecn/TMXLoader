@@ -81,30 +81,23 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
 
     // The parallax
     private boolean isParallaxEnabled = true;
-    private final Vector2f parallaxOrigin = new Vector2f(0, 0);
-    private final Vector2f parallaxDistance = new Vector2f(0, 0);
 
-    // The mapNode
+    // The map scale, user can zoom in/out the map from 10% to 400%
     private float mapScale;
+    private static final float MAP_SCALE_MIN = 0.1f;
+    private static final float MAP_SCALE_MAX = 4f;
 
     // The camera
     private Camera cam;
     private ViewPort viewPort;
     private InputManager inputManager;
     private MaterialFactory materialFactory;
-    private final Vector2f screenDimension;
-    private final Vector2f mapDimension;
 
     // The
-    private float viewColumns;
     protected float moveSpeed = 10f;// in tiles
     protected float zoomSpeed = 1f;// in tiles
-    /**
-     * update scene when the map updated
-     */
-    private boolean isMapUpdated = true;
 
-    private ZoomMode zoomMode = ZoomMode.MAP;
+    private ZoomMode zoomMode = ZoomMode.CAMERA;
 
     // variables used to drag map
     private final Vector3f startLoc = new Vector3f();
@@ -118,21 +111,12 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
      * Constructor
      */
     public TiledMapAppState() {
-        this(12f);
-    }
-
-    public TiledMapAppState(float viewColumns) {
-        screenDimension = new Vector2f();
-        mapDimension = new Vector2f();
-
         mapScale = 1f;
 
         rootNode = new Node("Tiled Map Root");
 
         gridVisual = new Node("Tiled Map Grid");
         gridVisual.setLocalTranslation(0f, 999f, 0f);
-
-        this.viewColumns = viewColumns;
     }
 
     @Override
@@ -144,7 +128,6 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
 
         viewPort = app.getViewPort();
         cam = app.getCamera();
-        screenDimension.set(cam.getWidth(), cam.getHeight());
 
         // sort by y-axis
         viewPort.getQueue().setGeometryComparator(RenderQueue.Bucket.Opaque, new YAxisComparator());
@@ -152,8 +135,8 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
 
         float near = -1000f;
         float far = 1000f;
-        float halfWidth = screenDimension.x * 0.5f;
-        float halfHeight = screenDimension.y * 0.5f;
+        float halfWidth = cam.getWidth() * 0.5f;
+        float halfHeight = cam.getHeight() * 0.5f;
         cam.setFrustum(near, far, -halfWidth, halfWidth, halfHeight, -halfHeight);
         cam.setParallelProjection(true);
         cam.lookAtDirection(new Vector3f(0f, -1f, 0f), new Vector3f(0f, 0f, -1f));
@@ -198,9 +181,8 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
 
     @Override
     public void update(float tpf) {
-        Spatial spatial;
         if (mapRenderer != null) {
-            spatial = mapRenderer.render();
+            mapRenderer.render();
 
             if (isGridUpdated) {
                 createGird();
@@ -208,16 +190,6 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
 
             if (isCursorUpdated) {
                 createCursor();
-            }
-
-            if (isMapUpdated) {
-                // move it to the left bottom of screen space
-                mapDimension.set(mapRenderer.getMapDimensionF());
-                mapScale = getMapScale();
-                spatial.setLocalScale(mapScale, 1f, mapScale);
-                calculateMapParallax();
-                
-                isMapUpdated = false;
             }
 
             moveCursor();
@@ -296,9 +268,8 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
         rootNode.attachChild(mapRenderer.getRootNode());
 
         Vector2f loc = mapRenderer.pixelToScreenCoords(map.getParallaxOriginX(), map.getParallaxOriginY());
-//        mapTranslation.set(loc.x, 0, loc.y);
         cam.setLocation(new Vector3f(loc.x, 0, loc.y));
-        isMapUpdated = true;
+        calculateMapParallax();
 
         if (gridMaterial != null) {
             createGird();
@@ -333,25 +304,26 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
         calculateMapParallax();
     }
 
-    private void moveMapVisual() {
-        calculateMapParallax();
-    }
-
     private void calculateMapParallax() {
         if (mapRenderer == null) {
             return;
         }
 
+        TempVars vars = TempVars.get();
+        Vector2f distance = vars.vect2d;
+
         if (isParallaxEnabled) {
-            // record the parallax origin
-            parallaxOrigin.set(map.getParallaxOriginX(), map.getParallaxOriginY());
-            Vector2f current = getCameraPixelCoordinate();
-            current.subtract(parallaxOrigin, parallaxDistance);
+            // current position of the camera in the map
+            distance.set(cam.getLocation().x, cam.getLocation().z).divideLocal(mapScale);
+            // calculate the distance between the camera and the parallax origin
+            distance.subtractLocal(map.getParallaxOriginX(), map.getParallaxOriginY());
         } else {
-            parallaxDistance.set(0, 0);
+            distance.set(0, 0);
         }
 
-        applyParallax(parallaxDistance);
+        applyParallax(distance);
+
+        vars.release();
     }
 
     private void applyParallax(Vector2f distance) {
@@ -386,31 +358,13 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
 
     public void setMapScale(float scale) {
         mapScale = scale;
-        if (map != null) {
-            viewColumns = screenDimension.x / (map.getTileWidth() * mapScale);
+        if (mapRenderer != null) {
             mapRenderer.getRootNode().setLocalScale(mapScale, 1, mapScale);
-            isMapUpdated = true;
         }
     }
 
     public float getMapScale() {
-        if (map != null) {
-            float pixel = map.getTileWidth() * viewColumns;
-            mapScale = screenDimension.x / pixel;
-            mapRenderer.getRootNode().setLocalScale(mapScale, 1, mapScale);
-        }
-        
         return mapScale;
-    }
-
-    /**
-     * Set view columns. It changes the number of tiles you can see in a row.
-     * 
-     * @param columns column count in a row
-     */
-    public void setViewColumn(float columns) {
-        this.viewColumns = columns;
-        this.mapScale = getMapScale();
     }
 
     /**
@@ -579,30 +533,64 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
         return zoomMode;
     }
 
+    public void zoom(float value) {
+        float zoomValue = zoomSpeed * value;
+        switch (zoomMode) {
+            case MAP:
+                zoomMap(zoomValue);
+                break;
+            case CAMERA:
+                zoomCamera(value);
+                break;
+            default:
+                break;
+        }
+    }
+
+    public void zoomMap(float value) {
+        value /= 100;// zoom value is too large
+        value *= mapScale;// scale the zoom value, make it more smooth
+        value = FastMath.clamp(value, MAP_SCALE_MIN - mapScale, MAP_SCALE_MAX - mapScale);// keep the map scale in a reasonable range
+        setMapScale(mapScale + value);
+    }
+
     /**
      * zoom camera
      * 
      * @param value zoom value
      */
     public void zoomCamera(float value) {
-        // store the current position
-        Vector2f pixel = null;
-        if (zoomMode == ZoomMode.CAMERA) {
-            pixel = getCameraPixelCoordinate();
-        }
+        // calculate camera frustum
+        if (cam.isParallelProjection()) {
+            float top = cam.getFrustumTop();
+            float bottom = cam.getFrustumBottom();
+            float left = cam.getFrustumLeft();
+            float right = cam.getFrustumRight();
+            float near = cam.getFrustumNear();
+            float far = cam.getFrustumFar();
+            // keep the near and far plane
 
-        viewColumns += zoomSpeed * value;
+            float height = top - bottom;
+            float width = right - left;
+            float aspect = width / height;
 
-        // at less see 1 tile on screen
-        if (viewColumns < 1f) {
-            viewColumns = 1f;
-        }
+            if (height + value < 1f) {
+                // too small
+                return;
+            }
 
-        setViewColumn(viewColumns);
+            float newHeight = height + value;
+            float newWidth = newHeight * aspect;
+            float newTop = top + (newHeight - height) * 0.5f;
+            float newBottom = bottom - (newHeight - height) * 0.5f;
+            float newLeft = left - (newWidth - width) * 0.5f;
+            float newRight = right + (newWidth - width) * 0.5f;
+            cam.setFrustum(near, far, newLeft, newRight, newTop, newBottom);
+        } else {
+            float fov = cam.getFov();
 
-        // restore the position
-        if (zoomMode == ZoomMode.CAMERA && pixel != null) {
-            moveToPixel(pixel.x, pixel.y);
+            fov = FastMath.clamp(fov + value, 15f, 179f);
+            cam.setFov(fov);
         }
     }
 
@@ -627,10 +615,10 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
                 drag();
                 break;
             case ZOOM_IN:
-                zoomCamera(value);
+                zoom(value);
                 break;
             case ZOOM_OUT:
-                zoomCamera(-value);
+                zoom(-value);
                 break;
             default:
                 break;
@@ -719,9 +707,6 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
     @Override
     public void reshape(ViewPort vp, int w, int h) {
         logger.info("reshape: {}, {}", w, h);
-        screenDimension.set(w, h);
-        setMapScale(mapScale);
-        getMapScale();
     }
 
     @Override

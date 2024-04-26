@@ -272,7 +272,7 @@ public abstract class MapRenderer {
 
                 // sort top-down
                 // don't support sorting by index
-                float z = getObjectTopDownHeight(y);
+                float z = getObjectTopDownYIndex(y);
 
                 Vector2f screenCoord = pixelToScreenCoords(x, y);
                 spatial.move(screenCoord.x, z, screenCoord.y);
@@ -385,16 +385,16 @@ public abstract class MapRenderer {
         return rootNode;
     }
 
-    public float getLayerBaseHeight(int index) {
+    public float getLayerYIndex(int index) {
         return index * layerDistance;
     }
 
-    public float getObjectTopDownHeight(float y) {
+    public float getObjectTopDownYIndex(float y) {
         float tileY = y / mapSize.getY();
         return tileY * layerDistance;
     }
 
-    public float getTileHeight(float x, float y) {
+    public float getTileYIndex(float x, float y) {
         x = x / tileWidth;
         y = y / tileHeight;
         float z = (y * width + x) * step;
@@ -427,5 +427,13 @@ public abstract class MapRenderer {
 
     public Vector2f getMapDimensionF() {
         return new Vector2f(mapSize.getX(), mapSize.getY());
+    }
+
+    public int getTileWidth() {
+        return tileWidth;
+    }
+
+    public int getTileHeight() {
+        return tileHeight;
     }
 }

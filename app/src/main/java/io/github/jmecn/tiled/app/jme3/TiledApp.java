@@ -37,7 +37,7 @@ public class TiledApp extends SimpleApplication {
 
     public TiledApp(CountDownLatch latch) {
         tiledMapState = new TiledMapAppState();
-        tiledMapState.setZoomMode(ZoomMode.CAMERA);
+        tiledMapState.setZoomMode(ZoomMode.MAP);
         this.latch = latch;
     }
 
