@@ -16,15 +16,11 @@ import com.jme3.input.controls.MouseAxisTrigger;
 import com.jme3.input.controls.MouseButtonTrigger;
 import com.jme3.material.Material;
 import com.jme3.math.*;
-import com.jme3.post.SceneProcessor;
-import com.jme3.profile.AppProfiler;
 import com.jme3.renderer.Camera;
-import com.jme3.renderer.RenderManager;
 import com.jme3.renderer.ViewPort;
 import com.jme3.renderer.queue.RenderQueue;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
-import com.jme3.texture.FrameBuffer;
 import com.jme3.util.TempVars;
 import io.github.jmecn.tiled.core.GroupLayer;
 import io.github.jmecn.tiled.core.Layer;
@@ -45,7 +41,7 @@ import org.slf4j.LoggerFactory;
  * 
  * @author yanmaoyuan
  */
-public class TiledMapAppState extends BaseAppState implements AnalogListener, ActionListener, SceneProcessor {
+public class TiledMapAppState extends BaseAppState implements AnalogListener, ActionListener {
 
     static Logger logger = LoggerFactory.getLogger(TiledMapAppState.class);
     public static final String LEFT = "left";
@@ -131,7 +127,6 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
 
         // sort by y-axis
         viewPort.getQueue().setGeometryComparator(RenderQueue.Bucket.Opaque, new YAxisComparator());
-        viewPort.addProcessor(this);
 
         float near = -1000f;
         float far = 1000f;
@@ -293,13 +288,13 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
     }
 
     public void moveToTile(float x, float y) {
-        Vector2f tilePos = mapRenderer.tileToScreenCoords(x, y).multLocal(getMapScale());
+        Vector2f tilePos = mapRenderer.tileToScreenCoords(x, y).multLocal(mapScale);
         cam.setLocation(new Vector3f(tilePos.x, cam.getLocation().y, tilePos.y));
         calculateMapParallax();
     }
 
     public void moveToPixel(float x, float y) {
-        Vector2f pixelPos = mapRenderer.pixelToScreenCoords(x, y).multLocal(getMapScale());
+        Vector2f pixelPos = mapRenderer.pixelToScreenCoords(x, y).multLocal(mapScale);
         cam.setLocation(new Vector3f(pixelPos.x, cam.getLocation().y, pixelPos.y));
         calculateMapParallax();
     }
@@ -358,9 +353,7 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
 
     public void setMapScale(float scale) {
         mapScale = scale;
-        if (mapRenderer != null) {
-            mapRenderer.getRootNode().setLocalScale(mapScale, 1, mapScale);
-        }
+        rootNode.setLocalScale(mapScale, 1, mapScale);
     }
 
     public float getMapScale() {
@@ -697,40 +690,5 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
         } else {
             gridVisual.removeFromParent();
         }
-    }
-
-    @Override
-    public void initialize(RenderManager rm, ViewPort vp) {
-        logger.info("initialize: {}", vp.getName());
-    }
-
-    @Override
-    public void reshape(ViewPort vp, int w, int h) {
-        logger.info("reshape: {}, {}", w, h);
-    }
-
-    @Override
-    public void rescale(ViewPort vp, float x, float y) {
-        logger.info("rescale: {}, {}", x, y);
-    }
-
-    @Override
-    public void preFrame(float tpf) {
-        // nothing
-    }
-
-    @Override
-    public void postQueue(RenderQueue rq) {
-        // nothing
-    }
-
-    @Override
-    public void postFrame(FrameBuffer out) {
-        // nothing
-    }
-
-    @Override
-    public void setProfiler(AppProfiler profiler) {
-        // nothing
     }
 }
