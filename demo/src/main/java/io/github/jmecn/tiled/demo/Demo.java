@@ -6,6 +6,7 @@ import com.jme3.app.state.ScreenshotAppState;
 import com.jme3.asset.TextureKey;
 import com.jme3.math.Vector2f;
 import com.jme3.scene.Geometry;
+import com.jme3.scene.Spatial;
 import com.jme3.texture.Texture;
 import com.jme3.texture.Texture2D;
 import io.github.jmecn.tiled.TmxLoader;
@@ -128,12 +129,15 @@ public class Demo extends SimpleApplication {
                 float sy = (float) obj.getY();
 
 
-                int layerIndex = tiledMap.getLayer("Plants").getIndex();
-                float y = mapRenderer.getLayerYIndex(layerIndex) + mapRenderer.getTileYIndex(sx, sy);
+                int layerIndex = tiledMap.getLayer("Trees").getIndex();
+                float y = mapRenderer.getLayerYIndex(layerIndex) + mapRenderer.getObjectTopDownYIndex(sy);
 
                 // Create player
-                Tile tile = buildAnimatedTile(tileset, CHAR_GIRL);
-                Geometry player = mapRenderer.getSpriteFactory().newTileSprite(tile);
+                Tile tile = buildAnimatedTile(tileset, CHAR_BOY);
+                MapObject playObj = new MapObject();
+                playObj.setShape(ObjectType.TILE);
+                playObj.setTile(tile);
+                Spatial player = mapRenderer.getSpriteFactory().newObjectSprite(playObj, null);
                 player.setLocalTranslation(sx, y, sy);
                 player.addControl(new CharacterAnimControl());
                 player.addControl(new YSortControl(mapRenderer, layerIndex));
@@ -273,11 +277,11 @@ public class Demo extends SimpleApplication {
         float hx = width / 2;
         float hy = height / 2;
 
-//        PolygonShape shape = new PolygonShape();
-//        shape.setAsBox(hx, hy, new Vec2(hx, hy), 0);
-        CircleShape shape = new CircleShape();
-        shape.m_radius = hx;
-        shape.m_p.set(hx, hy);
+        PolygonShape shape = new PolygonShape();
+        shape.setAsBox(4, 4, new Vec2(8, -4), 0);
+//        CircleShape shape = new CircleShape();
+//        shape.m_radius = hx;
+//        shape.m_p.set(hx, hy);
         fixtureDef.shape = shape;
 
         BodyDef bodyDef = new BodyDef();
