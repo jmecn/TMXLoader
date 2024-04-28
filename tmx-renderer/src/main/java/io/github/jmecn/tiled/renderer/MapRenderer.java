@@ -50,6 +50,7 @@ import java.util.*;
 public abstract class MapRenderer {
 
     protected float layerDistance = 16f;// the distance between layers
+    protected float layerGap = 1f;// the gap between layers
     protected float step;
 
     protected TiledMap map;
@@ -220,9 +221,7 @@ public abstract class MapRenderer {
             }
 
             if (visual != null) {
-                // this is a little magic to make let top layer block off the
-                // bottom layer
-                visual.setLocalTranslation(0, i * layerDistance, 0);
+                visual.setLocalTranslation(0, getLayerYIndex(i), 0);
                 layer.setNeedUpdated(false);
             }
         }
@@ -386,7 +385,7 @@ public abstract class MapRenderer {
     }
 
     public float getLayerYIndex(int index) {
-        return index * layerDistance;
+        return index * (layerDistance + layerGap);
     }
 
     public float getObjectTopDownYIndex(float y) {
