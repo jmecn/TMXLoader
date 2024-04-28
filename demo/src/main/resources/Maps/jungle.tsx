@@ -93,4 +93,39 @@
    </object>
   </objectgroup>
  </tile>
+ <wangsets>
+  <wangset name="Grass" type="corner" tile="-1">
+   <wangcolor name="bush" color="#ff0000" tile="-1" probability="1"/>
+   <wangcolor name="grass" color="#00ff00" tile="-1" probability="1"/>
+   <wangcolor name="dirt" color="#0000ff" tile="-1" probability="1"/>
+   <wangtile tileid="23" wangid="0,1,0,1,0,1,0,1"/>
+   <wangtile tileid="32" wangid="0,1,0,2,0,1,0,1"/>
+   <wangtile tileid="33" wangid="0,1,0,2,0,2,0,1"/>
+   <wangtile tileid="34" wangid="0,1,0,1,0,2,0,1"/>
+   <wangtile tileid="35" wangid="0,2,0,1,0,2,0,2"/>
+   <wangtile tileid="36" wangid="0,2,0,2,0,1,0,2"/>
+   <wangtile tileid="38" wangid="0,1,0,3,0,1,0,1"/>
+   <wangtile tileid="39" wangid="0,1,0,3,0,3,0,1"/>
+   <wangtile tileid="40" wangid="0,1,0,1,0,3,0,1"/>
+   <wangtile tileid="41" wangid="0,3,0,1,0,3,0,3"/>
+   <wangtile tileid="42" wangid="0,3,0,3,0,1,0,3"/>
+   <wangtile tileid="45" wangid="0,3,0,3,0,3,0,3"/>
+   <wangtile tileid="54" wangid="0,2,0,2,0,1,0,1"/>
+   <wangtile tileid="55" wangid="0,2,0,2,0,2,0,2"/>
+   <wangtile tileid="56" wangid="0,1,0,1,0,2,0,2"/>
+   <wangtile tileid="57" wangid="0,1,0,2,0,2,0,2"/>
+   <wangtile tileid="58" wangid="0,2,0,2,0,2,0,1"/>
+   <wangtile tileid="60" wangid="0,3,0,3,0,1,0,1"/>
+   <wangtile tileid="61" wangid="0,3,0,3,0,3,0,3"/>
+   <wangtile tileid="62" wangid="0,1,0,1,0,3,0,3"/>
+   <wangtile tileid="63" wangid="0,1,0,3,0,3,0,3"/>
+   <wangtile tileid="64" wangid="0,3,0,3,0,3,0,1"/>
+   <wangtile tileid="76" wangid="0,2,0,1,0,1,0,1"/>
+   <wangtile tileid="77" wangid="0,2,0,1,0,1,0,2"/>
+   <wangtile tileid="78" wangid="0,1,0,1,0,1,0,2"/>
+   <wangtile tileid="82" wangid="0,3,0,1,0,1,0,1"/>
+   <wangtile tileid="83" wangid="0,3,0,1,0,1,0,3"/>
+   <wangtile tileid="84" wangid="0,1,0,1,0,1,0,3"/>
+  </wangset>
+ </wangsets>
 </tileset>

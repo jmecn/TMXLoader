@@ -7,7 +7,7 @@
     <properties>
      <property name="body_type" value="static"/>
      <property name="is_sensor" type="bool" value="true"/>
-     <property name="sensor_behavior" value="hide"/>
+     <property name="sensor_behavior" value="hide:0.5"/>
     </properties>
     <polygon points="0,0 19.3724,-30.64 36.3726,-36.1749 76.5011,-14.2328 78.4779,4.15122 50.0124,33.6051 30.4423,33.6051 -0.197677,5.93032"/>
    </object>
@@ -20,7 +20,7 @@
     <properties>
      <property name="body_type" value="static"/>
      <property name="is_sensor" type="bool" value="true"/>
-     <property name="sensor_behavior" value="hide"/>
+     <property name="sensor_behavior" value="hide:0.5"/>
     </properties>
     <polygon points="0.197677,-3.36051 26.4888,-26.2911 55.5473,-22.9306 77.6872,-0.988386 77.6872,15.0235 49.024,39.9308 31.0353,40.1285 -0.395355,6.72103"/>
    </object>
@@ -34,7 +34,6 @@
      <property name="body_type" value="static"/>
     </properties>
    </object>
-   <object id="2" x="17" y="0" width="46" height="14"/>
   </objectgroup>
  </tile>
  <tile id="3" x="16" y="304" width="32" height="32">
@@ -44,6 +43,14 @@
     <properties>
      <property name="body_type" value="static"/>
     </properties>
+   </object>
+   <object id="3" x="3.75587" y="15.2212">
+    <properties>
+     <property name="body_type" value="static"/>
+     <property name="is_sensor" type="bool" value="true"/>
+     <property name="sensor_behavior" value="hide:0.5"/>
+    </properties>
+    <polygon points="0,0 0.197677,-2.96516 7.11638,-9.29083 17.3956,-9.09316 23.919,-2.37213 24.2155,0"/>
    </object>
   </objectgroup>
  </tile>

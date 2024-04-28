@@ -1,5 +1,6 @@
 package io.github.jmecn.tiled.demo.control;
 
+import com.jme3.math.FastMath;
 import com.jme3.renderer.RenderManager;
 import com.jme3.renderer.ViewPort;
 import com.jme3.scene.Geometry;
@@ -23,22 +24,44 @@ import org.slf4j.LoggerFactory;
 public class SensorControl extends AbstractControl implements ContactListener {
     Logger logger = LoggerFactory.getLogger(SensorControl.class);
 
+    public static final String BEHAVIOR_HIDE = "hide";
+
     private int count;// in case of multiple contacts
     private final Body body;
     private final String behavior;
+    private float opacity;
 
     public SensorControl(Body body, String behavior) {
         this.body = body;
-        this.behavior = behavior;
         this.count = 0;
+        if (behavior.startsWith(BEHAVIOR_HIDE)) {
+            this.behavior = BEHAVIOR_HIDE;
+            this.opacity = 0.5f;// default
+            // "hide:0.5"
+            String[] parts = behavior.split(":");
+            if (parts.length == 2) {
+                try {
+                    this.opacity = FastMath.clamp(Float.parseFloat(parts[1]), 0.0f, 1.0f);
+                } catch (NumberFormatException e) {
+                    logger.error("Invalid behavior:{}", behavior);
+                }
+            }
+        } else {
+            this.opacity = 1.0f;
+            this.behavior = behavior;
+        }
     }
 
     @Override
     protected void controlUpdate(float tpf) {
         if (count > 0) {
-            setOpacity(0.6f);
+            if (BEHAVIOR_HIDE.equals(behavior)) {
+                setOpacity(opacity);
+            }
         } else {
-            setOpacity(1.0f);
+            if (BEHAVIOR_HIDE.equals(behavior)) {
+                setOpacity(1.0f);
+            }
         }
     }
 
