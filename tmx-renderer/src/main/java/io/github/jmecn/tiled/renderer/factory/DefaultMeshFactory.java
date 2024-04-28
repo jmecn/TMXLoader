@@ -47,7 +47,7 @@ public class DefaultMeshFactory implements MeshFactory {
         this.tiledMap = tiledMap;
         if (tiledMap != null) {
             this.orientation = tiledMap.getOrientation();
-            this.ratio = (float) tiledMap.getTileWidth() / tiledMap.getTileHeight();
+            this.ratio = (float) tiledMap.getTileHeight() / tiledMap.getTileWidth();
         } else {
             this.orientation = Orientation.ORTHOGONAL;
             this.ratio = 1f;
@@ -78,7 +78,15 @@ public class DefaultMeshFactory implements MeshFactory {
     public TileMesh newTileMesh(Tile tile) {
         Tileset tileset = tile.getTileset();
         Vector2f offset = tileset.getTileOffset();
-        Vector2f origin = new Vector2f(0, tiledMap.getTileHeight());
+
+        Vector2f origin;
+        if (orientation == Orientation.ISOMETRIC) {
+            // isometric map tile origin is on top-center the tile
+            origin = new Vector2f(-tile.getWidth() * 0.5f, tiledMap.getTileHeight());
+        } else {
+            // the tile origin is on top-left corner
+            origin = new Vector2f(0, tiledMap.getTileHeight());
+        }
 
         Vector2f coord = new Vector2f(tile.getX(), tile.getY());
         Vector2f size = new Vector2f(tile.getWidth(), tile.getHeight());
@@ -255,9 +263,13 @@ public class DefaultMeshFactory implements MeshFactory {
             offset = new Vector2f(0, 0);
         }
 
-        Vector2f origin = new Vector2f(0, 0);// In orthogonal, it's aligned to the bottom-left
+        Vector2f origin;
         if (orientation == Orientation.ISOMETRIC) {
-            origin.set(-tw * 0.5f, 0);// In isometric, it's aligned to the bottom-center.
+            // In isometric, it's aligned to the bottom-center.
+            origin = new Vector2f(-tw * 0.5f, 0);
+        } else {
+            // In orthogonal, it's aligned to the bottom-left
+            origin = new Vector2f(0, 0);
         }
 
         // When the object has a gid set, then it is represented by

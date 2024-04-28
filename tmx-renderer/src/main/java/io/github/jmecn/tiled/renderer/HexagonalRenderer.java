@@ -6,8 +6,6 @@ import com.jme3.scene.Geometry;
 import com.jme3.scene.Mesh;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
-import io.github.jmecn.tiled.core.Tile;
-import io.github.jmecn.tiled.core.TileLayer;
 import io.github.jmecn.tiled.core.TiledMap;
 import io.github.jmecn.tiled.enums.StaggerAxis;
 import io.github.jmecn.tiled.enums.StaggerIndex;
@@ -134,78 +132,6 @@ public class HexagonalRenderer extends OrthogonalRenderer {
                 tileZIndex++;
             }
         }
-    }
-
-    @Override
-    public Spatial render(TileLayer layer) {
-        // instance the layer node
-        Node layerNode = getLayerNode(layer);
-
-        Point startTile = screenToTileCoords(0, 0);
-        if (staggerX) {
-            renderStaggerX(layer, startTile);
-        } else {
-            renderStaggerY(layer, startTile);
-        }
-
-        return layerNode;
-    }
-
-    private void renderStaggerX(TileLayer layer, Point startTile) {
-        int tileZIndex = 0;
-        int x = startTile.getX();
-        int y = startTile.getY();
-        boolean staggeredRow = doStaggerX(x);
-
-        while (y < height) {
-            for (int rowX = x; rowX < width; rowX += 2) {
-                if (layer.isNeedUpdateAt(rowX, y)) {
-                    // look up tile at rowTile
-                    final Tile tile = layer.getTileAt(rowX, y);
-                    if (tile == null) {
-                        removeTileSprite(layer, rowX, y);
-                    } else {
-                        Vector2f pos = tileToScreenCoords(rowX, y);
-                        putTileSprite(layer, rowX, y, getTileYAxis(tileZIndex), tile, pos);
-                    }
-                }
-
-                tileZIndex++;
-            }
-
-            if (staggeredRow) {
-                x -= 1;
-                y += 1;
-                staggeredRow = false;
-            } else {
-                x += 1;
-                staggeredRow = true;
-            }
-        }
-
-    }
-
-    private void renderStaggerY(TileLayer layer, Point startTile) {
-        int tileZIndex = 0;
-
-        int x = startTile.getX();
-        int y = startTile.getY();
-        for (int rowY = y; rowY < height; rowY++) {
-            for (int rowX = x; rowX < width; rowX++) {
-                if (layer.isNeedUpdateAt(rowX, rowY)) {
-                    // look up tile at rowTile
-                    final Tile tile = layer.getTileAt(rowX, rowY);
-                    if (tile == null) {
-                        removeTileSprite(layer, rowX, rowY);
-                    } else {
-                        Vector2f pos = tileToScreenCoords(rowX, rowY);
-                        putTileSprite(layer, rowX, rowY, getTileYAxis(tileZIndex), tile, pos);
-                    }
-                }
-                tileZIndex++;
-            }
-        }
-
     }
 
     @Override

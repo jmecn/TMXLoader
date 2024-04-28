@@ -6,8 +6,6 @@ import com.jme3.scene.Geometry;
 import com.jme3.scene.Mesh;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
-import io.github.jmecn.tiled.core.Tile;
-import io.github.jmecn.tiled.core.TileLayer;
 import io.github.jmecn.tiled.core.TiledMap;
 import io.github.jmecn.tiled.enums.RenderOrder;
 import io.github.jmecn.tiled.math2d.Point;
@@ -110,77 +108,6 @@ public class OrthogonalRenderer extends MapRenderer {
                 tileZIndex++;
             }
         }
-    }
-
-    @Override
-    public Spatial render(TileLayer layer) {
-        int startX = 0;
-        int startY = 0;
-        int endX = width - 1;
-        int endY = height - 1;
-
-        int incX = 1;
-        int incY = 1;
-        int tmp;
-        RenderOrder renderOrder = map.getRenderOrder();
-        switch (renderOrder) {
-            case RIGHT_UP: {
-                // swap y
-                tmp = endY;
-                endY = startY;
-                startY = tmp;
-                incY = -1;
-                break;
-            }
-            case LEFT_DOWN: {
-                // swap x
-                tmp = endX;
-                endX = startX;
-                startX = tmp;
-                incX = -1;
-                break;
-            }
-            case LEFT_UP: {
-                // swap x
-                tmp = endX;
-                endX = startX;
-                startX = tmp;
-                incX = -1;
-
-                // swap y
-                tmp = endY;
-                endY = startY;
-                startY = tmp;
-                incY = -1;
-                break;
-            }
-            case RIGHT_DOWN: {
-                break;
-            }
-        }
-        endX += incX;
-        endY += incY;
-
-        // instance the layer node
-        Node layerNode = getLayerNode(layer);
-
-        int tileZIndex = 0;
-        for (int y = startY; y != endY; y += incY) {
-            for (int x = startX; x != endX; x += incX) {
-                if (layer.isNeedUpdateAt(x, y)) {
-                    final Tile tile = layer.getTileAt(x, y);
-                    if (tile == null) {
-                        removeTileSprite(layer, x, y);
-                    } else {
-                        Vector2f pixelCoord = tileToScreenCoords(x, y);
-                        putTileSprite(layer, x, y, getTileYAxis(tileZIndex), tile, pixelCoord);
-                    }
-                    tileZIndex++;
-                }
-            }
-        }
-
-        return layerNode;
     }
 
     @Override

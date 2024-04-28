@@ -248,7 +248,24 @@ public abstract class MapRenderer {
 
     public abstract void visitTiles(TileVisitor visitor);
 
-    protected abstract Spatial render(TileLayer layer);
+    protected Spatial render(TileLayer layer) {
+        Node layerNode = getLayerNode(layer);
+        layerNode.detachAllChildren();
+
+        visitTiles((x, y, z) -> {
+            if (layer.isNeedUpdateAt(x, y)) {
+                final Tile tile = layer.getTileAt(x, y);
+                if (tile == null) {
+                    removeTileSprite(layer, x, y);
+                } else {
+                    Vector2f pixelCoord = tileToScreenCoords(x, y);
+                    putTileSprite(layer, x, y, getTileYAxis(z), tile, pixelCoord);
+                }
+            }
+        });
+
+        return layerNode;
+    }
 
     /**
      * Create the visual part for every ObjectNode in a ObjectLayer.
@@ -459,11 +476,7 @@ public abstract class MapRenderer {
     }
 
     public Point getMapDimension() {
-        return new Point(mapSize.getX(), mapSize.getY());// read only
-    }
-
-    public Vector2f getMapDimensionF() {
-        return new Vector2f(mapSize.getX(), mapSize.getY());
+        return mapSize;
     }
 
     public int getTileWidth() {

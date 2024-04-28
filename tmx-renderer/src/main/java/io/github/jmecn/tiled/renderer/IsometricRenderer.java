@@ -51,32 +51,6 @@ public class IsometricRenderer extends MapRenderer {
     }
 
     @Override
-    public Spatial render(TileLayer layer) {
-        Node layerNode = getLayerNode(layer);
-        
-        int count = 0;
-        for(int p = 0; p < height + width - 1; p++) {
-            for(int y = 0; y <= p; y++) {
-                int x = p - y;
-                if(y < height && x < width) {
-                    if (layer.isNeedUpdateAt(x, y)) {
-                        final Tile tile = layer.getTileAt(x, y);
-                        if (tile != null) {
-                            Vector2f pixelCoord = tileToScreenCoords(x, y);
-                            pixelCoord.x -= tileWidth * 0.5f;// move left to center the tile
-                            putTileSprite(layer, x, y, getTileYAxis(count), tile, pixelCoord);
-                        } else {
-                            removeTileSprite(layer, x, y);
-                        }
-                    }
-                    count++;
-                }
-            }
-        }
-        return layerNode;
-    }
-
-    @Override
     public void renderGrid(Node gridVisual, Material gridMaterial) {
         // add boundary
         IsoGrid grid = new IsoGrid(width, height, tileWidth, tileHeight);
