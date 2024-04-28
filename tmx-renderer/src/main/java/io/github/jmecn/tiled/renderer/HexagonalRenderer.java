@@ -93,6 +93,50 @@ public class HexagonalRenderer extends OrthogonalRenderer {
     }
 
     @Override
+    public void visitTiles(TileVisitor visitor) {
+        Point startTile = screenToTileCoords(0, 0);
+        if (staggerX) {
+            visitStaggerX(startTile, visitor);
+        } else {
+            visitStaggerY(startTile, visitor);
+        }
+    }
+
+    public void visitStaggerX(Point startTile, TileVisitor visitor) {
+        int tileZIndex = 0;
+        int x = startTile.getX();
+        int y = startTile.getY();
+        boolean staggeredRow = doStaggerX(x);
+
+        while (y < height) {
+            for (int rowX = x; rowX < width; rowX += 2) {
+                visitor.visit(rowX, y, tileZIndex);
+                tileZIndex++;
+            }
+            if (staggeredRow) {
+                x -= 1;
+                y += 1;
+                staggeredRow = false;
+            } else {
+                x += 1;
+                staggeredRow = true;
+            }
+        }
+    }
+
+    public void visitStaggerY(Point startTile, TileVisitor visitor) {
+        int tileZIndex = 0;
+        int x = startTile.getX();
+        int y = startTile.getY();
+        for (int rowY = y; rowY < height; rowY++) {
+            for (int rowX = x; rowX < width; rowX++) {
+                visitor.visit(rowX, rowY, tileZIndex);
+                tileZIndex++;
+            }
+        }
+    }
+
+    @Override
     public Spatial render(TileLayer layer) {
         // instance the layer node
         Node layerNode = getLayerNode(layer);

@@ -89,6 +89,21 @@ public abstract class MapRenderer {
         sortLayers();
     }
 
+    public static MapRenderer create(TiledMap tiledMap) {
+        switch (tiledMap.getOrientation()) {
+            case ORTHOGONAL:
+                return new OrthogonalRenderer(tiledMap);
+            case ISOMETRIC:
+                return new IsometricRenderer(tiledMap);
+            case STAGGERED:
+                return new StaggeredRenderer(tiledMap);
+            case HEXAGONAL:
+                return new HexagonalRenderer(tiledMap);
+            default:
+                throw new IllegalArgumentException("Unsupported orientation: " + tiledMap.getOrientation());
+        }
+    }
+
     public void sortLayers() {
         List<Layer> layers = new ArrayList<>();
 
@@ -230,6 +245,8 @@ public abstract class MapRenderer {
 
         return rootNode;
     }
+
+    protected abstract void visitTiles(TileVisitor visitor);
 
     protected abstract Spatial render(TileLayer layer);
 

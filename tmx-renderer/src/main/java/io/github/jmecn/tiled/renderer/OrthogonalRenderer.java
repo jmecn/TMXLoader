@@ -55,6 +55,64 @@ public class OrthogonalRenderer extends MapRenderer {
     }
 
     @Override
+    public void visitTiles(TileVisitor visitor) {
+        int startX = 0;
+        int startY = 0;
+        int endX = width - 1;
+        int endY = height - 1;
+
+        int incX = 1;
+        int incY = 1;
+        int tmp;
+        RenderOrder renderOrder = map.getRenderOrder();
+        switch (renderOrder) {
+            case RIGHT_UP: {
+                // swap y
+                tmp = endY;
+                endY = startY;
+                startY = tmp;
+                incY = -1;
+                break;
+            }
+            case LEFT_DOWN: {
+                // swap x
+                tmp = endX;
+                endX = startX;
+                startX = tmp;
+                incX = -1;
+                break;
+            }
+            case LEFT_UP: {
+                // swap x
+                tmp = endX;
+                endX = startX;
+                startX = tmp;
+                incX = -1;
+
+                // swap y
+                tmp = endY;
+                endY = startY;
+                startY = tmp;
+                incY = -1;
+                break;
+            }
+            case RIGHT_DOWN: {
+                break;
+            }
+        }
+        endX += incX;
+        endY += incY;
+
+        int tileZIndex = 0;
+        for (int y = startY; y != endY; y += incY) {
+            for (int x = startX; x != endX; x += incX) {
+                visitor.visit(x, y, tileZIndex);
+                tileZIndex++;
+            }
+        }
+    }
+
+    @Override
     public Spatial render(TileLayer layer) {
         int startX = 0;
         int startY = 0;

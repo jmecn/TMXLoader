@@ -108,42 +108,25 @@ public class TestYAxisSort extends SimpleApplication {
         // the tile map
         int w = 16;
         int h = 9;
-        for (int y = 0; y < h; y++) {
-            // how many tiles?
-            for (int x = 0; x < w; x++) {
-                float r = (float) y / h;
-                float g = (float) x / w;
-                ColorRGBA color = new ColorRGBA(r, g, 1f, 1f);
-                Material mat = materialFactory.newMaterial(color);
+        renderer.visitTiles((x, y, z) -> {
+            float r = (float) y / h;
+            float g = (float) x / w;
+            ColorRGBA color = new ColorRGBA(r, g, 1f, 1f);
+            Material mat = materialFactory.newMaterial(color);
 
-                // position
-                float px = x * 10f;
-                float py = y * 10f;
-                float pz = renderer.getTileZAxis(x, y);
-                // float pz = getZIndex(x, y);// z-index in the layer
+            // position
+            float px = x * 10f;
+            float py = y * 10f;
+            float pz = renderer.getTileZAxis(x, y);
+            // float pz = getZIndex(x, y);// z-index in the layer
 
-                TileMesh mesh = new TileMesh(new Vector2f(), new Vector2f(TILE_SIZE, TILE_SIZE), new Vector2f(), new Vector2f(0, TILE_SIZE));
-                Geometry geom = new Geometry("tile#" + x + "," + y, mesh);
-                geom.setMaterial(mat);
-                scene.attachChild(geom);
+            TileMesh mesh = new TileMesh(new Vector2f(), new Vector2f(TILE_SIZE, TILE_SIZE), new Vector2f(), new Vector2f(0, TILE_SIZE));
+            Geometry geom = new Geometry("tile#" + x + "," + y, mesh);
+            geom.setMaterial(mat);
+            scene.attachChild(geom);
 
-                geom.move(px, pz, py);
-            }
-        }
-
-        // the character
-        Material mat = materialFactory.newMaterial(ColorRGBA.Green);
-
-        TileMesh mesh = new TileMesh(new Vector2f(), new Vector2f(TILE_SIZE, TILE_SIZE), new Vector2f(), new Vector2f());
-        Geometry geom = new Geometry("Character", mesh);
-        geom.setMaterial(mat);
-        scene.attachChild(geom);
-
-        // position
-        float x = 24f;
-        float y = 24f;
-        float z = renderer.getTileZAxis(x / TILE_SIZE, y / TILE_SIZE);
-        geom.move(x, z, y);
+            geom.move(px, pz, py);
+        });
 
         scene.updateGeometricState();
         return scene;

@@ -234,23 +234,7 @@ public class TiledMapAppState extends BaseAppState implements AnalogListener, Ac
             this.map = map;
         }
 
-        switch (map.getOrientation()) {
-            case ORTHOGONAL:
-                mapRenderer = new OrthogonalRenderer(map);
-                break;
-            case ISOMETRIC:
-                mapRenderer = new IsometricRenderer(map);
-                break;
-            case HEXAGONAL:
-                mapRenderer = new HexagonalRenderer(map);
-                break;
-            case STAGGERED:
-                mapRenderer = new StaggeredRenderer(map);
-                break;
-            default:
-                // use OrthogonalRenderer by default
-                mapRenderer = new OrthogonalRenderer(map);
-        }
+        mapRenderer = MapRenderer.create(map);
 
         // new sprite factory. the materialFactory is set in initialize()
         DefaultSpriteFactory spriteFactory = new DefaultSpriteFactory();
