@@ -12,11 +12,18 @@ Or use the [source](https://github.com/jmecn/TMXLoader).
 maven
 
 ```xml
-<dependency>
-    <groupId>io.github.jmecn</groupId>
-    <artifactId>tmx-loader</artifactId>
-    <version>0.5.0</version>
-</dependency>
+<dependencies>
+    <dependency>
+        <groupId>io.github.jmecn</groupId>
+        <artifactId>tmx-loader</artifactId>
+        <version>0.6.0</version>
+    </dependency>
+    <dependency>
+        <groupId>io.github.jmecn</groupId>
+        <artifactId>tmx-renderer</artifactId>
+        <version>0.6.0</version>
+    </dependency>
+</dependencies>
 ```
 
 gradle
@@ -27,7 +34,8 @@ repositories {
 }
 
 dependencies {
-    implementation 'io.github.jmecn:tmx-loader:0.5.0'
+    implementation 'io.github.jmecn:tmx-loader:0.6.0'
+    implementation 'io.github.jmecn:tmx-renderer:0.6.0'
 }
 ```
 
@@ -52,7 +60,7 @@ public class TmxLoaderExample extends SimpleApplication {
     @Override
     public void simpleInitApp() {
         // register it
-        assetManager.registerLoader(TmxLoader.class, "tmx", "tsx");
+        TmxLoader.registerLoader(assetManager);
 
         // load tmx with it
         TiledMap map = (TiledMap) assetManager.loadAsset("Desert/desert.tmx");
