@@ -37,7 +37,7 @@ public class IsometricRenderer extends MapRenderer {
     }
 
     @Override
-    protected void visitTiles(TileVisitor visitor) {
+    public void visitTiles(TileVisitor visitor) {
         int count = 0;
         for(int p = 0; p < height + width - 1; p++) {
             for(int y = 0; y <= p; y++) {

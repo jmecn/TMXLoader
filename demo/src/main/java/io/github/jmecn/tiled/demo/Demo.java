@@ -5,7 +5,6 @@ import com.jme3.app.StatsAppState;
 import com.jme3.app.state.ScreenshotAppState;
 import com.jme3.asset.TextureKey;
 import com.jme3.math.Vector2f;
-import com.jme3.scene.Geometry;
 import com.jme3.scene.Spatial;
 import com.jme3.texture.Texture;
 import com.jme3.texture.Texture2D;
@@ -76,54 +75,12 @@ public class Demo extends SimpleApplication {
         debugState.initialize(stateManager, this);
         stateManager.attach(debugState);
 
-//        ObjectGroup objectGroup = (ObjectGroup) tiledMap.getLayer("Collision");
-//        for (MapObject obj : objectGroup.getObjects()) {
-//            createBody(physicsState, obj);
-//        }
-
         // generate collisions
-        for (Layer layer : mapRenderer.getSortedLayers()) {
-            if (layer instanceof TileLayer) {
-                TileLayer tileLayer = (TileLayer) layer;
-                for (int y = 0; y < tileLayer.getHeight(); y++) {
-                    for (int x = 0; x < tileLayer.getWidth(); x++) {
-                        Tile tile = tileLayer.getTileAt(x, y);
-                        if (tile != null && tile.getCollisions() != null) {
-                            Vector2f pos = mapRenderer.tileToPixelCoords(x, y);
-                            Vector2f size = new Vector2f(tile.getWidth(), tile.getHeight());
-                            for (MapObject obj : tile.getCollisions().getObjects()) {
-                                createTileBody(physicsState, pos, size, obj);
-                            }
-                        }
-                    }
-                }
-            }
-            if (layer instanceof ObjectGroup) {
-                ObjectGroup objGroup = (ObjectGroup) layer;
-                for (MapObject obj : objGroup.getObjects()) {
-                    if (obj.getShape() == ObjectType.TILE) {
-                        Tile tile = obj.getTile();
-                        if (tile != null && tile.getCollisions() != null) {
-                            Vector2f size = new Vector2f(tile.getWidth(), tile.getHeight());
-                            Vector2f pos = new Vector2f((float) obj.getX(), (float) obj.getY());
-                            for (MapObject collision : tile.getCollisions().getObjects()) {
+        initPhysics(physicsState, mapRenderer);
 
-                                boolean isSensor = Boolean.TRUE.equals(collision.getProperties().get("is_sensor"));
-                                String sensorBehavior = (String) collision.getProperties().get("sensor_behavior");
-                                Body body = createObjectBody(physicsState, pos, size, collision, isSensor);
-                                if (isSensor) {
-                                    SensorControl control = new SensorControl(body, sensorBehavior);// TODO cache for later use
-                                    physicsState.addContactListener(control);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
         ObjectGroup locations = (ObjectGroup) tiledMap.getLayer("Location");
         for (MapObject obj : locations.getObjects()) {
-            if ("出生点".equals(obj.getName())) {
+            if ("Start Point".equals(obj.getName())) {
 
                 float sx = (float) obj.getX();
                 float sy = (float) obj.getY();
@@ -149,6 +106,48 @@ public class Demo extends SimpleApplication {
                 playerState.setBody(body);
                 playerState.setPlayer(player);
                 break;
+            }
+        }
+    }
+
+    private void initPhysics(PhysicsState physicsState, MapRenderer mapRenderer) {
+
+        // generate collisions
+        for (Layer layer : mapRenderer.getSortedLayers()) {
+            if (layer instanceof TileLayer) {
+                TileLayer tileLayer = (TileLayer) layer;
+                mapRenderer.visitTiles((x, y, z) -> {
+                    Tile tile = tileLayer.getTileAt(x, y);
+                    if (tile != null && tile.getCollisions() != null) {
+                        Vector2f pos = mapRenderer.tileToPixelCoords(x, y);
+                        Vector2f size = new Vector2f(tile.getWidth(), tile.getHeight());
+                        for (MapObject obj : tile.getCollisions().getObjects()) {
+                            createTileBody(physicsState, pos, size, obj);
+                        }
+                    }
+                });
+            }
+            if (layer instanceof ObjectGroup) {
+                ObjectGroup objGroup = (ObjectGroup) layer;
+                for (MapObject obj : objGroup.getObjects()) {
+                    if (obj.getShape() == ObjectType.TILE) {
+                        Tile tile = obj.getTile();
+                        if (tile != null && tile.getCollisions() != null) {
+                            Vector2f size = new Vector2f(tile.getWidth(), tile.getHeight());
+                            Vector2f pos = new Vector2f((float) obj.getX(), (float) obj.getY());
+                            for (MapObject collision : tile.getCollisions().getObjects()) {
+
+                                boolean isSensor = Boolean.TRUE.equals(collision.getProperties().get("is_sensor"));
+                                String sensorBehavior = (String) collision.getProperties().get("sensor_behavior");
+                                Body body = createObjectBody(physicsState, pos, size, collision, isSensor);
+                                if (isSensor) {
+                                    SensorControl control = new SensorControl(body, sensorBehavior);// TODO cache for later use
+                                    physicsState.addContactListener(control);
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
     }

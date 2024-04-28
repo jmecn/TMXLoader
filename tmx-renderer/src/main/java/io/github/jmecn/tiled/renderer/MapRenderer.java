@@ -246,7 +246,7 @@ public abstract class MapRenderer {
         return rootNode;
     }
 
-    protected abstract void visitTiles(TileVisitor visitor);
+    public abstract void visitTiles(TileVisitor visitor);
 
     protected abstract Spatial render(TileLayer layer);
 

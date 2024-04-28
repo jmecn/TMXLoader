@@ -26,7 +26,7 @@
   <object id="42" gid="463" x="365" y="192.5" width="80" height="80"/>
  </objectgroup>
  <objectgroup id="4" name="Location" visible="0">
-  <object id="15" name="出生点" x="70" y="242.833">
+  <object id="15" name="Start Point" x="70" y="242.833">
    <point/>
   </object>
  </objectgroup>
