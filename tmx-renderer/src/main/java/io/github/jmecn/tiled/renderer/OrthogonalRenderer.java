@@ -20,13 +20,13 @@ import io.github.jmecn.tiled.renderer.shape.Rect;
  */
 public class OrthogonalRenderer extends MapRenderer {
 
-    public OrthogonalRenderer(TiledMap map) {
-        super(map);
+    public OrthogonalRenderer(TiledMap tiledMap) {
+        super(tiledMap);
     }
 
     public float getTileZAxis(float x, float y) {
         float z;
-        switch (map.getRenderOrder()) {
+        switch (tiledMap.getRenderOrder()) {
             case RIGHT_UP:
                 z = (height - 1 - y) * width + x;
                 break;
@@ -62,7 +62,7 @@ public class OrthogonalRenderer extends MapRenderer {
         int incX = 1;
         int incY = 1;
         int tmp;
-        RenderOrder renderOrder = map.getRenderOrder();
+        RenderOrder renderOrder = tiledMap.getRenderOrder();
         switch (renderOrder) {
             case RIGHT_UP: {
                 // swap y

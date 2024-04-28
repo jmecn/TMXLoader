@@ -20,8 +20,8 @@ import io.github.jmecn.tiled.renderer.shape.IsoRect;
  */
 public class IsometricRenderer extends MapRenderer {
 
-    public IsometricRenderer(TiledMap map) {
-        super(map);
+    public IsometricRenderer(TiledMap tiledMap) {
+        super(tiledMap);
         
         int side = width + height;
         mapSize.set(side * tileWidth * 0.5f, side * tileHeight * 0.5f);

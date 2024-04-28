@@ -70,6 +70,7 @@ public class Demo extends SimpleApplication {
 
         viewState.setMap(tiledMap);
         MapRenderer mapRenderer = viewState.getMapRenderer();
+        mapRenderer.render();// prepare for physics
 
         PhysicsDebugState debugState = new PhysicsDebugState(mapRenderer.getSpriteFactory());
         debugState.initialize(stateManager, this);
@@ -127,6 +128,7 @@ public class Demo extends SimpleApplication {
                     }
                 });
             }
+
             if (layer instanceof ObjectGroup) {
                 ObjectGroup objGroup = (ObjectGroup) layer;
                 for (MapObject obj : objGroup.getObjects()) {
@@ -143,6 +145,10 @@ public class Demo extends SimpleApplication {
                                 if (isSensor) {
                                     SensorControl control = new SensorControl(body, sensorBehavior);// TODO cache for later use
                                     physicsState.addContactListener(control);
+                                    Spatial spatial = mapRenderer.getMapObjectSpatial(objGroup, obj);
+                                    if (spatial != null) {
+                                        spatial.addControl(control);
+                                    }
                                 }
                             }
                         }

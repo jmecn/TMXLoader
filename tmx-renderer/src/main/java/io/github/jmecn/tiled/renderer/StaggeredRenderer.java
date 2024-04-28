@@ -15,14 +15,14 @@ import io.github.jmecn.tiled.renderer.shape.Diamond;
  */
 public class StaggeredRenderer extends HexagonalRenderer {
 
-    public StaggeredRenderer(TiledMap map) {
-        super(map);
+    public StaggeredRenderer(TiledMap tiledMap) {
+        super(tiledMap);
     }
 
     @Override
     public Spatial createTileGrid(Material material) {
         // create a grid
-        Diamond mesh = new Diamond(map.getTileWidth(), map.getTileHeight(), true);
+        Diamond mesh = new Diamond(tiledMap.getTileWidth(), tiledMap.getTileHeight(), true);
         Geometry geom = new Geometry("TileGrid", mesh);
         geom.setMaterial(material);
         return geom;

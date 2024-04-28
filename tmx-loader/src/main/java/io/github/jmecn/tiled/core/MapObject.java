@@ -90,6 +90,8 @@ public class MapObject extends Base {
     private TiledImage image;// ObjectType.IMAGE
     private ObjectText textData;// ObjectType.TEXT
 
+    private boolean isNeedUpdate = true;
+
     public MapObject() {
         // for serialization
     }
@@ -147,6 +149,7 @@ public class MapObject extends Base {
 
     public void setX(double x) {
         this.x = x;
+        invalidate();
     }
 
     public double getY() {
@@ -155,6 +158,7 @@ public class MapObject extends Base {
 
     public void setY(double y) {
         this.y = y;
+        invalidate();
     }
 
     public double getWidth() {
@@ -179,6 +183,7 @@ public class MapObject extends Base {
 
     public void setRotation(double rotation) {
         this.rotation = rotation;
+        invalidate();
     }
 
     public String getTemplate() {
@@ -195,6 +200,7 @@ public class MapObject extends Base {
 
     public void setVisible(boolean visible) {
         this.visible = visible;
+        invalidate();
     }
 
     public int getGid() {
@@ -235,6 +241,21 @@ public class MapObject extends Base {
 
     public void setTextData(ObjectText textData) {
         this.textData = textData;
+    }
+
+    public void invalidate() {
+        isNeedUpdate = true;
+        if (objectGroup != null) {
+            objectGroup.invalidate();
+        }
+    }
+
+    public boolean isNeedUpdate() {
+        return isNeedUpdate;
+    }
+
+    public void setNeedUpdate(boolean isNeedUpdate) {
+        this.isNeedUpdate = isNeedUpdate;
     }
 
     @Override

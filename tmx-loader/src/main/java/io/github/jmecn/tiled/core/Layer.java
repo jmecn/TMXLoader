@@ -231,6 +231,7 @@ public class Layer extends Base {
      */
     public void setOpacity(double opacity) {
         this.opacity = opacity;
+        invalidate();
     }
 
     /**
@@ -249,6 +250,7 @@ public class Layer extends Base {
      */
     public void setVisible(boolean visible) {
         this.visible = visible;
+        invalidate();
     }
 
     public boolean isLocked() {
@@ -257,6 +259,7 @@ public class Layer extends Base {
 
     public void setLocked(boolean locked) {
         this.locked = locked;
+        invalidate();
     }
 
     /**
@@ -275,6 +278,7 @@ public class Layer extends Base {
      */
     public void setTintColor(ColorRGBA tintColor) {
         this.tintColor = tintColor;
+        invalidate();
     }
 
     /**
@@ -398,6 +402,7 @@ public class Layer extends Base {
      */
     public void invalidRenderOffset() {
         isRenderOffsetUpdated = true;
+        invalidate();
     }
 
     /**
@@ -405,6 +410,7 @@ public class Layer extends Base {
      */
     public void invalidRenderParallax() {
         isRenderParallaxUpdated = true;
+        invalidate();
     }
 
     /**
@@ -449,6 +455,10 @@ public class Layer extends Base {
 
     public void setNeedUpdated(boolean isSpatialUpdated) {
         this.isNeedUpdate = isSpatialUpdated;
+    }
+
+    public void invalidate() {
+        isNeedUpdate = true;
     }
 
     @Override

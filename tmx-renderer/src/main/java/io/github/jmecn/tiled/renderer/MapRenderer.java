@@ -1,6 +1,8 @@
 package io.github.jmecn.tiled.renderer;
 
 import com.jme3.material.Material;
+import com.jme3.math.FastMath;
+import com.jme3.math.Quaternion;
 import com.jme3.math.Vector2f;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.queue.RenderQueue;
@@ -9,10 +11,10 @@ import com.jme3.scene.Mesh;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import io.github.jmecn.tiled.core.*;
-import io.github.jmecn.tiled.enums.DrawOrder;
 import io.github.jmecn.tiled.renderer.factory.SpriteFactory;
 import io.github.jmecn.tiled.math2d.Point;
-import io.github.jmecn.tiled.renderer.shape.Rect;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
@@ -50,11 +52,13 @@ import java.util.*;
  */
 public abstract class MapRenderer {
 
+    static Logger logger = LoggerFactory.getLogger(MapRenderer.class);
+
     protected double layerDistance = 16f;// the distance between layers
     protected double layerGap = 1f;// the gap between layers
     protected double step;
 
-    protected TiledMap map;
+    protected TiledMap tiledMap;
     protected int width;
     protected int height;
     protected int tileWidth;
@@ -62,8 +66,14 @@ public abstract class MapRenderer {
 
     protected Node rootNode;
     protected List<Layer> sortedLayers;
-    protected Map<Layer, Node> layerNodeMap;// save the layer node
-    protected Map<Layer, Spatial[]> layerSpatialMap;// save the layer spatial
+    protected Map<Layer, Node> layerNodeMap;// save the layer-node relation
+    // for tile layer, save the layer tile-spatial relation
+    protected Map<Layer, Spatial[]> layerSpatialMap;
+    // for object group, save the layer object-spatial relation
+    protected Map<Layer, Map<MapObject, Spatial>> objectSpatialMap;
+    // for image layer, save the layer image-spatial relation
+    protected Map<Layer, Spatial> imageSpatialMap;
+    protected Map<Layer, Material> layerMaterialMap;
 
     protected SpriteFactory spriteFactory;
 
@@ -72,12 +82,12 @@ public abstract class MapRenderer {
      */
     protected Point mapSize;
 
-    protected MapRenderer(TiledMap map) {
-        this.map = map;
-        this.width = map.getWidth();
-        this.height = map.getHeight();
-        this.tileWidth = map.getTileWidth();
-        this.tileHeight = map.getTileHeight();
+    protected MapRenderer(TiledMap tiledMap) {
+        this.tiledMap = tiledMap;
+        this.width = tiledMap.getWidth();
+        this.height = tiledMap.getHeight();
+        this.tileWidth = tiledMap.getTileWidth();
+        this.tileHeight = tiledMap.getTileHeight();
         this.step = layerDistance / (height * width);
         this.mapSize = new Point(width * tileWidth, height * tileHeight);
 
@@ -86,6 +96,9 @@ public abstract class MapRenderer {
 
         this.layerNodeMap = new HashMap<>();
         this.layerSpatialMap = new HashMap<>();
+        this.objectSpatialMap = new HashMap<>();
+        this.imageSpatialMap = new HashMap<>();
+        this.layerMaterialMap = new HashMap<>();
         sortLayers();
     }
 
@@ -107,7 +120,7 @@ public abstract class MapRenderer {
     public void sortLayers() {
         List<Layer> layers = new ArrayList<>();
 
-        for (Layer layer : map.getLayers()) {
+        for (Layer layer : tiledMap.getLayers()) {
             if (layer instanceof GroupLayer) {
                 sortLayers(layers, (GroupLayer) layer);
             } else {
@@ -161,13 +174,19 @@ public abstract class MapRenderer {
         });
     }
 
-    private Spatial[] getLayerSpatials(TileLayer layer) {
+    public Spatial[] getLayerSpatials(TileLayer layer) {
         if (layerSpatialMap.containsKey(layer)) {
             return layerSpatialMap.get(layer);
         }
         Spatial[] spatials = new Spatial[layer.getHeight() * layer.getWidth()];
         layerSpatialMap.put(layer, spatials);
         return spatials;
+    }
+
+    public Spatial getLayerSpatialAt(TileLayer layer, int x, int y) {
+        Spatial[] spatials = getLayerSpatials(layer);
+        int index = (y - layer.getY()) * layer.getWidth() + (x - layer.getX());
+        return spatials[index];
     }
 
     /**
@@ -201,6 +220,77 @@ public abstract class MapRenderer {
         }
     }
 
+    public Map<MapObject, Spatial> getObjectSpatialMap(ObjectGroup layer) {
+        if (objectSpatialMap.containsKey(layer)) {
+            return objectSpatialMap.get(layer);
+        }
+        Map<MapObject, Spatial> map = new HashMap<>();
+        objectSpatialMap.put(layer, map);
+        return map;
+    }
+
+    public Spatial getMapObjectSpatial(ObjectGroup layer, MapObject obj) {
+        return getObjectSpatialMap(layer).get(obj);
+    }
+
+    public Spatial getOrCreateMapObjectSpatial(ObjectGroup layer, MapObject obj, Material material) {
+        Map<MapObject, Spatial> objectMap = getObjectSpatialMap(layer);
+
+        Spatial spatial;
+        if (objectMap.containsKey(obj)) {
+            spatial = objectMap.get(obj);
+        } else {
+            spatial = spriteFactory.newObjectSprite(obj, material);
+            if (spatial == null) {
+                logger.warn("Failed creating sprite for object failed, object:{}", obj);
+                return null;
+            }
+            objectMap.put(obj, spatial);
+        }
+        return spatial;
+    }
+
+    public Spatial getImageLayerSpatial(ImageLayer layer) {
+        return imageSpatialMap.get(layer);
+    }
+
+    public Spatial getOrCreateImageLayerSpatial(ImageLayer layer) {
+        if (imageSpatialMap.containsKey(layer)) {
+            return imageSpatialMap.get(layer);
+        } else {
+            Material material = getLayerMaterial(layer);
+            Mesh mesh = spriteFactory.getMeshFactory().rectangle(mapSize.getX(), mapSize.getY(), true);
+            Geometry geom = new Geometry(layer.getName(), mesh);
+            geom.setMaterial(material);
+            imageSpatialMap.put(layer, geom);
+            return geom;
+        }
+    }
+
+    private Material getLayerMaterial(ObjectGroup layer) {
+        // cache or create material
+        Material material = layerMaterialMap.get(layer);
+        if (material == null) {
+            material = spriteFactory.newMaterial(layer.getColor(), layer.getTintColor());
+            layerMaterialMap.put(layer, material);
+        } else {
+            spriteFactory.setTintColor(material, layer.getTintColor());
+        }
+        return material;
+    }
+
+    private Material getLayerMaterial(ImageLayer layer) {
+        // cache or create material
+        Material material = layerMaterialMap.get(layer);
+        if (material == null) {
+            material = spriteFactory.newMaterial(layer.getImage(), layer.getTintColor());
+            layerMaterialMap.put(layer, material);
+        } else {
+            spriteFactory.setTintColor(material, layer.getTintColor());
+        }
+        return material;
+    }
+
     public abstract Spatial createTileGrid(Material material);
 
     /**
@@ -210,7 +300,7 @@ public abstract class MapRenderer {
      */
     public Spatial render() {
 
-        if (map == null) {
+        if (tiledMap == null) {
             return null;
         }
 
@@ -218,28 +308,23 @@ public abstract class MapRenderer {
         for (int i = 0; i < len; i++) {
             Layer layer = sortedLayers.get(i);
 
-            // skip invisible layer
-            if (!layer.isVisible() || !layer.isNeedUpdated() || (layer instanceof GroupLayer)) {
+            // skip layer not updated
+            if (!layer.isNeedUpdated() || (layer instanceof GroupLayer)) {
                 continue;
             }
 
-            Spatial visual = null;
-            if (layer instanceof TileLayer) {
-                visual = render((TileLayer) layer);
-            }
-
-            if (layer instanceof ObjectGroup) {
-                visual = render((ObjectGroup) layer);
-            }
-
-            if (layer instanceof ImageLayer) {
-                visual = render((ImageLayer) layer);
-            }
+            Spatial visual = render(layer);
 
             if (visual != null) {
                 Vector3f loc = visual.getLocalTranslation();
                 visual.setLocalTranslation(loc.x, getLayerYIndex(i), loc.z);
                 layer.setNeedUpdated(false);
+            }
+
+            if (layer.isVisible()) {
+                rootNode.attachChild(visual);
+            } else {
+                rootNode.detachChild(visual);
             }
         }
 
@@ -248,9 +333,20 @@ public abstract class MapRenderer {
 
     public abstract void visitTiles(TileVisitor visitor);
 
+    protected Spatial render(Layer layer) {
+        if (layer instanceof TileLayer) {
+            return render((TileLayer) layer);
+        } else if (layer instanceof ObjectGroup) {
+            return render((ObjectGroup) layer);
+        } else if (layer instanceof ImageLayer) {
+            return render((ImageLayer) layer);
+        } else {
+            return null;
+        }
+    }
+
     protected Spatial render(TileLayer layer) {
         Node layerNode = getLayerNode(layer);
-        layerNode.detachAllChildren();
 
         visitTiles((x, y, z) -> {
             if (layer.isNeedUpdateAt(x, y)) {
@@ -277,28 +373,26 @@ public abstract class MapRenderer {
     protected Spatial render(ObjectGroup layer) {
         List<MapObject> objects = layer.getObjects();
         Node layerNode = getLayerNode(layer);
+        Map<MapObject, Spatial> objectMap = getObjectSpatialMap(layer);
+
+
+        Material material = getLayerMaterial(layer);
 
         int len = objects.size();
-
-        if (len > 0) {
-            // sort draw order
-            if (Objects.requireNonNull(layer.getDrawOrder()) == DrawOrder.TOPDOWN) {
-                objects.sort(new CompareTopdown());
-            } else if (layer.getDrawOrder() == DrawOrder.INDEX) {
-                objects.sort(new CompareIndex());
-            }
-        }
-
-        Material material = spriteFactory.newMaterial(layer.getColor(), layer.getTintColor());
-
+        objects.sort(layer.getDrawOrder());
         for (int i = 0; i < len; i++) {
             MapObject obj = objects.get(i);
 
+            if (!obj.isNeedUpdate()) {
+                continue;
+            }
+
             if (obj.isVisible()) {
-                Spatial spatial = spriteFactory.newObjectSprite(obj, material);
+                Spatial spatial = getOrCreateMapObjectSpatial(layer, obj, material);
                 if (spatial == null) {
                     continue;
                 }
+
                 spriteFactory.setTintColor(spatial, layer.getTintColor());
                 spriteFactory.setLayerOpacity(spatial, (float) layer.getOpacity());
 
@@ -311,8 +405,21 @@ public abstract class MapRenderer {
 
                 Vector2f screenCoord = pixelToScreenCoords(x, y);
                 spatial.move(screenCoord.x, z, screenCoord.y);
+
+                double deg = obj.getRotation();
+                if (deg != 0) {
+                    float radian = (float) (FastMath.DEG_TO_RAD * deg);
+                    // rotate the spatial clockwise
+                    spatial.setLocalRotation(new Quaternion().fromAngles(0, -radian, 0));
+                }
                 layerNode.attachChild(spatial);
+            } else {
+                Spatial spatial = objectMap.get(obj);
+                if (spatial != null) {
+                    layerNode.detachChild(spatial);
+                }
             }
+            obj.setNeedUpdate(false);
         }
 
         return layerNode;
@@ -322,18 +429,20 @@ public abstract class MapRenderer {
         Node layerNode = getLayerNode(layer);
 
         if (layer.isNeedUpdated()) {
-            layerNode.detachAllChildren();
 
-            Material material = spriteFactory.newMaterial(layer.getImage(), layer.getTintColor());
+            if (layer.isVisible()) {
+                Spatial spatial = getOrCreateImageLayerSpatial(layer);
 
-            Mesh mesh = new Rect(mapSize.getX(), mapSize.getY(), true);
-            Geometry geom = new Geometry(layer.getName(), mesh);
-            geom.setMaterial(material);
+                spriteFactory.setTintColor(spatial, layer.getTintColor());
+                spriteFactory.setLayerOpacity(spatial, (float) layer.getOpacity());
 
-            spriteFactory.setTintColor(geom, layer.getTintColor());
-            spriteFactory.setLayerOpacity(geom, (float) layer.getOpacity());
-
-            layerNode.attachChild(geom);
+                layerNode.attachChild(spatial);
+            } else {
+                Spatial spatial = getImageLayerSpatial(layer);
+                if (spatial != null) {
+                    layerNode.detachChild(spatial);
+                }
+            }
 
             layer.setNeedUpdated(false);
         }
@@ -453,26 +562,6 @@ public abstract class MapRenderer {
     public float getObjectTopDownYIndex(float y) {
         float tileY = y / mapSize.getY();
         return (float) (tileY * layerDistance);
-    }
-
-    private static final class CompareTopdown implements Comparator<MapObject> {
-        @Override
-        public int compare(MapObject o1, MapObject o2) {
-            double a = o1.getY();
-            double b = o2.getY();
-
-            return Double.compare(a, b);
-        }
-    }
-
-    private static final class CompareIndex implements Comparator<MapObject> {
-        @Override
-        public int compare(MapObject o1, MapObject o2) {
-            int a = o1.getId();
-            int b = o2.getId();
-
-            return Integer.compare(a, b);
-        }
     }
 
     public Point getMapDimension() {

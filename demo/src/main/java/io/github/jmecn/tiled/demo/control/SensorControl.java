@@ -2,7 +2,11 @@ package io.github.jmecn.tiled.demo.control;
 
 import com.jme3.renderer.RenderManager;
 import com.jme3.renderer.ViewPort;
+import com.jme3.scene.Geometry;
+import com.jme3.scene.Node;
+import com.jme3.scene.Spatial;
 import com.jme3.scene.control.AbstractControl;
+import io.github.jmecn.tiled.renderer.MaterialConst;
 import org.jbox2d.callbacks.ContactImpulse;
 import org.jbox2d.callbacks.ContactListener;
 import org.jbox2d.collision.Manifold;
@@ -32,9 +36,16 @@ public class SensorControl extends AbstractControl implements ContactListener {
     @Override
     protected void controlUpdate(float tpf) {
         if (count > 0) {
-            logger.info("object enter:{}", behavior);
+            setOpacity(0.6f);
         } else {
-            logger.info("object leave:{}", behavior);
+            setOpacity(1.0f);
+        }
+    }
+
+    public void setOpacity(float opacity) {
+        if (spatial instanceof Geometry) {
+            Geometry geometry = (Geometry) spatial;
+            geometry.getMaterial().setFloat(MaterialConst.OPACITY, opacity);
         }
     }
 

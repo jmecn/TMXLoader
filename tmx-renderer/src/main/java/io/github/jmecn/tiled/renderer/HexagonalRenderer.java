@@ -32,22 +32,22 @@ public class HexagonalRenderer extends OrthogonalRenderer {
     protected boolean staggerEven;
     protected int staggerIndex;
 
-    public HexagonalRenderer(TiledMap map) {
-        super(map);
+    public HexagonalRenderer(TiledMap tiledMap) {
+        super(tiledMap);
 
-        staggerX = map.getStaggerAxis() == StaggerAxis.X;
-        staggerEven = map.getStaggerIndex() == StaggerIndex.EVEN;
+        staggerX = tiledMap.getStaggerAxis() == StaggerAxis.X;
+        staggerEven = tiledMap.getStaggerIndex() == StaggerIndex.EVEN;
         staggerIndex = staggerEven ? 0 : 1;
 
         sideLengthX = sideLengthY = 0;
         if (staggerX) {
-            sideLengthX = map.getHexSideLength();
+            sideLengthX = tiledMap.getHexSideLength();
         } else {
-            sideLengthY = map.getHexSideLength();
+            sideLengthY = tiledMap.getHexSideLength();
         }
 
-        sideOffsetX = (map.getTileWidth() - sideLengthX) / 2;
-        sideOffsetY = (map.getTileHeight() - sideLengthY) / 2;
+        sideOffsetX = (tiledMap.getTileWidth() - sideLengthX) / 2;
+        sideOffsetY = (tiledMap.getTileHeight() - sideLengthY) / 2;
 
         columnWidth = sideOffsetX + sideLengthX;
         rowHeight = sideOffsetY + sideLengthY;
@@ -84,7 +84,7 @@ public class HexagonalRenderer extends OrthogonalRenderer {
 
     @Override
     public Spatial createTileGrid(Material material) {
-        Hexagon mesh = new Hexagon(tileWidth, tileHeight, map.getHexSideLength(), map.getStaggerAxis(), true);
+        Hexagon mesh = new Hexagon(tileWidth, tileHeight, tiledMap.getHexSideLength(), tiledMap.getStaggerAxis(), true);
         Geometry geom = new Geometry("HexGrid", mesh);
         geom.setMaterial(material);
         return geom;
@@ -141,7 +141,7 @@ public class HexagonalRenderer extends OrthogonalRenderer {
         rect.setMaterial(gridMaterial);
         gridVisual.attachChild(rect);
 
-        HexGrid grid = new HexGrid(width, height, map.getTileWidth(), map.getTileHeight(), map.getHexSideLength(), map.getStaggerAxis(), map.getStaggerIndex());
+        HexGrid grid = new HexGrid(width, height, tiledMap.getTileWidth(), tiledMap.getTileHeight(), tiledMap.getHexSideLength(), tiledMap.getStaggerAxis(), tiledMap.getStaggerIndex());
         Geometry geom = new Geometry("HexGrid", grid);
         geom.setMaterial(gridMaterial);
         gridVisual.attachChild(geom);
