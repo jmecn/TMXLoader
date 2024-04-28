@@ -126,7 +126,7 @@ public final class MapLoader {
         map.setTiledVersion(tiledVersion);
         map.setClazz(clazz);
         map.setOrientation(orientation);
-        map.setRenderOrder(renderOrder.toLowerCase());
+        map.setRenderOrder(RenderOrder.fromString(renderOrder));
         map.setCompressionLevel(compressionLevel);
         map.setTileWidth(tileWidth);
         map.setTileHeight(tileHeight);

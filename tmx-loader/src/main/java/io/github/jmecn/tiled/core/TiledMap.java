@@ -517,10 +517,6 @@ public class TiledMap extends Base {
         return renderOrder;
     }
 
-    public void setRenderOrder(String renderOrder) {
-        this.renderOrder = RenderOrder.fromString(renderOrder);
-    }
-
     public void setRenderOrder(RenderOrder renderOrder) {
         this.renderOrder = renderOrder;
     }

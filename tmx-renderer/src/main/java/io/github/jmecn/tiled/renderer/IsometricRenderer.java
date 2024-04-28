@@ -40,8 +40,7 @@ public class IsometricRenderer extends MapRenderer {
     public Spatial render(TileLayer layer) {
         Node layerNode = getLayerNode(layer);
         
-        int tileZIndex = 0;
-        
+        int count = 0;
         for(int p = 0; p < height + width - 1; p++) {
             for(int y = 0; y <= p; y++) {
                 int x = p - y;
@@ -51,18 +50,14 @@ public class IsometricRenderer extends MapRenderer {
                         if (tile != null) {
                             Vector2f pixelCoord = tileToScreenCoords(x, y);
                             pixelCoord.x -= tileWidth * 0.5f;// move left to center the tile
-                            putTileSprite(layer, x, y, tileZIndex, tile, pixelCoord);
+                            putTileSprite(layer, x, y, getTileYAxis(count), tile, pixelCoord);
                         } else {
                             removeTileSprite(layer, x, y);
                         }
                     }
-                    tileZIndex++;
+                    count++;
                 }
             }
-        }
-        // make it thinner
-        if (tileZIndex > 0) {
-            layerNode.setLocalScale(1, layerDistance / tileZIndex, 1);
         }
         return layerNode;
     }

@@ -2,6 +2,7 @@ package io.github.jmecn.tiled.renderer;
 
 import com.jme3.material.Material;
 import com.jme3.math.Vector2f;
+import com.jme3.math.Vector3f;
 import com.jme3.renderer.queue.RenderQueue;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Mesh;
@@ -49,9 +50,9 @@ import java.util.*;
  */
 public abstract class MapRenderer {
 
-    protected float layerDistance = 16f;// the distance between layers
-    protected float layerGap = 1f;// the gap between layers
-    protected float step;
+    protected double layerDistance = 16f;// the distance between layers
+    protected double layerGap = 1f;// the gap between layers
+    protected double step;
 
     protected TiledMap map;
     protected int width;
@@ -221,7 +222,8 @@ public abstract class MapRenderer {
             }
 
             if (visual != null) {
-                visual.setLocalTranslation(0, getLayerYIndex(i), 0);
+                Vector3f loc = visual.getLocalTranslation();
+                visual.setLocalTranslation(loc.x, getLayerYIndex(i), loc.z);
                 layer.setNeedUpdated(false);
             }
         }
@@ -384,20 +386,39 @@ public abstract class MapRenderer {
         return rootNode;
     }
 
+    public void updateLayerYAxis() {
+        for (Layer layer : sortedLayers) {
+            layer.setNeedUpdated(true);
+        }
+    }
+
+    public void setLayerDistance(double layerDistance) {
+        this.layerDistance = layerDistance;
+        this.step = layerDistance / (height * width);
+        updateLayerYAxis();
+    }
+
+    public void setLayerGap(double layerGap) {
+        this.layerGap = layerGap;
+        updateLayerYAxis();
+    }
+
     public float getLayerYIndex(int index) {
-        return index * (layerDistance + layerGap);
+        return  (float) (index *(layerDistance + layerGap));
+    }
+
+    /**
+     * this is the z-index in the layer
+     * @param tileZIndex the z-index in the layer, range from [0 , width * height)
+     * @return the y-axis in the layer
+     */
+    protected float getTileYAxis(int tileZIndex) {
+        return (float) (tileZIndex * step);
     }
 
     public float getObjectTopDownYIndex(float y) {
         float tileY = y / mapSize.getY();
-        return tileY * layerDistance;
-    }
-
-    public float getTileYIndex(float x, float y) {
-        x = x / tileWidth;
-        y = y / tileHeight;
-        float z = (y * width + x) * step;
-        return (z < 0f) ? 0f : Math.min(z, layerDistance);
+        return (float) (tileY * layerDistance);
     }
 
     private static final class CompareTopdown implements Comparator<MapObject> {

@@ -97,23 +97,17 @@ public class HexagonalRenderer extends OrthogonalRenderer {
         // instance the layer node
         Node layerNode = getLayerNode(layer);
 
-        int tileCount;
         Point startTile = screenToTileCoords(0, 0);
         if (staggerX) {
-            tileCount = renderStaggerX(layer, startTile);
+            renderStaggerX(layer, startTile);
         } else {
-            tileCount = renderStaggerY(layer, startTile);
-        }
-
-        // make it thinner
-        if (tileCount > 0) {
-            layerNode.setLocalScale(1, layerDistance / tileCount, 1);
+            renderStaggerY(layer, startTile);
         }
 
         return layerNode;
     }
 
-    private int renderStaggerX(TileLayer layer, Point startTile) {
+    private void renderStaggerX(TileLayer layer, Point startTile) {
         int tileZIndex = 0;
         int x = startTile.getX();
         int y = startTile.getY();
@@ -128,7 +122,7 @@ public class HexagonalRenderer extends OrthogonalRenderer {
                         removeTileSprite(layer, rowX, y);
                     } else {
                         Vector2f pos = tileToScreenCoords(rowX, y);
-                        putTileSprite(layer, rowX, y, tileZIndex, tile, pos);
+                        putTileSprite(layer, rowX, y, getTileYAxis(tileZIndex), tile, pos);
                     }
                 }
 
@@ -145,10 +139,9 @@ public class HexagonalRenderer extends OrthogonalRenderer {
             }
         }
 
-        return tileZIndex;
     }
 
-    private int renderStaggerY(TileLayer layer, Point startTile) {
+    private void renderStaggerY(TileLayer layer, Point startTile) {
         int tileZIndex = 0;
 
         int x = startTile.getX();
@@ -162,14 +155,13 @@ public class HexagonalRenderer extends OrthogonalRenderer {
                         removeTileSprite(layer, rowX, rowY);
                     } else {
                         Vector2f pos = tileToScreenCoords(rowX, rowY);
-                        putTileSprite(layer, rowX, rowY, tileZIndex, tile, pos);
+                        putTileSprite(layer, rowX, rowY, getTileYAxis(tileZIndex), tile, pos);
                     }
                 }
                 tileZIndex++;
             }
         }
 
-        return tileZIndex;
     }
 
     @Override

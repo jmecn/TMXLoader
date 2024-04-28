@@ -26,6 +26,26 @@ public class OrthogonalRenderer extends MapRenderer {
         super(map);
     }
 
+    public float getTileZAxis(float x, float y) {
+        float z;
+        switch (map.getRenderOrder()) {
+            case RIGHT_UP:
+                z = (height - 1 - y) * width + x;
+                break;
+            case LEFT_DOWN:
+                z = y * width + (width - 1 - x);
+                break;
+            case LEFT_UP:
+                z = (height - 1 - y) * width + (width - 1 - x);
+                break;
+            case RIGHT_DOWN:
+            default:
+                z = y * width + x;
+                break;
+        }
+        return (float) (z * step);
+    }
+
     @Override
     public Spatial createTileGrid(Material material) {
         Mesh mesh = new Rect(tileWidth, tileHeight, true);
@@ -86,6 +106,7 @@ public class OrthogonalRenderer extends MapRenderer {
         // instance the layer node
         Node layerNode = getLayerNode(layer);
 
+        int tileZIndex = 0;
         for (int y = startY; y != endY; y += incY) {
             for (int x = startX; x != endX; x += incX) {
                 if (layer.isNeedUpdateAt(x, y)) {
@@ -94,9 +115,9 @@ public class OrthogonalRenderer extends MapRenderer {
                         removeTileSprite(layer, x, y);
                     } else {
                         Vector2f pixelCoord = tileToScreenCoords(x, y);
-                        float z = getTileYIndex(x, y);
-                        putTileSprite(layer, x, y, z, tile, pixelCoord);
+                        putTileSprite(layer, x, y, getTileYAxis(tileZIndex), tile, pixelCoord);
                     }
+                    tileZIndex++;
                 }
             }
         }

@@ -107,7 +107,6 @@ public class TiledApp extends SimpleApplication {
         enqueue((Callable<Void>)() -> {
             if (map != null) {
                 tiledMapState.setMap(map);
-                tiledMapState.setMapScale(1f);
                 tiledMapState.update(0);
             }
             return null;

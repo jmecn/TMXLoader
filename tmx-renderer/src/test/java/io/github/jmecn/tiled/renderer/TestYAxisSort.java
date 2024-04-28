@@ -1,4 +1,4 @@
-package io.github.jmecn.tiled.camera;
+package io.github.jmecn.tiled.renderer;
 
 import com.jme3.app.SimpleApplication;
 import com.jme3.material.Material;
@@ -19,6 +19,8 @@ import com.jme3.texture.FrameBuffer;
 import com.jme3.texture.Image;
 import com.jme3.texture.Texture;
 import com.jme3.texture.Texture2D;
+import io.github.jmecn.tiled.core.TiledMap;
+import io.github.jmecn.tiled.enums.RenderOrder;
 import io.github.jmecn.tiled.renderer.factory.DefaultMaterialFactory;
 import io.github.jmecn.tiled.renderer.factory.MaterialFactory;
 import io.github.jmecn.tiled.renderer.queue.YAxisComparator;
@@ -29,22 +31,17 @@ import io.github.jmecn.tiled.renderer.shape.TileMesh;
  *
  * @author yanmaoyuan
  */
-public class TestLayerDistance extends SimpleApplication {
+public class TestYAxisSort extends SimpleApplication {
 
     public static final int TILE_SIZE = 10;
-    // how many tiles?
-    private final int w = 16;
-    private final int h = 9;
     // the layer distance
-    private final float layerDistance = 20f;
-    private final float step = layerDistance / (w * h);
 
     public static void main(String[] args) {
         AppSettings settings = new AppSettings(true);
         settings.setResolution(1280, 720);
         settings.setSamples(4);
 
-        TestLayerDistance app = new TestLayerDistance();
+        TestYAxisSort app = new TestYAxisSort();
         app.setSettings(settings);
         app.start();
     }
@@ -54,13 +51,22 @@ public class TestLayerDistance extends SimpleApplication {
         cam.setLocation(new Vector3f(-4.364303f, 4.856053f, 18.433529f));
         cam.setRotation(new Quaternion(0.015008871f, 0.95650566f, -0.050019775f, 0.2870012f));
 
+        TiledMap tiledMap = new TiledMap(16, 9);
+        tiledMap.setTileWidth(TILE_SIZE);
+        tiledMap.setTileHeight(TILE_SIZE);
+        tiledMap.setRenderOrder(RenderOrder.RIGHT_DOWN);
+
+        OrthogonalRenderer renderer = new OrthogonalRenderer(tiledMap);
+        renderer.setLayerDistance(20f);
+        renderer.setLayerGap(1f);
+
         // setup off-screen camera and scene
-        Node offScene = createScene();
+        Node offScene = createScene(renderer);
         Camera offCamera = setupCamera();
         Texture offTex = setupOffTexture(offCamera, offScene);
 
         // display the offCamera
-        Node scene = createScene();
+        Node scene = createScene(renderer);
         Geometry cameraFrustum = createCameraFrustum(offCamera);
 
         Node offRoot = new Node("OffRoot");
@@ -93,13 +99,17 @@ public class TestLayerDistance extends SimpleApplication {
         return geom;
     }
 
-    private Node createScene() {
+    private Node createScene(OrthogonalRenderer renderer) {
         Node scene = new Node("Scene");
         scene.setQueueBucket(RenderQueue.Bucket.Opaque);
 
         MaterialFactory materialFactory = new DefaultMaterialFactory(assetManager);
+
         // the tile map
+        int w = 16;
+        int h = 9;
         for (int y = 0; y < h; y++) {
+            // how many tiles?
             for (int x = 0; x < w; x++) {
                 float r = (float) y / h;
                 float g = (float) x / w;
@@ -109,7 +119,8 @@ public class TestLayerDistance extends SimpleApplication {
                 // position
                 float px = x * 10f;
                 float py = y * 10f;
-                float pz = getZIndex(x, y);// z-index in the layer
+                float pz = renderer.getTileZAxis(x, y);
+                // float pz = getZIndex(x, y);// z-index in the layer
 
                 TileMesh mesh = new TileMesh(new Vector2f(), new Vector2f(TILE_SIZE, TILE_SIZE), new Vector2f(), new Vector2f(0, TILE_SIZE));
                 Geometry geom = new Geometry("tile#" + x + "," + y, mesh);
@@ -131,22 +142,11 @@ public class TestLayerDistance extends SimpleApplication {
         // position
         float x = 24f;
         float y = 24f;
-        float z = getZIndexTiled(x, y);
+        float z = renderer.getTileZAxis(x / TILE_SIZE, y / TILE_SIZE);
         geom.move(x, z, y);
 
         scene.updateGeometricState();
         return scene;
-    }
-
-    private float getZIndexTiled(float tx, float ty) {
-        float x = tx / TILE_SIZE;
-        float y = ty / TILE_SIZE;
-        return getZIndex(x, y);
-    }
-
-    private float getZIndex(float x, float y) {
-        float z = (y * w + x) * step;
-        return (z < 0f) ? 0f : Math.min(z, layerDistance);
     }
 
     private Geometry displayOffTexture(Texture offTex) {
