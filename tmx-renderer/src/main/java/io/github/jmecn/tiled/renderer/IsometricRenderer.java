@@ -5,8 +5,6 @@ import com.jme3.math.Vector2f;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
-import io.github.jmecn.tiled.core.Tile;
-import io.github.jmecn.tiled.core.TileLayer;
 import io.github.jmecn.tiled.core.TiledMap;
 import io.github.jmecn.tiled.math2d.Point;
 import io.github.jmecn.tiled.renderer.shape.IsoGrid;

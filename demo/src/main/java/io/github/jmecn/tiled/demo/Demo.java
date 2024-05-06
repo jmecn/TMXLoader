@@ -138,8 +138,8 @@ public class Demo extends SimpleApplication {
                             Vector2f pos = new Vector2f((float) obj.getX(), (float) obj.getY());
                             for (MapObject collision : tile.getCollisions().getObjects()) {
 
-                                boolean isSensor = Boolean.TRUE.equals(collision.getProperties().get("is_sensor"));
-                                String sensorBehavior = (String) collision.getProperties().get("sensor_behavior");
+                                boolean isSensor = collision.getProperty("is_sensor", false, Boolean.class);
+                                String sensorBehavior = collision.getProperty("sensor_behavior", String.class);
                                 Body body = createObjectBody(physicsState, pos, size, collision, isSensor);
                                 if (isSensor) {
                                     SensorControl control = new SensorControl(body, sensorBehavior);
@@ -152,13 +152,13 @@ public class Demo extends SimpleApplication {
                             }
                         }
                     } else {
-                        String bodyType = (String) obj.getProperties().get("body_type");
+                        String bodyType = obj.getProperty("body_type", String.class);
                         if (bodyType == null) {
                             // not a physics object
                             continue;
                         }
-                        boolean isSensor = Boolean.TRUE.equals(obj.getProperties().get("is_sensor"));
-                        String sensorBehavior = (String) obj.getProperties().get("sensor_behavior");
+                        boolean isSensor = obj.getProperty("is_sensor", false, Boolean.class);
+                        String sensorBehavior = obj.getProperty("sensor_behavior", String.class);
                         Vector2f size = new Vector2f((float) obj.getWidth(), (float) obj.getHeight());
                         Vector2f pos = new Vector2f((float) obj.getX(), (float) obj.getY());
                         logger.info("Create object {} body at: {}, {}", obj.getName(), pos, size);

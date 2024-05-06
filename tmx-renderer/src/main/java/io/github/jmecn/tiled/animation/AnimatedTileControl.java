@@ -30,10 +30,10 @@ public class AnimatedTileControl extends AbstractControl {
     }
 
     public void setAnim(String name) {
-        Animation anim = tile.getAnimation(name);
-        if (anim != null) {
-            if (this.anim != anim) {
-                this.anim = anim;
+        Animation animation = tile.getAnimation(name);
+        if (animation != null) {
+            if (this.anim != animation) {
+                this.anim = animation;
                 resetAnimation();
             }
         } else {
@@ -45,10 +45,10 @@ public class AnimatedTileControl extends AbstractControl {
     }
 
     public void setAnim(int index) {
-        Animation anim = tile.getAnimations().get(index);
-        if (anim != null) {
-            if (this.anim != anim) {
-                this.anim = anim;
+        Animation animation = tile.getAnimations().get(index);
+        if (animation != null) {
+            if (this.anim != animation) {
+                this.anim = animation;
                 resetAnimation();
             }
         } else {
