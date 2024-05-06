@@ -10,13 +10,9 @@ import com.jme3.math.Vector2f;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.Camera;
 import com.jme3.scene.Spatial;
-import io.github.jmecn.tiled.animation.AnimatedTileControl;
 import org.jbox2d.common.Vec2;
 import org.jbox2d.dynamics.Body;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import static io.github.jmecn.tiled.demo.Const.ANIM_IDLE_DOWN;
 import static io.github.jmecn.tiled.demo.Const.VELOCITY;
 
 /**
@@ -25,8 +21,6 @@ import static io.github.jmecn.tiled.demo.Const.VELOCITY;
  * @author yanmaoyuan
  */
 public class PlayerState extends BaseAppState implements ActionListener {
-
-    static Logger logger = LoggerFactory.getLogger(PlayerState.class);
 
     private static final String MOVE_LEFT     = "MOVE_LEFT";
     private static final String MOVE_RIGHT    = "MOVE_RIGHT";
@@ -42,11 +36,11 @@ public class PlayerState extends BaseAppState implements ActionListener {
 
     // playerInput
     private final Vector2f playerInput    = new Vector2f(0f, 0f);
-    private final float    inputSensitive = 5f;
+    private float inputSensitive = 5f;
 
     // velocity
     private final Vector2f velocity = new Vector2f(0f, 0f);
-    private final float moveSpeed = 16f * 5;
+    private float moveSpeed = 16f * 5;
 
     private Body body;
     private Spatial player;
@@ -92,6 +86,8 @@ public class PlayerState extends BaseAppState implements ActionListener {
             case MOVE_BACKWARD:
                 backward = isPressed;
                 break;
+            default:
+                break;
         }
 
     }
@@ -110,14 +106,6 @@ public class PlayerState extends BaseAppState implements ActionListener {
         player.setUserData(VELOCITY, velocity);
     }
 
-    private void setAnimation(String anim) {
-        logger.info("Change animation to {}", anim);
-        // nothing
-        AnimatedTileControl control = player.getControl(AnimatedTileControl.class);
-        if (control != null) {
-            control.setAnim(anim);
-        }
-    }
     public void updateInput(float tpf) {
         float step = tpf * inputSensitive;
         if (!left && !right) {
@@ -173,6 +161,13 @@ public class PlayerState extends BaseAppState implements ActionListener {
 
     public void setPlayer(Spatial player) {
         this.player = player;
-        setAnimation(ANIM_IDLE_DOWN);
+    }
+
+    public void setInputSensitive(float sensitive) {
+        this.inputSensitive = sensitive;
+    }
+
+    public void setMoveSpeed(float speed) {
+        this.moveSpeed = speed;
     }
 }

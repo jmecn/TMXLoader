@@ -34,7 +34,7 @@ public class Polygon extends Polyline {
         int len = points.size();
         List<Integer> result = new ArrayList<>(len);
 
-        Triangulation.Process(points, result);
+        Triangulation.process(points, result);
 
         Vector3f[] vertex = new Vector3f[len];
         Vector3f[] normal = new Vector3f[len];
