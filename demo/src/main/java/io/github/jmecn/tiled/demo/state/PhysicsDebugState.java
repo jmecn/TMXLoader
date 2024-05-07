@@ -13,7 +13,6 @@ import com.jme3.math.Vector2f;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Mesh;
 import com.jme3.scene.Node;
-import com.jme3.scene.Spatial;
 import io.github.jmecn.tiled.demo.control.BodyControl;
 import io.github.jmecn.tiled.renderer.factory.SpriteFactory;
 import org.jbox2d.collision.shapes.CircleShape;
@@ -21,7 +20,6 @@ import org.jbox2d.collision.shapes.PolygonShape;
 import org.jbox2d.collision.shapes.Shape;
 import org.jbox2d.common.Vec2;
 import org.jbox2d.dynamics.Body;
-import org.jbox2d.dynamics.Fixture;
 import org.jbox2d.dynamics.FixtureDef;
 
 import java.util.ArrayList;

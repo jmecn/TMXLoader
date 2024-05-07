@@ -9,7 +9,6 @@ public final class TiledConst {
     private TiledConst() {
     }
 
-    public static final String TILED_J3MD = "Shader/Tiled.j3md";
     public static final String EMPTY = "";
     public static final String TMX_EXTENSION = "tmx";// tiled map xml file
     public static final String TSX_EXTENSION = "tsx";// tileset xml file

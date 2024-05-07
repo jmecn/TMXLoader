@@ -12,7 +12,7 @@ import java.util.List;
 public class PropertyModel extends DefaultTableModel {
 
     private String[] columnNames = {"Name", "Value"};
-    private transient final List<PropertyPair> list;
+    private final transient List<PropertyPair> list;
 
     public PropertyModel() {
         list = new ArrayList<>();

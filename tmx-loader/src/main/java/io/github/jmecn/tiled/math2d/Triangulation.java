@@ -44,79 +44,79 @@ import com.jme3.math.Vector2f;
  * @author yanmaoyuan
  * 
  */
-public class Triangulation {
+public final class Triangulation {
+
+    private Triangulation() {}
+
     private static final float EPSILON = 0.0000000001f;
 
     public static float area(final List<Vector2f> contour) {
 
         int n = contour.size();
 
-        float A = 0.0f;
+        float a = 0.0f;
 
         for (int p = n - 1, q = 0; q < n; p = q++) {
             Vector2f vp = contour.get(p);
             Vector2f vq = contour.get(q);
-            A += vp.determinant(vq);
+            a += vp.determinant(vq);
         }
-        return A * 0.5f;
+        return a * 0.5f;
     }
 
     /*
-     * InsideTriangle decides if a point P is inside of the triangle defined by
-     * A, B, C.
+     * InsideTriangle decides if a point p is inside the triangle defined by pA, pB, pC.
      */
-    public static boolean InsideTriangle(Vector2f A, Vector2f B, Vector2f C, Vector2f P)
-
-    {
-        Vector2f a = C.subtract(B);
-        Vector2f b = A.subtract(C);
-        Vector2f c = B.subtract(A);
+    public static boolean insideTriangle(Vector2f pA, Vector2f pB, Vector2f pC, Vector2f p) {
+        Vector2f a = pC.subtract(pB);
+        Vector2f b = pA.subtract(pC);
+        Vector2f c = pB.subtract(pA);
         
-        Vector2f ap = P.subtract(A);
-        Vector2f bp = P.subtract(B);
-        Vector2f cp = P.subtract(C);
+        Vector2f ap = p.subtract(pA);
+        Vector2f bp = p.subtract(pB);
+        Vector2f cp = p.subtract(pC);
         
         return ((a.determinant(bp) >= 0.0f) && (b.determinant(cp) >= 0.0f) && (c.determinant(ap) >= 0.0f));
     }
 
-    public static boolean Snip(final List<Vector2f> contour, int u, int v,
-            int w, int n, int[] V) {
-        Vector2f A = contour.get(V[u]);
-        Vector2f B = contour.get(V[v]);
-        Vector2f C = contour.get(V[w]);
+    public static boolean snip(final List<Vector2f> contour, int u, int v, int w, int n, int[] vertex) {
+        Vector2f pA = contour.get(vertex[u]);
+        Vector2f pB = contour.get(vertex[v]);
+        Vector2f pC = contour.get(vertex[w]);
         
-        if (EPSILON > (((B.x - A.x) * (C.y - A.y)) - ((B.y - A.y) * (C.x - A.x))))
+        if (EPSILON > (((pB.x - pA.x) * (pC.y - pA.y)) - ((pB.y - pA.y) * (pC.x - pA.x)))) {
             return false;
+        }
 
         for (int p = 0; p < n; p++) {
-            if ((p == u) || (p == v) || (p == w))
+            if ((p == u) || (p == v) || (p == w)) {
                 continue;
-            Vector2f P = contour.get(V[p]);
-            if (InsideTriangle(A, B, C, P))
+            }
+            if (insideTriangle(pA, pB, pC, contour.get(vertex[p]))) {
                 return false;
+            }
         }
 
         return true;
     }
 
-    public static boolean Process(final List<Vector2f> contour,
-            List<Integer> index) {
+    public static boolean process(final List<Vector2f> contour, List<Integer> index) {
         /* allocate and initialize list of Vertices in polygon */
 
         int n = contour.size();
         if (n < 3)
             return false;
 
-        int[] V = new int[n];
+        int[] vertex = new int[n];
 
-        /* we want a counter-clockwise polygon in V */
+        /* we want a counter-clockwise polygon in vertex */
 
         if (0.0f < area(contour))
             for (int v = 0; v < n; v++)
-                V[v] = v;
+                vertex[v] = v;
         else
             for (int v = 0; v < n; v++)
-                V[v] = (n - 1) - v;
+                vertex[v] = (n - 1) - v;
 
         int nv = n;
 
@@ -141,13 +141,13 @@ public class Triangulation {
             if (nv <= w)
                 w = 0; /* next */
 
-            if (Snip(contour, u, v, w, nv, V)) {
+            if (snip(contour, u, v, w, nv, vertex)) {
                 int a, b, c, s, t;
 
                 /* true names of the vertices */
-                a = V[u];
-                b = V[v];
-                c = V[w];
+                a = vertex[u];
+                b = vertex[v];
+                c = vertex[w];
 
                 /* output Triangle */
                 index.add(a);
@@ -156,10 +156,10 @@ public class Triangulation {
 
                 /* remove v from remaining polygon */
                 for (s = v, t = v + 1; t < nv; s++, t++)
-                    V[s] = V[t];
+                    vertex[s] = vertex[t];
                 nv--;
 
-                /* resest error detection counter */
+                /* reset error detection counter */
                 count = 2 * nv;
             }
         }
