@@ -53,7 +53,7 @@ public abstract class MapRenderer {
 
     static Logger logger = LoggerFactory.getLogger(MapRenderer.class);
 
-    protected double layerDistance = 16f;// the distance between layers
+    protected double layerDistance = 4f;// the distance between layers
     protected double layerGap = 1f;// the gap between layers
     protected double step;
     protected boolean isTintingColorEnabled = true;
