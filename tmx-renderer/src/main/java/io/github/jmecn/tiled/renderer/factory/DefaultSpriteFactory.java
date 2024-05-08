@@ -63,21 +63,6 @@ public final class DefaultSpriteFactory implements SpriteFactory {
     }
 
     @Override
-    public void setTintColor(Spatial spatial, ColorRGBA tintColor) {
-        materialFactory.setTintColor(spatial, tintColor);
-    }
-
-    @Override
-    public void setLayerOpacity(Spatial spatial, float opacity) {
-        materialFactory.setLayerOpacity(spatial, opacity);
-    }
-
-    @Override
-    public void setOpacity(Spatial spatial, float opacity) {
-        materialFactory.setOpacity(spatial, opacity);
-    }
-
-    @Override
     public Material newMaterial(ColorRGBA color) {
         return materialFactory.newMaterial(color);
     }
@@ -95,31 +80,6 @@ public final class DefaultSpriteFactory implements SpriteFactory {
     @Override
     public Material newMaterial(TiledImage image) {
         return materialFactory.newMaterial(image);
-    }
-
-    @Override
-    public Material newMaterial(Tileset tileset, ColorRGBA tintColor) {
-        return materialFactory.newMaterial(tileset, tintColor);
-    }
-
-    @Override
-    public Material newMaterial(Tile tile, ColorRGBA tintColor) {
-        return materialFactory.newMaterial(tile, tintColor);
-    }
-
-    @Override
-    public Material newMaterial(TiledImage image, ColorRGBA tintColor) {
-        return materialFactory.newMaterial(image, tintColor);
-    }
-
-    @Override
-    public Material newMaterial(ColorRGBA color, ColorRGBA tintColor) {
-        return materialFactory.newMaterial(color, tintColor);
-    }
-
-    @Override
-    public void setTintColor(Material material, ColorRGBA tintColor) {
-        materialFactory.setTintColor(material, tintColor);
     }
 
     @Override

@@ -144,7 +144,7 @@ public class Demo extends SimpleApplication {
                                 if (isSensor) {
                                     SensorControl control = new SensorControl(body, sensorBehavior);
                                     physicsState.addContactListener(control);
-                                    Spatial spatial = mapRenderer.getMapObjectSpatial(objGroup, obj);
+                                    Spatial spatial = mapRenderer.getMapObjectSprite(objGroup, obj);
                                     if (spatial != null) {
                                         spatial.addControl(control);
                                     }

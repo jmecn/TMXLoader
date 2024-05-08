@@ -14,14 +14,6 @@ import io.github.jmecn.tiled.core.Tileset;
  */
 public interface SpriteFactory {
 
-    void setTintColor(Material material, ColorRGBA tintColor);
-
-    void setTintColor(Spatial spatial, ColorRGBA tintColor);
-
-    void setLayerOpacity(Spatial spatial, float opacity);
-
-    void setOpacity(Spatial spatial, float opacity);
-
     Material newMaterial(ColorRGBA color);
 
     Material newMaterial(Tileset tileset);
@@ -29,14 +21,6 @@ public interface SpriteFactory {
     Material newMaterial(Tile tile);
 
     Material newMaterial(TiledImage image);
-
-    Material newMaterial(Tileset tileset, ColorRGBA tintColor);
-
-    Material newMaterial(Tile tile, ColorRGBA tintColor);
-
-    Material newMaterial(TiledImage image, ColorRGBA tintColor);
-
-    Material newMaterial(ColorRGBA color, ColorRGBA tintColor);
 
     Geometry newTileSprite(Tile tile);
 

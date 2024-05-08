@@ -4,7 +4,7 @@
 uniform vec4 m_TransColor;
 #endif
 
-#if defined(USE_TINT_COLOR) && defined(HAS_TINT_COLOR)
+#ifdef HAS_TINT_COLOR
 uniform vec4 m_TintColor;
 #endif
 
@@ -64,7 +64,7 @@ void main(){
     color *= m_Color;
     #endif
 
-    #if defined(USE_TINT_COLOR) && defined(HAS_TINT_COLOR)
+    #ifdef HAS_TINT_COLOR
     color *= m_TintColor;
     #endif
 

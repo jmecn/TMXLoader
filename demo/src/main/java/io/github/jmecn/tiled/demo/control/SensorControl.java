@@ -1,10 +1,13 @@
 package io.github.jmecn.tiled.demo.control;
 
+import com.jme3.material.MatParamOverride;
 import com.jme3.math.FastMath;
 import com.jme3.renderer.RenderManager;
 import com.jme3.renderer.ViewPort;
 import com.jme3.scene.Geometry;
+import com.jme3.scene.Spatial;
 import com.jme3.scene.control.AbstractControl;
+import com.jme3.shader.VarType;
 import io.github.jmecn.tiled.renderer.MaterialConst;
 import org.jbox2d.callbacks.ContactImpulse;
 import org.jbox2d.callbacks.ContactListener;
@@ -23,6 +26,8 @@ public class SensorControl extends AbstractControl implements ContactListener {
     Logger logger = LoggerFactory.getLogger(SensorControl.class);
 
     public static final String BEHAVIOR_HIDE = "hide";
+
+    private MatParamOverride opacityOverride;
 
     private int count;// in case of multiple contacts
     private final Body body;
@@ -45,28 +50,31 @@ public class SensorControl extends AbstractControl implements ContactListener {
                 }
             }
         } else {
-            this.opacity = 1.0f;
             this.behavior = behavior;
+        }
+
+        opacityOverride = new MatParamOverride(VarType.Float, MaterialConst.OPACITY, opacity);
+        opacityOverride.setEnabled(false);
+    }
+
+    @Override
+    public void setSpatial(Spatial spatial) {
+        Spatial oldSpatial = this.spatial;
+        super.setSpatial(spatial);
+
+        if (oldSpatial != null) {
+            oldSpatial.removeMatParamOverride(opacityOverride);
+        }
+
+        if (spatial != null) {
+            spatial.addMatParamOverride(opacityOverride);
         }
     }
 
     @Override
     protected void controlUpdate(float tpf) {
-        if (count > 0) {
-            if (BEHAVIOR_HIDE.equals(behavior)) {
-                setOpacity(opacity);
-            }
-        } else {
-            if (BEHAVIOR_HIDE.equals(behavior)) {
-                setOpacity(1.0f);
-            }
-        }
-    }
-
-    public void setOpacity(float opacity) {
-        if (spatial instanceof Geometry) {
-            Geometry geometry = (Geometry) spatial;
-            geometry.getMaterial().setFloat(MaterialConst.OPACITY, opacity);
+        if (BEHAVIOR_HIDE.equals(behavior)) {
+            opacityOverride.setEnabled(count > 0);
         }
     }
 
