@@ -56,6 +56,7 @@ public abstract class MapRenderer {
     protected double layerDistance = 16f;// the distance between layers
     protected double layerGap = 1f;// the gap between layers
     protected double step;
+    protected boolean isTintingColorEnabled = true;
 
     protected TiledMap tiledMap;
     protected int width;
@@ -154,11 +155,20 @@ public abstract class MapRenderer {
     }
 
     public LayerNode getLayerNode(Layer layer) {
-        return layerNodeMap.computeIfAbsent(layer, key -> {
-            LayerNode node = new LayerNode(layer);
-            rootNode.attachChild(node);
-            return node;
-        });
+        return layerNodeMap.get(layer);
+    }
+
+    public boolean isTintingColorEnabled() {
+        return isTintingColorEnabled;
+    }
+
+    public void setTintingColorEnabled(boolean enabled) {
+        this.isTintingColorEnabled = enabled;
+        for (LayerNode node : layerNodeMap.values()) {
+            if (node != null) {
+                node.setTintColorEnabled(enabled);
+            }
+        }
     }
 
     public Spatial getMapObjectSprite(ObjectGroup layer, MapObject obj) {
@@ -190,7 +200,12 @@ public abstract class MapRenderer {
                 continue;
             }
 
-            LayerNode layerNode = getLayerNode(layer);
+            LayerNode layerNode = layerNodeMap.computeIfAbsent(layer, key -> {
+                LayerNode node = new LayerNode(layer);
+                node.setTintColorEnabled(isTintingColorEnabled);
+                rootNode.attachChild(node);
+                return node;
+            });
 
             if (layer instanceof TileLayer) {
                 render(layerNode, (TileLayer) layer);

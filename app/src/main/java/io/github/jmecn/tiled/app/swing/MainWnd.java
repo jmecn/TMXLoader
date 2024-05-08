@@ -43,6 +43,7 @@ public class MainWnd extends JFrame {
     private boolean isGridVisible;
     private boolean isCursorVisible;
     private boolean isParallaxEnabled;
+    private boolean isTintingColorEnabled;
 
     private final LinkedList<RecentFile> recentFiles = new LinkedList<>();
 
@@ -64,6 +65,7 @@ public class MainWnd extends JFrame {
         this.isGridVisible = app.isGridVisible();
         this.isCursorVisible = app.isCursorVisible();
         this.isParallaxEnabled = app.isParallaxEnabled();
+        this.isTintingColorEnabled = app.isTintingColorEnabled();
 
         this.app = app;
 
@@ -169,8 +171,14 @@ public class MainWnd extends JFrame {
         JCheckBoxMenuItem parallaxItem = new JCheckBoxMenuItem("Enable Parallax");
         parallaxItem.setMnemonic('P');
         parallaxItem.setSelected(isParallaxEnabled);
-        parallaxItem.addActionListener(e -> setParallaxEnable());
+        parallaxItem.addActionListener(e -> setParallaxEnabled());
         viewMenu.add(parallaxItem);
+
+        JCheckBoxMenuItem tintColorItem = new JCheckBoxMenuItem("Enable Tinting Color");
+        tintColorItem.setMnemonic('T');
+        tintColorItem.setSelected(isTintingColorEnabled);
+        tintColorItem.addActionListener(e -> setTintingColorEnabled());
+        viewMenu.add(tintColorItem);
 
         return menuBar;
     }
@@ -185,9 +193,14 @@ public class MainWnd extends JFrame {
         app.setCursorVisible(isCursorVisible);
     }
 
-    private void setParallaxEnable() {
+    private void setParallaxEnabled() {
         isParallaxEnabled = !isParallaxEnabled;
         app.setParallaxEnabled(isParallaxEnabled);
+    }
+
+    private void setTintingColorEnabled() {
+        isTintingColorEnabled = !isTintingColorEnabled;
+        app.setTintingColorEnabled(isTintingColorEnabled);
     }
 
     private JPanel createContentPanel() {

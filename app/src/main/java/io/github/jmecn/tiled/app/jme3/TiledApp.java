@@ -32,11 +32,11 @@ public class TiledApp extends SimpleApplication {
     private AwtPanel panel;
     private MainWnd wnd;
 
-    private final ViewAppState tiledMapState;
+    private final ViewAppState viewAppState;
 
     public TiledApp(CountDownLatch latch) {
-        tiledMapState = new ViewAppState();
-        tiledMapState.setZoomMode(ZoomMode.MAP);
+        viewAppState = new ViewAppState();
+        viewAppState.setZoomMode(ZoomMode.MAP);
         this.latch = latch;
     }
 
@@ -51,7 +51,7 @@ public class TiledApp extends SimpleApplication {
     public void simpleInitApp() {
         TmxLoader.registerLoader(assetManager);
 
-        stateManager.attach(tiledMapState);
+        stateManager.attach(viewAppState);
 
         inputManager.addMapping("click", new MouseButtonTrigger(MouseInput.BUTTON_LEFT));
         inputManager.addListener((ActionListener) (name, isPressed, tpf) -> {
@@ -77,28 +77,28 @@ public class TiledApp extends SimpleApplication {
     }
 
     private void doClick() {
-        if (tiledMapState != null && tiledMapState.getMapRenderer() != null) {
+        if (viewAppState != null && viewAppState.getMapRenderer() != null) {
             Vector2f cursor = inputManager.getCursorPosition();
-            Point tile = tiledMapState.getCursorTileCoordinate(cursor);
-            Vector2f pixel = tiledMapState.getCursorPixelCoordinate(cursor);
+            Point tile = viewAppState.getCursorTileCoordinate(cursor);
+            Vector2f pixel = viewAppState.getCursorPixelCoordinate(cursor);
             wnd.onPick(tile, pixel);
         }
     }
 
     @Override
     public void simpleUpdate(float tpf) {
-        if (tiledMapState != null && tiledMapState.getMapRenderer() != null) {
+        if (viewAppState != null && viewAppState.getMapRenderer() != null) {
             Vector2f cursor = inputManager.getCursorPosition();
 
-            Point tile = tiledMapState.getCursorTileCoordinate(cursor);
-            Vector2f pixel = tiledMapState.getCursorPixelCoordinate(cursor);
-            Vector2f camPixel = tiledMapState.getCameraPixelCoordinate();
+            Point tile = viewAppState.getCursorTileCoordinate(cursor);
+            Vector2f pixel = viewAppState.getCursorPixelCoordinate(cursor);
+            Vector2f camPixel = viewAppState.getCameraPixelCoordinate();
             String status = String.format("Tile: (%d,%d), Pixel: (%.0f, %.0f), Cursor: (%.0f,%.0f), Camera:(%d, %d), Camera Center Pixel:(%.0f, %.0f)",
                     tile.getX(), tile.getY(), pixel.x, pixel.y, cursor.x, cursor.y,
                     cam.getWidth(), cam.getHeight(), camPixel.x, camPixel.y);
             wnd.setCursorStatus(status);
 
-            float scale = tiledMapState.getMapScale();
+            float scale = viewAppState.getMapScale();
             wnd.setMapStatus(String.format("Map Scale: %.1f%%", scale * 100));
         }
     }
@@ -106,34 +106,42 @@ public class TiledApp extends SimpleApplication {
     public void load(TiledMap map) {
         enqueue((Callable<Void>)() -> {
             if (map != null) {
-                tiledMapState.setMap(map);
-                tiledMapState.update(0);
+                viewAppState.setMap(map);
+                viewAppState.update(0);
             }
             return null;
         });
     }
 
     public void setGridVisible(boolean visible) {
-        tiledMapState.setGridVisible(visible);
+        viewAppState.setGridVisible(visible);
     }
 
     public void setCursorVisible(boolean visible) {
-        tiledMapState.setCursorVisible(visible);
+        viewAppState.setCursorVisible(visible);
     }
 
     public void setParallaxEnabled(boolean enabled) {
-        tiledMapState.setParallaxEnabled(enabled);
+        viewAppState.setParallaxEnabled(enabled);
+    }
+
+    public void setTintingColorEnabled(boolean enabled) {
+        viewAppState.setTintingColorEnabled(enabled);
     }
 
     public boolean isGridVisible() {
-        return tiledMapState.isGridVisible();
+        return viewAppState.isGridVisible();
     }
 
     public boolean isCursorVisible() {
-        return tiledMapState.isCursorVisible();
+        return viewAppState.isCursorVisible();
     }
 
     public boolean isParallaxEnabled() {
-        return tiledMapState.isParallaxEnabled();
+        return viewAppState.isParallaxEnabled();
+    }
+
+    public boolean isTintingColorEnabled() {
+        return viewAppState.isTintingColorEnabled();
     }
 }

@@ -78,6 +78,9 @@ public class ViewAppState extends BaseAppState implements AnalogListener, Action
     // The parallax
     private boolean isParallaxEnabled = true;
 
+    // Enable tinting color
+    private boolean isTintingColorEnabled = true;
+
     // The map scale, user can zoom in/out the map from 10% to 400%
     private float mapScale;
     private static final float MAP_SCALE_MIN = 0.1f;
@@ -264,22 +267,8 @@ public class ViewAppState extends BaseAppState implements AnalogListener, Action
         }
     }
 
-    public TiledMap getMap() {
-        return map;
-    }
-
     public MapRenderer getMapRenderer() {
         return mapRenderer;
-    }
-
-    public void moveToTile(float x, float y) {
-        Vector2f tilePos = mapRenderer.tileToScreenCoords(x, y).multLocal(mapScale);
-        cam.setLocation(new Vector3f(tilePos.x, cam.getLocation().y, tilePos.y));
-    }
-
-    public void moveToPixel(float x, float y) {
-        Vector2f pixelPos = mapRenderer.pixelToScreenCoords(x, y).multLocal(mapScale);
-        cam.setLocation(new Vector3f(pixelPos.x, cam.getLocation().y, pixelPos.y));
     }
 
     private void calculateMapParallax() {
@@ -345,7 +334,7 @@ public class ViewAppState extends BaseAppState implements AnalogListener, Action
 
     /**
      * Sets the move speed. The speed is given in world units per second.
-     * 
+     *
      * @param moveSpeed move speed
      */
     public void setMoveSpeed(float moveSpeed) {
@@ -656,6 +645,15 @@ public class ViewAppState extends BaseAppState implements AnalogListener, Action
     public void setParallaxEnabled(boolean enabled) {
         isParallaxEnabled = enabled;
         calculateMapParallax();
+    }
+
+    public boolean isTintingColorEnabled() {
+        return isTintingColorEnabled;
+    }
+
+    public void setTintingColorEnabled(boolean enabled) {
+        isTintingColorEnabled = enabled;
+        mapRenderer.setTintingColorEnabled(enabled);
     }
 
     /**
