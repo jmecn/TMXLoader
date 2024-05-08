@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.10.2" orientation="orthogonal" renderorder="right-down" width="30" height="20" tilewidth="16" tileheight="16" infinite="0" backgroundcolor="#22c07f" nextlayerid="7" nextobjectid="48">
+<map version="1.10" tiledversion="1.10.2" orientation="orthogonal" renderorder="right-down" width="30" height="20" tilewidth="16" tileheight="16" infinite="0" backgroundcolor="#22c07f" nextlayerid="9" nextobjectid="48">
  <tileset firstgid="1" source="jungle.tsx"/>
  <tileset firstgid="463" source="tree.tsx"/>
  <layer id="1" name="Ground" width="30" height="20">

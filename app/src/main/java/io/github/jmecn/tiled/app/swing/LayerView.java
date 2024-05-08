@@ -1,8 +1,6 @@
 package io.github.jmecn.tiled.app.swing;
 
-import io.github.jmecn.tiled.core.GroupLayer;
-import io.github.jmecn.tiled.core.Layer;
-import io.github.jmecn.tiled.core.TiledMap;
+import io.github.jmecn.tiled.core.*;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -21,7 +19,7 @@ public class LayerView extends JTree {
         this.tiledMap = null;
         this.setPreferredSize(new Dimension(200, 0));
         this.setRootVisible(false);
-        this.setModel(new DefaultTreeModel(new DefaultMutableTreeNode("Layers")));
+        this.setModel(new DefaultTreeModel(new DefaultMutableTreeNode()));
     }
 
     public void setTiledMap(TiledMap map) {
@@ -31,11 +29,11 @@ public class LayerView extends JTree {
 
     public void update() {
         if (tiledMap == null) {
-            setModel(new DefaultTreeModel(new DefaultMutableTreeNode("Layers")));
+            setModel(new DefaultTreeModel(new DefaultMutableTreeNode()));
             return;
         }
 
-        DefaultMutableTreeNode root = new DefaultMutableTreeNode("Layers");
+        DefaultMutableTreeNode root = new DefaultMutableTreeNode();
         int count = tiledMap.getLayerCount();
         for (int i = 0; i < tiledMap.getLayerCount(); i++) {
             Layer layer = tiledMap.getLayer(count - i - 1);
@@ -57,4 +55,5 @@ public class LayerView extends JTree {
             }
         }
     }
+
 }

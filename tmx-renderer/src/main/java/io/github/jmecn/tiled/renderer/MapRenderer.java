@@ -250,13 +250,14 @@ public abstract class MapRenderer {
                     layerNode.removeTileSprite(x, y);
                 } else {
                     Material material = spriteFactory.newMaterial(tile);
-                    Geometry visual = spriteFactory.newTileSprite(tile, material);
+                    Geometry sprite = spriteFactory.newTileSprite(tile, material);
+                    sprite.setName("Tile(" + layer.getIndex() + "," + x + "," + y + ")#" + tile.getGidNoMask());
 
                     Vector2f pixelCoord = tileToScreenCoords(x, y);
                     float tileYAxis = getTileYAxis(z);
-                    visual.move(pixelCoord.x, tileYAxis, pixelCoord.y);
+                    sprite.move(pixelCoord.x, tileYAxis, pixelCoord.y);
 
-                    layerNode.setTileSpriteAt(x, y, visual);
+                    layerNode.setTileSpriteAt(x, y, sprite);
                 }
                 layer.setNeedUpdateAt(x, y, false);
             }
@@ -328,6 +329,11 @@ public abstract class MapRenderer {
 
     protected void render(LayerNode layerNode, ImageLayer layer) {
         if (layer.isNeedUpdated()) {
+            if (layer.getImage() == null) {
+                logger.warn("ImageLayer {} has no image", layer.getName());
+                layer.setNeedUpdated(false);
+                return;
+            }
 
             Spatial sprite = layerNode.getImageSprite();
 

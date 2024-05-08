@@ -49,11 +49,10 @@ public class ImageLayerLoader extends LayerLoader {
         Node imageNode = getChildByTag(node, IMAGE);
         if (imageNode == null) {
             logger.warn("ImageLayer {} has no image", layer.getName());
-            throw new IllegalArgumentException("ImageLayer " + layer.getName() + " has no image");
+        } else {
+            TiledImage image = imageLoader.load(imageNode);
+            layer.setImage(image);
         }
-
-        TiledImage image = imageLoader.load(imageNode);
-        layer.setImage(image);
 
         return layer;
     }

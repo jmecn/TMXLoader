@@ -106,7 +106,7 @@ public final class DefaultSpriteFactory implements SpriteFactory {
             return null;
         }
 
-        Geometry geometry = new Geometry(obj.getName(), mesh);
+        Geometry geometry = new Geometry("Obj:" + obj.getName() + "#" + obj.getId(), mesh);
 
         double deg = obj.getRotation();
         if (deg != 0) {
