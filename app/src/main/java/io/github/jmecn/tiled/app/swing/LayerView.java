@@ -36,8 +36,9 @@ public class LayerView extends JTree {
         }
 
         DefaultMutableTreeNode root = new DefaultMutableTreeNode("Layers");
+        int count = tiledMap.getLayerCount();
         for (int i = 0; i < tiledMap.getLayerCount(); i++) {
-            Layer layer = tiledMap.getLayer(i);
+            Layer layer = tiledMap.getLayer(count - i - 1);
             addLayer(root, layer);
         }
 
@@ -49,8 +50,9 @@ public class LayerView extends JTree {
         node.add(subNode);
         if (layer instanceof GroupLayer) {
             GroupLayer group = (GroupLayer) layer;
+            int count = group.getLayerCount();
             for (int j = 0; j < group.getLayerCount(); j++) {
-                Layer subLayer = group.getLayer(j);
+                Layer subLayer = group.getLayer(count - j - 1);
                 addLayer(subNode, subLayer);
             }
         }
