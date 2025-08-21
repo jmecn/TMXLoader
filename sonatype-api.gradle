@@ -1,0 +1,161 @@
+// 公共方法：获取认证信息
+def getSonatypeCredentials() {
+    def username = project.findProperty('ossrhUsername') ?: System.getenv('OSSRH_USERNAME')
+    def password = project.findProperty('ossrhPassword') ?: System.getenv('OSSRH_PASSWORD')
+
+    if (!username || !password) {
+        throw new GradleException('OSSRH credentials are required for Sonatype API operations')
+    }
+
+    def auth = "${username}:${password}".bytes.encodeBase64().toString()
+    return "Bearer ${auth}"
+}
+
+// 公共方法：发送 HTTP 请求
+def callSonatypeApi(String method, String url, Closure responseHandler = null) {
+    try {
+        def connection = new URL("https://ossrh-staging-api.central.sonatype.com" + url).openConnection() as HttpURLConnection
+        connection.requestMethod = method
+        connection.setRequestProperty("Authorization", getSonatypeCredentials())
+
+        if (method == "POST") {
+            connection.setRequestProperty("Content-Type", "application/json")
+            connection.doOutput = true
+        }
+
+        def responseCode = connection.responseCode
+        def responseMessage = connection.responseMessage
+
+        if (responseHandler) {
+            responseHandler.call(connection, responseCode, responseMessage)
+        } else {
+            if (responseCode >= 200 && responseCode < 300) {
+                println "Sonatype API call successful: ${responseCode} ${responseMessage}"
+                def inputStream = connection.inputStream
+                if (inputStream) {
+                    println "${inputStream.text}"
+                }
+            } else {
+                println "Sonatype API call failed: ${responseCode} ${responseMessage}"
+                def errorStream = connection.errorStream
+                if (errorStream) {
+                    def errorText = errorStream.text
+                    println "Error details: ${errorText}"
+                }
+            }
+        }
+
+        return responseCode
+    } catch (Exception e) {
+        throw new GradleException("Failed to call Sonatype API: ${e.message}", e)
+    }
+}
+
+// list sonatype staging repositories
+tasks.register('sonatypeList') {
+    group = 'publishing'
+    description = 'List Sonatype staging repositories'
+
+    onlyIf {
+        !project.version.endsWith('SNAPSHOT')
+    }
+
+    doLast {
+        def url = "/manual/search/repositories?ip=any&profile_id=${project.group}"
+        callSonatypeApi("GET", url)
+    }
+}
+
+// notify sonatype upload
+tasks.register('sonatypeUpload') {
+    group = 'publishing'
+    description = 'Notify Sonatype that upload is complete'
+
+    onlyIf {
+        !project.version.endsWith('SNAPSHOT')
+    }
+
+    doLast {
+        def url ="/manual/upload/defaultRepository/${project.group}"
+        callSonatypeApi("POST", url) { connection, responseCode, responseMessage ->
+            if (responseCode >= 200 && responseCode < 300) {
+                println "Successfully notified Sonatype Staging API: ${responseCode} ${responseMessage}"
+            } else {
+                println "Failed to notify Sonatype Staging API: ${responseCode} ${responseMessage}"
+                def errorText
+                def errorStream = connection.errorStream
+                if (errorStream) {
+                    errorText = errorStream.text
+                    println "Error details: ${errorText}"
+                } else {
+                    errorText = "No error details available"
+                }
+                throw new GradleException("Failed to notify Sonatype Staging API: ${responseCode} ${responseMessage}\nError details: ${errorText}")
+            }
+        }
+    }
+}
+
+// 上传到指定仓库
+tasks.register('sonatypeUploadToRepository') {
+    group = 'publishing'
+    description = 'Upload to a specific Sonatype repository (requires -PrepositoryKey=<key>)'
+
+    // 检查是否提供了 repositoryKey 参数
+    onlyIf {
+        if (!project.hasProperty('repositoryKey')) {
+            throw new GradleException('Repository key is required. Use -PrepositoryKey=<key>')
+        }
+        return true
+    }
+
+    doLast {
+        def repositoryKey = project.property('repositoryKey')
+        def url = "/manual/upload/repository/${repositoryKey}"
+        callSonatypeApi("POST", url) { connection, responseCode, responseMessage ->
+            if (responseCode >= 200 && responseCode < 300) {
+                println "Successfully uploaded to repository ${repositoryKey}: ${responseCode} ${responseMessage}"
+            } else {
+                println "Failed to upload to repository ${repositoryKey}: ${responseCode} ${responseMessage}"
+                def errorStream = connection.errorStream
+                if (errorStream) {
+                    def errorText = errorStream.text
+                    println "Error details: ${errorText}"
+                }
+                throw new GradleException("Failed to upload to repository ${repositoryKey}: ${responseCode} ${responseMessage}")
+            }
+        }
+    }
+}
+
+// 删除指定仓库
+tasks.register('sonatypeDropRepository') {
+    group = 'publishing'
+    description = 'Drop a specific Sonatype repository (requires -PrepositoryKey=<key>)'
+
+    // 检查是否提供了 repositoryKey 参数
+    onlyIf {
+        if (!project.hasProperty('repositoryKey')) {
+            throw new GradleException('Repository key is required. Use -PrepositoryKey=<key>')
+        }
+        return true
+    }
+
+    doLast {
+        def repositoryKey = project.property('repositoryKey')
+        def url = "/manual/drop/repository/${repositoryKey}"
+        callSonatypeApi("DELETE", url) { connection, responseCode, responseMessage ->
+            if (responseCode >= 200 && responseCode < 300) {
+                println "Successfully dropped repository ${repositoryKey}: ${responseCode} ${responseMessage}"
+            } else {
+                println "Failed to drop repository ${repositoryKey}: ${responseCode} ${responseMessage}"
+                def errorStream = connection.errorStream
+                if (errorStream) {
+                    def errorText = errorStream.text
+                    println "Error details: ${errorText}"
+                }
+                throw new GradleException("Failed to drop repository ${repositoryKey}: ${responseCode} ${responseMessage}")
+            }
+        }
+    }
+}

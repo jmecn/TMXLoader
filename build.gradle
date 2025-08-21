@@ -1,3 +1,5 @@
+apply from: 'sonatype-api.gradle'
+
 allprojects {
     group = 'io.github.jmecn'
     version = '0.6.0'
