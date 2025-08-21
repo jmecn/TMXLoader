@@ -11,7 +11,6 @@ def getSonatypeCredentials() {
     return "Bearer ${auth}"
 }
 
-// 公共方法：发送 HTTP 请求
 def callSonatypeApi(String method, String url, Closure responseHandler = null) {
     try {
         def connection = new URL("https://ossrh-staging-api.central.sonatype.com" + url).openConnection() as HttpURLConnection
@@ -96,12 +95,10 @@ tasks.register('sonatypeUpload') {
     }
 }
 
-// 上传到指定仓库
-tasks.register('sonatypeUploadToRepository') {
+tasks.register('sonatypeUploadRepository') {
     group = 'publishing'
     description = 'Upload to a specific Sonatype repository (requires -PrepositoryKey=<key>)'
 
-    // 检查是否提供了 repositoryKey 参数
     onlyIf {
         if (!project.hasProperty('repositoryKey')) {
             throw new GradleException('Repository key is required. Use -PrepositoryKey=<key>')
@@ -128,12 +125,10 @@ tasks.register('sonatypeUploadToRepository') {
     }
 }
 
-// 删除指定仓库
 tasks.register('sonatypeDropRepository') {
     group = 'publishing'
     description = 'Drop a specific Sonatype repository (requires -PrepositoryKey=<key>)'
 
-    // 检查是否提供了 repositoryKey 参数
     onlyIf {
         if (!project.hasProperty('repositoryKey')) {
             throw new GradleException('Repository key is required. Use -PrepositoryKey=<key>')

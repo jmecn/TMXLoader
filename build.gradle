@@ -10,3 +10,20 @@ allprojects {
         }
     }
 }
+
+// Notify Sonatype upload after all publish tasks are completed
+gradle.projectsEvaluated {
+    // get publish tasks from all subprojects
+    def publishTasks = subprojects.collect { subproject ->
+        subproject.tasks.matching { it.name.startsWith('publish') && it.name.endsWith('PublicationToOSSRHRepository') }
+    }.flatten()
+
+    // register a new task to trigger Sonatype upload
+    tasks.register('allPublishToOSSRH') {
+        group = 'publishing'
+        description = 'Publish all modules to OSSRH and notify Sonatype'
+
+        dependsOn publishTasks
+        finalizedBy sonatypeUpload
+    }
+}
