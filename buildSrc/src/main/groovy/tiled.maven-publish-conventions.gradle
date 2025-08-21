@@ -40,10 +40,10 @@ publishing {
         def ossrhUrl;
         if (version.endsWith('SNAPSHOT')) {
             // snapshot
-            ossrhUrl = 'https://s01.oss.sonatype.org/content/repositories/snapshots/'
+            ossrhUrl = 'https://ossrh-staging-api.central.sonatype.com/content/repositories/snapshots/'
         } else {
             // release
-            ossrhUrl = 'https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/'
+            ossrhUrl = 'https://ossrh-staging-api.central.sonatype.com/service/local/staging/deploy/maven2/'
         }
 
         maven {
